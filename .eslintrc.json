@@ -1,0 +1,17 @@
+{
+  "parser": "babel-eslint",
+  "extends": "react-app",
+  "rules": {
+  	"no-unused-expressions": [0, {"allowTaggedTemplates": true, "allowShortCircuit": true, "allowTernary": true}]
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "allowImportExportEverywhere": true
+  },
+  "env": {
+        "browser": true,
+        "node": true,
+        "mocha": true,
+        "es6": true
+    }
+}

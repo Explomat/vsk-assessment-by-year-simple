@@ -1,0 +1,142 @@
+.assessment-profile {
+	
+}
+
+.assessment-delegate__search {
+	width: 100%;
+}
+
+.assessment-delegate__search > div.input:first-child{
+	width: 100%;
+}
+
+.assessment-profile__subordinates {
+	padding-top: 20px !important;
+}
+
+.assessment-profile-subordinate__check {
+	display: table-cell !important;
+	vertical-align: top !important;
+}
+
+.assessment-profile-subordinate__avatar-icon {
+	padding-left: 8px;
+}
+
+.assessment-profile__indicators-container-item {
+	line-height: 22px !important;
+}
+
+.assessment-profile__description {
+	line-height: 22px;
+    display: block;
+    padding: 3px 0;
+    text-overflow: ellipsis;
+    color: rgba(0,0,0,.5);
+    width: 122px;
+    display: inline-block;
+}
+
+.assessment-profile__indicators-container {
+	margin-top: 14px;
+}
+
+.assessment-profile__pa{
+	margin-bottom: 24px;
+}
+.assessment-profile__pa-content {
+	display: none;
+}
+
+.assessment-profile__pa-content--visible {
+	display: block;
+}
+
+.assessment-profile__result {
+	margin-top: 36px;
+}
+
+.assessment-profile__pa_header{
+	cursor: pointer;
+	border: 1px solid #d2d2d2;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.assessment-profile__pa_header > h3{
+	color: #2185d0 !important;
+}
+
+.assessment-profile__label {
+	color: #000;
+	font-family: 'Roboto';
+}
+
+.assessment-profile__label--active {
+	border: 2px solid #888 !important;
+}
+
+.assessment-profile__competences{
+	position: relative;
+	padding: .2em 0;
+}
+
+.assessment-profile__competences-container{
+	margin-bottom: 24px;
+}
+
+.assessment-profile__competences-container-complete {
+	float: right;
+}
+
+.assessment-profile-subordinate {
+	
+}
+
+.assessment-profile-subordinate__decription{
+	color: rgba(123, 123, 123, 0.7);
+	margin-top: 4px;
+}
+
+.assessment-profile__competences-container__text-area{
+	resize: none;
+	z-index: 2;
+	width: 100%;
+	margin: 0;
+    max-width: 100%;
+    -webkit-flex: 1 0 auto;
+    flex: 1 0 auto;
+    outline: 0;
+    -webkit-tap-highlight-color: rgba(255,255,255,0);
+    text-align: left;
+    line-height: 1.21428571em;
+    font-family: Lato,Helvetica Neue,Arial,Helvetica,sans-serif;
+    padding: .67857143em 1em;
+    background: #fff;
+    border: 1px solid rgba(34,36,38,.15);
+    color: rgba(0,0,0,.87);
+    border-radius: .28571429rem;
+    transition: box-shadow .1s ease,border-color .1s ease;
+    box-shadow: none;
+    box-sizing: border-box;
+}
+.assessment-profile__competences-container__text-area--error{
+	background-color: #fff6f6;
+    border-color: #e0b4b4;
+    color: #9f3a38;
+    box-shadow: none;
+}
+
+
+.assessment-profile__competences-container-tooltip {
+	position: absolute !important;
+	white-space: nowrap !important;
+
+	left: 50%;
+    transform: translateX(-50%);
+    top: -22px;
+}
+
+.assessment-profile__card-actions_action-a:last-child{
+	margin-left: 24px;
+}

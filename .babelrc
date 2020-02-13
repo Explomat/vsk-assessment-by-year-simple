@@ -1,0 +1,10 @@
+{
+    presets: [
+    	[
+    		"react-app",
+    		{
+    			"useBuiltIns": "entry"
+    		}
+    	]
+    ]
+}

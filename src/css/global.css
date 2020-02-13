@@ -1,0 +1,19 @@
+body {
+	margin: 0;
+	padding: 0;
+	font-family: Roboto, Arial,Helvetica, sans-serif;
+}
+
+#root {
+	max-width: 1050px;
+}
+
+.dot {
+	content: '';
+	height: 6px;
+	width: 6px;
+	background-color: #bbb;
+	border-radius: 50%;
+	display: inline-block;
+	margin: 0 4px;
+}
