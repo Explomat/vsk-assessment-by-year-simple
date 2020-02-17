@@ -82,13 +82,13 @@ class Profile extends Component {
 						</Card.Header>
 						<Card.Meta>{user.department} -> {user.position}</Card.Meta>
 						<Card.Description>
-							<span className='assessment-profile__description'>Название : </span><strong>"{user.assessment.name}"</strong>
+							<span className='assessment-profile__description'>Название : </span><strong>{user.assessment.name}</strong>
 						</Card.Description>
 						<Card.Description>
 							<span className='assessment-profile__description'>Период : </span><strong>{new Date(user.assessment.startDate).toLocaleDateString()} -  {new Date(user.assessment.finishDate).toLocaleDateString()}</strong>
 						</Card.Description>
 						<Card.Description>
-							<span className='assessment-profile__description'>Этап : </span><strong>"{user.assessment.stepName}"</strong>
+							<span className='assessment-profile__description'>Этап : </span><strong>{user.assessment.stepName}</strong>
 						</Card.Description>
 						<Card.Description>
 							<span className='assessment-profile__description'>Руководитель {' : '}</span>
@@ -202,14 +202,7 @@ class Profile extends Component {
 								color='green'
 								onClick={() => onFourthStep(true, this.props.match.params.id)}
 							>
-								Согласен с оценкой
-							</Button>
-							<Button
-								inverted
-								color='red'
-								onClick={() => onFourthStep(false, this.props.match.params.id)}
-							>
-								Не согласен
+								Ознакомлен с оценкой
 							</Button>
 						</Button.Group>
 					}

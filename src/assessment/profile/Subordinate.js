@@ -36,7 +36,7 @@ const Subordinate = ({ subordinate, rules, onShow, onSelect }) => {
 				/>
 			</List.Content>)}
 
-			{subordinate.step < parseInt(assessmentSteps.third, 10) && <Checkbox checked={subordinate.checked} onClick={handleClick} className='assessment-profile-subordinate__check'/>}
+			{parseInt(subordinate.assessment.step, 10) < parseInt(assessmentSteps.third, 10) && <Checkbox checked={subordinate.checked} onClick={handleClick} className='assessment-profile-subordinate__check'/>}
 			{subordinate.avatarUrl ? <Image className='assessment-profile-subordinate__avatar-icon' avatar src={subordinate.avatarUrl} /> : <Icon className='assessment-profile-subordinate__avatar-icon' size='big' color='blue' name='user' />}
 			<List.Content>
 				<List.Header>{subordinate.fullname}</List.Header>

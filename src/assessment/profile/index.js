@@ -28,6 +28,18 @@ class Main extends Component {
 		this.onShowMessage = this.onShowMessage.bind(this);
 	}
 
+	_isContainsSubordinate() {
+		const { checkedSubordinates, delegateUser } = this.props;
+
+		for (var i = checkedSubordinates.length - 1; i >= 0; i--) {
+			if (checkedSubordinates[i].id == delegateUser.id) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	componentDidMount(){
 		const { match, loadData } = this.props;
 		loadData(match.params.id);
@@ -173,9 +185,18 @@ class Main extends Component {
 							<SelectUser />
 						</Modal.Content>
 						 <Modal.Actions>
-							{delegateUser && <Button onClick={this.handleDelegateUser} color='green' inverted>
-								<Icon name='checkmark' /> Выбрать
-							</Button>}
+							{delegateUser && (this._isContainsSubordinate() ? (
+									<Message error style={{ textAlign: 'left' }}>
+										<Message.Content>
+											Недопустимое делегирование.
+											Сотрудник {delegateUser.title} не может выступать своим же руководителем.
+										</Message.Content>
+									</Message>
+								) : (
+								<Button onClick={this.handleDelegateUser} color='green' inverted>
+									<Icon name='checkmark' /> Выбрать
+								</Button>
+							))}
 						</Modal.Actions>
 					</Modal>
 				)}

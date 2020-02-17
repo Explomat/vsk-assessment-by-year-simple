@@ -1,13 +1,19 @@
 <%
+	
+	//alert('-----------------index.js---------------------');
 
-	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/utils.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/utils.js');
+	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
 
-	var Report = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/report.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/report.js');
+	var Report = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/report.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/report.js');
 
-	var curUserID = 6711785032659205612; // me test
+	//var curUserID = 6711785032659205612; // me test
 	//var curUserID = 6770996101418848653; // user test
+
+	//var curUserID = 6148914691236517121; // user prod
+
+	//var curUserID = 6605157354988654063; // пичугина prod
 
 	/*var rules = [
 	{
@@ -84,13 +90,24 @@
 				and col.fullname LIKE ('%" + search + "%') \n\
 		");
 
-		return tools.object_to_text(colls, 'json');
+		var objs = [];
+		for (el in colls) {
+			objs.push({
+				id: Int(el.id),
+				title: String(el.title),
+				position: String(el.position),
+				department: String(el.department),
+				description: String(el.description)
+			});
+		}
+
+		return tools.object_to_text(objs, 'json');
 	}
 
 	function createInitialProfile(assessmentAppraiseId){
 
-		var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/settings.js');
-		DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/settings.js');
+		var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+		DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
 		var bsettings = Settings.baseSettings(assessmentAppraiseId);
 
 		/*var data = tools.read_object(queryObjects.Body);
@@ -153,12 +170,17 @@
 		docSelf.Save();
 		//alert('createInitialProfile_8');
 
+		var objToSend = tools.object_to_text({
+			assessmentAppraiseId: assessmentAppraiseId
+		}, 'json');
+
 		if (userBossId != null) {
-			Utils.notificate('oc_1', userBossId, curUserID);
+			Utils.notificate('oc_1', userBossId, curUserID, objToSend);
 		}
 	}
 
 	function get_ProfileData(queryObjects){
+		//alert('get_ProfileData');
 
 		var userID = queryObjects.HasProperty('user_id') ? Trim(queryObjects.user_id) : curUserID;
 		var assessmentAppraiseId = queryObjects.HasProperty('assessment_appraise_id') ? queryObjects.assessment_appraise_id : null;
@@ -312,11 +334,10 @@
 			}, 'json');
 		}
 
-		var data = tools.read_object(queryObjects.Body);
-		var answer = data.HasProperty('answer') ? Trim(data.answer) : '';
-		//var pa_id = queryObjects.HasProperty('pa_id') ? OptInt(queryObjects.pa_id, null) : null;
+		//var data = tools.read_object(queryObjects.Body);
+		//var answer = data.HasProperty('answer') ? Trim(data.answer) : '';
 
-		var comment = (answer == 'false' ? 'Не согласен с результатом' : 'Согласен с результатом');
+		//var comment = (answer == 'false' ? 'Не согласен с результатом' : 'Согласен с результатом');
 
 		var q = ArrayOptFirstElem(XQuery("sql: \n\
 			select pas.id \n\
@@ -331,7 +352,7 @@
 			try {
 				var paCard = OpenDoc(UrlFromDocID(Int(q.id)));
 				paCard.TopElem.is_done = true;
-				paCard.TopElem.comment = comment;
+				//paCard.TopElem.comment = comment;
 				paCard.TopElem.workflow_state = 4;
 				paCard.TopElem.workflow_state_name = 'Оценка завершена';
 				paCard.Save();
@@ -341,11 +362,19 @@
 				docPlan.TopElem.is_done = true;
 				docPlan.Save();
 
+
 				var bossId = Utils.assessmentBossByUser(curUserID, assessmentAppraiseId);
 
 				if (bossId != undefined){
-					Utils.notificate('oc_4', bossId, curUserID, comment);
-					Utils.notificate('oc_5', curUserID, bossId);
+					var objToSend = tools.object_to_text({
+						assessmentAppraiseId: assessmentAppraiseId
+					}, 'json');
+					Utils.notificate('oc_4', bossId, curUserID, objToSend);
+
+					objToSend = tools.object_to_text({
+						assessmentAppraiseId: assessmentAppraiseId
+					}, 'json');
+					Utils.notificate('oc_5', curUserID, bossId, objToSend);
 				}
 
 				return tools.object_to_text({ step: 4 }, 'json');
@@ -356,6 +385,13 @@
 	}
 
 	function post_ThirdStep(queryObjects){
+		var assessmentAppraiseId = queryObjects.HasProperty('assessment_appraise_id') ? queryObjects.assessment_appraise_id : null;
+		if (assessmentAppraiseId == null) {
+			return tools.object_to_text({
+				error: 'Не указана процедура оценки'
+			}, 'json');
+		}
+
 		var data = tools.read_object(queryObjects.Body);
 		var paId = data.HasProperty('id') ? data.id : null;
 		var overall = data.HasProperty('overall') ? data.overall : '';
@@ -388,7 +424,10 @@
 		docPlan.TopElem.workflow_state = 3;
 		docPlan.Save();
 
-		Utils.notificate('oc_3', curPaCard.TopElem.person_id, curUserID);
+		var objToSend = tools.object_to_text({
+			assessmentAppraiseId: assessmentAppraiseId
+		}, 'json');
+		Utils.notificate('oc_3', curPaCard.TopElem.person_id, curUserID, objToSend);
 		return tools.object_to_text({
 			step: 3
 		}, 'json');
@@ -403,8 +442,8 @@
 		}
 
 
-		var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/settings.js');
-		DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/settings.js');
+		var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+		DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
 		var bsettings = Settings.baseSettings(assessmentAppraiseId);
 
 		var data = tools.read_object(queryObjects.Body);
@@ -461,7 +500,10 @@
 			curPaCard.TopElem.workflow_state_name = 'Оценка руководителя';
 			curPaCard.Save();
 
-			Utils.notificate('oc_2', docPlan.TopElem.boss_id, curUserID);
+			var objToSend = tools.object_to_text({
+				assessmentAppraiseId: assessmentAppraiseId
+			}, 'json');
+			Utils.notificate('oc_2', docPlan.TopElem.boss_id, curUserID, objToSend);
 		} catch(e){ alert(e); }
 
 		return tools.object_to_text({
@@ -477,8 +519,8 @@
 			}, 'json');
 		}
 
-		var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/settings.js');
-		DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/settings.js');
+		var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+		DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
 		var bsettings = Settings.baseSettings(assessmentAppraiseId);
 
 
@@ -536,6 +578,9 @@
 		");
 
 		var err = '';
+		var objToSend = tools.object_to_text({
+			assessmentAppraiseId: assessmentAppraiseId
+		}, 'json');
 
 		for (el in q) {
 			try {
@@ -548,7 +593,7 @@
 				apDoc.TopElem.boss_id = userId;
 				apDoc.Save();
 
-				Utils.notificate('oc_1', Int(userId), paDoc.TopElem.person_id);
+				Utils.notificate('oc_1', Int(userId), paDoc.TopElem.person_id, objToSend);
 			} catch(e) {
 				err = err + e + '\r\n';
 			}

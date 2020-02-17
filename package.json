@@ -1,5 +1,5 @@
 {
-  "name": "assessment-by-year",
+  "name": "assessment-by-quarter",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -130,8 +130,8 @@
       "node"
     ],
     "watchPlugins": [
-      "D:\\wt-projects\\assessment-by-year\\node_modules\\jest-watch-typeahead\\filename.js",
-      "D:\\wt-projects\\assessment-by-year\\node_modules\\jest-watch-typeahead\\testname.js"
+      "D:\\wt-projects\\assessment-by-quarter\\node_modules\\jest-watch-typeahead\\filename.js",
+      "D:\\wt-projects\\assessment-by-quarter\\node_modules\\jest-watch-typeahead\\testname.js"
     ]
   }
 }

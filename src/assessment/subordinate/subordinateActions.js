@@ -134,10 +134,13 @@ export function thirdStep(assessmentId){
 
 			dispatch(setLoading(true));
 			request('ThirdStep')
-				.post(data)
+				.post(data, {
+					assessment_appraise_id: assessmentId
+				})
 				.then(d => {
 					dispatch(getInitialData(user.id, assessmentId));
 					dispatch(setLoading(false));
+					//window.location.reload(true);
 				})
 				.catch(e => {
 					console.error(e);

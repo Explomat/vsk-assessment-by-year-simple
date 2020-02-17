@@ -76,8 +76,8 @@ function getUserBoss(userId) {
 }
 
 function assessmentPlanForUser(userId, assessmentAppraiseId){
-	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/settings.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_year_simple/server/settings.js');
+	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
 
 	var bsettings = Settings.baseSettings(assessmentAppraiseId);
 
@@ -273,7 +273,7 @@ function subordinatesForUser(userId, assessmentAppraiseId) {
 }
 
 function commonCompetences(userId, assessmentAppraiseId) {
-
+	//alert('-----------------utils.js---------------------');
 	var q = XQuery("sql: \n\
 		select cid.competence_id, cs.name \n\
 		from \n\
