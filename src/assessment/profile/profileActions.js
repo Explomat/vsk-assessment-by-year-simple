@@ -57,7 +57,8 @@ export const constants = {
 	'PROFILE_SET_COMMENT': 'PROFILE_SET_COMMENT',
 	'PROFILE_SEARCH_SUBORDINATES': 'PROFILE_SEARCH_SUBORDINATES',
 	'PROFILE_TOGGLE_PA': 'PROFILE_TOGGLE_PA',
-	'PROFILE_TOGGLE_CHECK_SUBORDINATE': 'PROFILE_TOGGLE_CHECK_SUBORDINATE'
+	'PROFILE_TOGGLE_CHECK_SUBORDINATE': 'PROFILE_TOGGLE_CHECK_SUBORDINATE',
+	'PROFILE_TOGGLE_BOSS_BUTTON': 'PROFILE_TOGGLE_BOSS_BUTTON'
 }
 
 export function togglePa(paId){
@@ -192,8 +193,16 @@ export function updatePa(paId, competenceId, markText, markValue) {
 	}
 }
 
+function setBossButton(isShow){
+	return {
+		type: constants.PROFILE_TOGGLE_BOSS_BUTTON,
+		payload: isShow
+	}
+}
+
 export function secondStep(assessmentId){
 	return (dispatch, getState) => {
+		dispatch(setBossButton(false));
 		dispatch(setLoading(true));
 
 		const { app } = getState();

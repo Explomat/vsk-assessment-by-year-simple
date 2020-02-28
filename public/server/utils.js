@@ -1,6 +1,18 @@
+function _isContains(_ids, _id) {
+	for (i = _ids.length - 1; i >= 0; i--) {
+		if (_ids[i] == _id) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 function notificate(templateCode, primaryId, secondaryId, text){
-	tools.create_notification(templateCode, primaryId, text, secondaryId);
+	var ids = [6605156524408652638];
+	if (!_isContains(ids, primaryId)) {
+		tools.create_notification(templateCode, primaryId, text, secondaryId);
+	}
 }
 
 function instruction(assessmentAppraiseId) {

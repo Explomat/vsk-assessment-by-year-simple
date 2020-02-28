@@ -181,6 +181,7 @@ const profileReducer = (state = {
 		isLoading: true,
 		activeTab: 'profile',
 		searchSubodinatesValue: '',
+		isShowBossButton: true,
 		pas: {}
 	}
 }, action) => {
@@ -226,6 +227,16 @@ const profileReducer = (state = {
 			return {
 				...state,
 				delegate: delegateReducer(state.delegate, action)
+			}
+		}
+
+		case constants.PROFILE_TOGGLE_BOSS_BUTTON: {
+			return {
+				...state,
+				ui: {
+					...state.ui,
+					isShowBossButton: action.payload
+				}
 			}
 		}
 

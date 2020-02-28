@@ -174,9 +174,9 @@
 			assessmentAppraiseId: assessmentAppraiseId
 		}, 'json');
 
-		if (userBossId != null) {
+		/*if (userBossId != null) {
 			Utils.notificate('oc_1', userBossId, curUserID, objToSend);
-		}
+		}*/
 	}
 
 	function get_ProfileData(queryObjects){

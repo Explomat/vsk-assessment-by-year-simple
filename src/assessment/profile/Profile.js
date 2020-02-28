@@ -16,9 +16,16 @@ class Profile extends Component {
 
 		this.renderResultMark = this.renderResultMark.bind(this);
 		this.handleToggleInstruction = this.handleToggleInstruction.bind(this);
+		this.handleSecondStep = this.handleSecondStep.bind(this);
+
 		this.state = {
 			isShowInstruction: false
 		}
+	}
+
+	handleSecondStep() {
+		const { onSecondStep, match } = this.props;
+		onSecondStep(match.params.id);
 	}
 
 	handleToggleInstruction(){
@@ -60,7 +67,8 @@ class Profile extends Component {
 			meta,
 			user,
 			instruction,
-			match
+			match,
+			ui
 		} = this.props;
 
 		const pasLen = user.assessment.pas.length;
@@ -175,13 +183,13 @@ class Profile extends Component {
 						user.assessment.step == assessmentSteps.first && 
 						meta.curUserID === user.id && (
 							<div>
-								<Button
+								{ui.isShowBossButton && <Button
 									disabled={!isCompleted}
 									color='blue'
-									onClick={() => onSecondStep(this.props.match.params.id)}
+									onClick={this.handleSecondStep}
 								>
 									Перевести на оценку руководителя
-								</Button>
+								</Button>}
 								{!isCompleted &&
 									<Message negative>
 										<Message.Content>
