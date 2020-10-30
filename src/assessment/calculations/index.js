@@ -34,7 +34,12 @@ const isCompetencesCompleted = (props) => {
 
 	const ids = Object.keys(competences);
 
-	const len = ids.filter(c => isCompetenceCompleted(c, props)).length;
+	const len = ids.filter(c => {
+		const l = isCompetenceCompleted(c, props);
+		console.log('isCompetenceCompleted:' + l);
+		return l;
+	}).length;
+	console.log(len);
 	return len === ids.length;
 }
 
@@ -86,6 +91,8 @@ const computeResultPercents = (paId, props) => {
 	const pa = pas[paId];
 	const comps = pa.competences;
 	const percents = comps.reduce((f, s) => f += computeCompetencePercent(s, props), 0);
+	//return Math.floor((percents / comps.length) * 100) / 100;
+
 	return Math.round((percents / comps.length) / 10) * 10;
 }
 

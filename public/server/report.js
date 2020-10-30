@@ -1,4 +1,4 @@
-function newReport(userID, _rules, assessmentAppraiseId) {
+function create(userID, _rules, assessmentAppraiseId) {
 
 	function pasForUserReport(userId, status){
 
@@ -95,7 +95,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 
 
 	oCell = oWorksheet.Cells.GetCell('A'  + rindex);
-	oCell.Value = 'РљРѕРјРїРµС‚РµРЅС†РёРё';
+	oCell.Value = 'Компетенции';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.ForegroundColor = '#CCCCCC';
@@ -104,7 +104,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 	colWidths[0] = StrCharCount(oCell.Value) * (12.0 / 9);
 
 	oCell = oWorksheet.Cells.GetCell('B' + rindex);
-	oCell.Value = 'РћС†РµРЅРєР° СЃРѕС‚СЂСѓРґРЅРёРєР°';
+	oCell.Value = 'Оценка сотрудника';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.ForegroundColor = '#CCCCCC';
@@ -113,7 +113,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 	colWidths[1] = StrCharCount(oCell.Value) * (12.0 / 9);
 
 	oCell = oWorksheet.Cells.GetCell('C' + rindex);
-	oCell.Value = 'РћС†РµРЅРєР° СЂСѓРєРѕРІРѕРґРёС‚РµР»СЏ';
+	oCell.Value = 'Оценка руководителя';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.ForegroundColor = '#CCCCCC';
@@ -122,7 +122,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 	colWidths[2] = StrCharCount(oCell.Value) * (12.0 / 9);
 
 	oCell = oWorksheet.Cells.GetCell('D' + rindex);
-	oCell.Value = 'РќР°Р·РІР°РЅРёРµ РёРЅРґРёРєР°С‚РѕСЂР°';
+	oCell.Value = 'Название индикатора';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.ForegroundColor = '#CCCCCC';
@@ -131,7 +131,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 	colWidths[3] = StrCharCount(oCell.Value) * (12.0 / 9);
 
 	oCell = oWorksheet.Cells.GetCell('E' + rindex);
-	oCell.Value = 'РџРѕРґС‚РІРµСЂР¶РґР°СЋС‰РёР№ РїСЂРёРјРµСЂ';
+	oCell.Value = 'Подтверждающий пример';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.ForegroundColor = '#CCCCCC';
@@ -140,7 +140,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 	colWidths[4] = StrCharCount(oCell.Value) * (12.0 / 9);
 
 	oCell = oWorksheet.Cells.GetCell('F' + rindex);
-	oCell.Value = 'РћС†РµРЅРєР° СЃРѕС‚СЂСѓРґРЅРёРєР°';
+	oCell.Value = 'Оценка сотрудника';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.ForegroundColor = '#CCCCCC';
@@ -149,7 +149,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 	colWidths[5] = StrCharCount(oCell.Value) * (12.0 / 9);
 
 	oCell = oWorksheet.Cells.GetCell('G' + rindex);
-	oCell.Value = 'РћС†РµРЅРєР° СЂСѓРєРѕРІРѕРґРёС‚РµР»СЏ';
+	oCell.Value = 'Оценка руководителя';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.ForegroundColor = '#CCCCCC';
@@ -224,7 +224,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 	}
 
 	oCell = oWorksheet.Cells.GetCell('A' + rindex);
-	oCell.Value = 'РС‚РѕРіРѕРІР°СЏ РѕС†РµРЅРєР° СЃРѕС‚СЂСѓРґРЅРёРєР°';
+	oCell.Value = 'Итоговая оценка сотрудника';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.IsBold = true;
@@ -238,7 +238,7 @@ function newReport(userID, _rules, assessmentAppraiseId) {
 	rindex = rindex + 2;
 
 	oCell = oWorksheet.Cells.GetCell('A' + rindex);
-	oCell.Value = 'РС‚РѕРіРѕРІР°СЏ РѕС†РµРЅРєР° СЂСѓРєРѕРІРѕРґРёС‚РµР»СЏ';
+	oCell.Value = 'Итоговая оценка руководителя';
 	oCell.Style.FontSize = 12;
 	oCell.Style.FontColor = "#444444";
 	oCell.Style.IsBold = true;
