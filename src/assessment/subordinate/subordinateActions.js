@@ -73,7 +73,7 @@ export function setComment(competenceId, comment){
 
 export function getInitialData(subordinateId, assessmentId){
 	return dispatch => {
-		request('SubordinateData')
+		request('Subordinates')
 			.get({
 				user_id: subordinateId,
 				assessment_appraise_id: assessmentId

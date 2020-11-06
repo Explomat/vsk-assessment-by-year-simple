@@ -1,7 +1,4 @@
 <%
-	
-	//alert('-----------------index.js---------------------');
-
 	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
 
@@ -17,6 +14,9 @@
 	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
 
+	var Lists = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
+
 	//var curUserID = 6711785032659205612; // me test
 	//var curUserID = 6770996101418848653; // user test
 
@@ -24,48 +24,151 @@
 
 	//var curUserID = 6605157354988654063; // пичугина prod
 
+	function post_Meta(queryObjects) {
 
-	function get_UiStep(queryObjects){
+		function getConditions(userId, assessmentAppraiseId, competenceBlockId, assignImmediately, channelSelection, positionSelection, channelId, positionLevelId) {
+			if (assignImmediately) {
+				Assessment.create(userId, assessmentAppraiseId, channelId, positionLevelId);
+				return {
+					hasPa: true
+				};
+			} else {
+				if (
+					channelSelection && positionSelection
+					&& channelId == null && positionLevelId == null
+				) {
+					// return channels and positions
+					var channels = Assessment.getBlocksTree(competenceBlockId);
+					return {
+						hasPa: false,
+						channels: channels
+					};
+				} else if (channelSelection && positionSelection
+					&& channelId != null && positionLevelId != null) {
+					// create assessment
+					Assessment.create(userId, assessmentAppraiseId, channelId, positionLevelId);
+					return {
+						hasPa: true
+					};
+				} else if (channelSelection && channelId == null) {
+					// return channels
+					var channels = Assessment.getBlocksTree(competenceBlockId, false);
+					return {
+						hasPa: false,
+						channels: channels
+					};
+				} else if (channelSelection && channelId != null) {
+					Assessment.create(userId, assessmentAppraiseId, channelId);
+					return {
+						hasPa: true
+					};
+				} else if (positionSelection && positionLevelId == null) {
+					alert(1);
+					// return positions
+					// Автоматически определить вертикаль
+					/*return {
+						hasPa: false,
+						positions: positions
+					};*/
+				} else if (positionSelection && positionLevelId != null) {
+					Assessment.create(userId, assessmentAppraiseId, null, positionLevelId);
+					return {
+						hasPa: true
+					};
+				}
+			}
+
+			return {
+				hasPa: false
+			}
+		}
+
+		var data = tools.read_object(queryObjects.Body);
+
 		var assessmentAppraiseId = queryObjects.HasProperty('assessment_appraise_id') ? queryObjects.assessment_appraise_id : null;
+		var isTrain = data.HasProperty('is_train') ? Utils.toBoolean(data.is_train) : null;
+		var channelId = data.HasProperty('channel_id') ? data.channel : null;
+		var positionLevelId = data.HasProperty('position_level_id') ? data.position_level : null;
 
 		if (assessmentAppraiseId == null) {
 			return Utils.setError('Не указана процедура оценки.');
 		}
 
-		var pa = ArrayOptFirstElem(XQuery("sql: \n\
-			select \n\
-				count(*) c \n\
-			from pas \n\
-			where \n\
-				pas.assessment_appraise_id = " + assessmentAppraiseId + " \n\
-				and pas.person_id = " + curUserID 
-		));
+		var hasPa = User.hasPa(curUserID, assessmentAppraiseId);
+		if (hasPa) {
+			return Utils.setSuccess({
+				hasPa: true
+			});
+		}
 
-		var step = pa.c == 0 ? bsettings.steps.first : bsettings.steps.second;
+		try {
+			var bsettings = Settings.baseSettings(assessmentAppraiseId);
+			var blocks = bsettings.blocks;
 
-		return Utils.setSuccess({ step: step });
+			var isPa = User.hasPa(curUserID, assessmentAppraiseId);
+			var gkBs = User.getBlockSub(curUserID, blocks.gk);
+			var topBg = User.getBlockGroup(curUserID, blocks.top);
+			var dmBs = User.getBlockSub(curUserID, blocks.division_moscow);
+			var aBs = User.getBlockSub(curUserID, blocks.affilate);
+			var amBs = User.getBlockSub(curUserID, blocks.affiliate_manager);
+			var cblock = null;
+
+			if (gkBs != undefined) {
+				if (isTrain) {
+					var tBg = User.getBlockGroup(curUserID, blocks.trains);
+
+					if (tBg != undefined) {
+						var grDoc = OpenDoc(UrlFromDocID(Int(tBg.TopElem.group)));
+						grDoc.TopElem.collaborators.ObtainChildByKey(curUserID);
+						grDoc.Save();
+					} else {
+						return Utils.setError('Не указана группа, обратитесь в поддержку портала');
+					}
+
+					cblock = tBg;
+				} else {
+					if (topBg != undefined) {
+						cblock = topBg;
+					} else if (dmBs != undefined) {
+						// выбрать вертикаль, уровень должности
+						cblock = dmBs;
+					} else {
+						// выбрать уровень должности
+						cblock = gkBs;
+					}
+				}
+			} else if (aBs != undefined) {
+				if (amBs != undefined) {
+					cblock = amBs;
+				} else {
+					// выбрать вертикаль, уровень должности
+					cblock = aBs;
+				}
+			}
+
+			if (cblock != null) {
+				var conds = getConditions(
+					curUserID,
+					assessmentAppraiseId,
+					cblock.TopElem.competence_block,
+					cblock.TopElem.assign_immediately,
+					cblock.TopElem.channel_selection,
+					cblock.TopElem.position_selection
+				);
+
+				return Utils.setSuccess(conds);
+			} else {
+				return Utils.setError('Ваш профиль не подходит под условия');
+			}
+		} catch (e) {
+			return Utils.setError(e);
+		}
 	}
+
 
 	function get_Collaborators(queryObjects) {
 		var search = queryObjects.HasProperty('search') ? Trim(queryObjects.search) : '';
-
-		var colls = XQuery("sql: \n\
-			select \n\
-				TOP 5 \n\
-				col.id, \n\
-				col.fullname as title, \n\
-				col.position_name as position, \n\
-				col.position_parent_name as department, \n\
-				(col.position_parent_name + ' -> ' + col.position_name) as description \n\
-			from \n\
-				collaborators as col \n\
-			where \n\
-				col.is_dismiss = 0 \n\
-				and col.id <> " + curUserID + " \n\
-				and col.fullname like ('%" + search + "%') \n\
-		");
-
-		return Utils.setSuccess(colls);
+		return Utils.setSuccess(Lists.getCollaborators(curUserID, search));
 	}
 
 	function get_Subordinates(queryObjects) {
@@ -90,46 +193,39 @@
 		}
 	}
 
-	function get_ProfileData(queryObjects){
-		//alert('get_ProfileData');
-
+	function get_Profile(queryObjects) {
 		var userID = queryObjects.HasProperty('user_id') ? Trim(queryObjects.user_id) : curUserID;
 		var assessmentAppraiseId = queryObjects.HasProperty('assessment_appraise_id') ? queryObjects.assessment_appraise_id : null;
-		//alert('111111111111111111');
 
 		if (assessmentAppraiseId == null) {
 			return Utils.setError('Не указана процедура оценки.');
 		}
 
 		try {
-			var isPa = User.hasPa(curUserID, assessmentAppraiseId);
-			if (!isPa) {
-				Assessment.create(curUserID, assessmentAppraiseId);
-			}
 
 			var userData = User.getUser(userID, assessmentAppraiseId);
-			var instruction = Utils.instruction(assessmentAppraiseId);
+			//var instruction = Utils.instruction(assessmentAppraiseId);
 			var managerData = User.getManager(userID, assessmentAppraiseId);
-			var planData = User.assessmentPlan(userID, assessmentAppraiseId);
+			var planData = Assessment.getAssessmentPlan(userID, assessmentAppraiseId);
 			var pasData = User.getPas(userID, undefined, assessmentAppraiseId);
-			var commonCompetencesData = User.getCommonCompetences(userID, assessmentAppraiseId);
+			var commonCompetencesData = Assessment.getCommonCompetences(assessmentAppraiseId);
 			var _rules = Utils.docWvars(queryObjects.DocID);
 
+			var manager = {};
 			if (managerData != undefined){
-				userData.manager = {
+				manager = {
 					id: String(managerData.id),
 					fullname: String(managerData.fullname),
 					position: String(managerData.position),
 					department: String(managerData.department)
 				}
-			} else {
-				userData.manager = {};
-			}  
+			} 
 
+			var ast = {};
 			if (planData != undefined){
 				var aapDoc = OpenDoc(UrlFromDocID(Int(assessmentAppraiseId)));
 
-				userData.assessment = {
+				ast = {
 					name: String(aapDoc.TopElem.name),
 					step: String(planData.step),
 					startDate: StrXmlDate(Date(aapDoc.TopElem.start_date)),
@@ -138,14 +234,14 @@
 					overall: String(planData.overall),
 					pas: pasData
 				}
-			} else {
-				userData.assessment = {}
 			}
 
 			return Utils.setSuccess({
-				meta: Assessment._setComputedFields(curUserID, userID, userData.manager.id, planData.step),
-				instruction: String(instruction),
+				meta: Assessment._setComputedFields(assessmentAppraiseId, curUserID, userID, manager.id, planData.step),
+				//instruction: String(instruction),
 				user: userData,
+				manager: manager,
+				assessment: ast,
 				commonCompetences: commonCompetencesData,
 				rules: _rules
 			});
@@ -161,9 +257,7 @@
 		}
 
 		var instruction = Utils.instruction(assessmentAppraiseId);
-		return Utils.setSuccess({
-			instruction: String(instruction)
-		});
+		return Utils.setSuccess(String(instruction));
 	}
 
 	function post_ThirdStep(queryObjects) {

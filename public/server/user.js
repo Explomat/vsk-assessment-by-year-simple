@@ -1,3 +1,71 @@
+function isInSub(userId, subId, excludeSubIds, positions, excludePositions) {
+	var joinSubs = ArrayMerge(ArrayUnion([subId], excludePositions), 'This', '),(');
+	var joinPositions = ArrayMerge(positions, 'This', '\'),(\'');
+	var joinExcludePositions = ArrayMerge(excludePositions, 'This', '\'),(\'');
+
+	var q = XQuery("sql: \n\
+		select c.* \n\
+		from ( \n\
+			select \n\
+				cs.id, \n\
+				cs.position_name, \n\
+				c.p.query('id[text()[1]]').value('.', 'bigint') parent_sub_id \n\
+			from collaborators cs \n\
+			inner join collaborator cr on cr.id = cs.id \n\
+			cross apply cr.data.nodes('/collaborator/path_subs/path_sub') as c(p) \n\
+			where \n\
+				cs.id = " + OptInt(userId) + " \n\
+		) c \n\
+		where \n\
+			c.parent_sub_id in (" + joinSubs + ") \n\
+			and c.position_name in ('" + joinPositions + "') \n\
+			and c.position_name not in ('" + joinExcludePositions + "') \n\
+	");
+
+	return ArrayCount(q) == 1;
+}
+
+function getBlockGroup(userId, block) {
+	var q = XQuery("sql: \n\
+		select \n\
+			ccabs.id, \n\
+			gcs.collaborator_id \n\
+		from cc_assessment_block_subs ccabs \n\
+		inner join group_collaborators gcs on gcs.group_id = ccabs.[group] \n\
+		where \n\
+			ccabs.code = '" + block + "' \n\
+			and gcs.collaborator_id = " + userId + " \n\
+	");
+
+	var belem = ArrayOptFirstElem(q);
+	if (belem != undefined) {
+		return OpenDoc(UrlFromDocID(Int(belem.id)));
+	}
+}
+
+function getBlockSub(userId, block) {
+	var sq = XQuery("sql: \n\
+		select \n\
+			ccabs.* \n\
+		from cc_assessment_block_subs ccabs \n\
+		where \n\
+			ccabs.code = '" + block + "' \n\
+	");
+
+	for (el in sq) {
+		doc = OpenDoc(UrlFromDocID(el.id));
+		_subs = ArrayExtractKeys(doc.TopElem.exclude_subdivisions, 'exclude_subdivision_id');
+		_positions = String(doc.TopElem.positions).split(',');
+		_excludePositions = String(doc.TopElem.exclude_positions).split(',');
+
+		inSub = isInSub(userId, OptInt(el.subdivision), _subs, _positions, _excludePositions);
+
+		if (inSub) {
+			return doc;
+		}
+	}
+}
+
 function hasPa(userId, assessmentAppraiseId) {
 	var pa = ArrayOptFirstElem(XQuery("sql: \n\
 		select \n\
@@ -61,38 +129,9 @@ function getActions(userId, objectType) {
 	return actions;
 }
 
-function assessmentPlan(userId, assessmentAppraiseId){
-	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
-
-	var bsettings = Settings.baseSettings(assessmentAppraiseId);
-
-	var q = XQuery("sql: \n\
-		select \n\
-			ap.workflow_state as step, \n\
-			ap.integral_mark as overall, \n\
-			w.name as stepName \n\
-		from \n\
-			assessment_plans ap, \n\
-			(select \n\
-				ws.id, \n\
-				t.p.query('code').value('.','varchar(250)') as code, \n\
-				t.p.query('name').value('.','varchar(250)') as name \n\
-			from workflows ws \n\
-			inner join workflow w on w.id = ws.id \n\
-			cross apply w.data.nodes('/workflow/states/state') AS t(p) \n\
-			where ws.id = " + bsettings.workflow_id + ") w \n\
-		where \n\
-			ap.person_id = " + userId + " \n\
-			and ap.assessment_appraise_id = " + bsettings.assessment_appraise_id + " \n\
-			and ap.workflow_id = w.id \n\
-			and ap.workflow_state = w.code \n\
-	");
-
-	return ArrayOptFirstElem(q);
-}
-
-function getPas(userId, status, assessmentAppraiseId){
+function getPas(userId, status, assessmentAppraiseId) {
+	var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
 
 	var qs = "select pas.id \n\
 		from \n\
@@ -105,49 +144,16 @@ function getPas(userId, status, assessmentAppraiseId){
 		qs = qs + " and pas.status = '" + status + "'";
 	}
 
-	//alert(qs);
-
 	var q = XQuery("sql:" + qs);
-
 	var result = [];
+
 	for (p in q){
-		doc = OpenDoc(UrlFromDocID(Int(p.id)));
-		statusName = statusNameByStatusId(String(doc.TopElem.status));
-		d = {
-			id: String(doc.TopElem.id),
-			workflowState: String(doc.TopElem.workflow_state),
-			workflowStateName: String(doc.TopElem.workflow_state_name),
-			statusName: String(statusName),
-			status: String(doc.TopElem.status),
-			overall: String(doc.TopElem.overall),
-			competences: []
-		};
-
-		for (c in doc.TopElem.competences){
-			cc = {
-				pa_id: String(p.id),
-				competence_id: String(c.competence_id),
-				weight: String(c.weight),
-				mark_text: String(c.mark_text),
-				mark_value: String(c.mark_value),
-				comment: String(c.comment),
-				indicators: []
-			}
-
-			for (i in c.indicators){
-				cc.indicators.push({
-					pa_id: String(p.id),
-					indicator_id: String(i.indicator_id),
-					weight: String(i.weight),
-					mark_text: String(i.mark_text),
-					mark_value: String(i.mark_value),
-					comment: String(i.comment)
-				});
-			}
-			d.competences.push(cc);
-		}
-		result.push(d);
+		try {
+			objPa = Assessment.getPa(p.id);
+			result.push(objPa);
+		} catch(e) {}
 	}
+
 	return result;
 }
 
@@ -175,8 +181,7 @@ function getManager(userId, assessmentAppraiseId){
 	return ArrayOptFirstElem(q);
 }
 
-function getUser(userId, assessmentAppraiseId){
-
+function getUser(userId, assessmentAppraiseId) {
 	var q = XQuery("sql: \n\
 		select \n\
 			c.id, \n\
@@ -196,19 +201,14 @@ function getUser(userId, assessmentAppraiseId){
 		where \n\
 			c.id = " + userId
 	);
-	var u = ArrayOptFirstElem(q);
-	if (u != undefined){
-		return {
-			id: String(u.id),
-			fullname: String(u.fullname),
-			position: String(u.position),
-			department: String(u.department),
-			isManager: OptInt(u.count) >= 1
-		}
-	}
+
+	return ArrayOptFirstElem(q);
 }
 
 function getSubordinates(userId, assessmentAppraiseId, search, minRow, maxRow, pageSize) {
+	var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
+
 	var sq = XQuery("sql: \n\
 		declare @s varchar(300) = '" + search + "'; \n\
 		select d.* \n\
@@ -242,21 +242,21 @@ function getSubordinates(userId, assessmentAppraiseId, search, minRow, maxRow, p
 
 	var result = [];
 	for (s in sq){
-		plan = assessmentPlan(String(s.id), assessmentAppraiseId);
+		plan = Assessment.getAssessmentPlan(String(s.id), assessmentAppraiseId);
 		data = {
 			id: String(s.id),
 			fullname: String(s.fullname),
 			position: String(s.position),
-			department: String(s.department)
+			department: String(s.department),
+			assessment: {}
 		}
+
 		if (plan != undefined){
 			data.assessment = {
 				step: String(plan.step),
 				stepName: String(plan.stepName),
 				overall: String(s.overall)
 			}
-		} else {
-			data.assessment = {};
 		}
 
 		result.push(data);
@@ -275,75 +275,6 @@ function getSubordinates(userId, assessmentAppraiseId, search, minRow, maxRow, p
 		},
 		subordinates: result
 	}
-}
-
-function getCommonCompetences(userId, assessmentAppraiseId) {
-	//alert('-----------------utils.js---------------------');
-	var q = XQuery("sql: \n\
-		select cid.competence_id, cs.name \n\
-		from \n\
-			(select distinct\n\
-				t.p.query('competence_id').value('.','varchar(250)') competence_id \n\
-			from competence_profiles cps \n\
-			join pas p on p.competence_profile_id = cps.id \n\
-			join competence_profile cp on cp.id = cps.id \n\
-			cross apply cp.data.nodes('/competence_profile/competences/competence') AS t(p) \n\
-			where \n\
-				p.person_id = " + userId + " \n\
-				and p.assessment_appraise_id = " + assessmentAppraiseId + ") cid \n\
-		join competences cs on cs.id = cid.competence_id \n\
-	"); 
-
-	var result = [];
-	for (cp in q){
-		comp = {
-			id: String(cp.competence_id),
-			name: String(cp.name),
-			scales: [],
-			commonIndicators: []
-		}
-
-		cDoc = OpenDoc(UrlFromDocID(Int(cp.competence_id)));
-		for (s in cDoc.TopElem.scales){
-			comp.scales.push({
-				id: String(s.id),
-				name: String(s.name),
-				percent: String(s.percent),
-				desc: String(s.desc),
-				comment_require: String(s.comment_require)
-			});
-		}
-
-
-		qi = XQuery("sql: \n\
-			select i.id \n\
-			from indicators i \n\
-			where i.competence_id = " + cp.competence_id
-		);
-		for (i in qi){
-			iDoc = OpenDoc(UrlFromDocID(Int(i.id)));
-
-			ind = {
-				id: String(i.id),
-				competence_id: String(iDoc.TopElem.competence_id),
-				name: String(iDoc.TopElem.name),
-				scales: []
-			}
-			for (s in iDoc.TopElem.scales){
-				ind.scales.push({
-					id: String(s.id),
-					name: String(s.name),
-					percent: String(s.percent),
-					desc: String(s.desc),
-					comment_require: String(s.comment_require)
-				});
-			}
-
-			comp.commonIndicators.push(ind);
-		}
-		result.push(comp);
-	}
-	return result;
 }
 
 function getAssessmentBossId(userId, assessmentAppraiseId){

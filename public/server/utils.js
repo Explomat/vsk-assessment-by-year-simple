@@ -25,26 +25,6 @@ function setError(message){
 	return toJSON(setMessage('error', message));
 }
 
-function toJSObject(xmlElem) {
-	var returnObj = {};
-	for (el in xmlElem){
-		try {
-			returnObj.SetProperty(el.Name, String(el.Value));
-		} catch(e) {}
-	}
-	return returnObj;
-}
-
-function toJSArray(xmlArray) {
-	var returnArr = [];
-
-	for (el in xmlArray) {
-		returnArr.push(toJSObject(el));
-	}
-
-	return returnArr;
-}
-
 function toBoolean(val) {
 	if (val == 'true') {
 		return true;
@@ -63,7 +43,6 @@ function _isContains(_ids, _id) {
 			return true;
 		}
 	}
-
 	return false;
 }
 
@@ -71,7 +50,7 @@ function notificate(templateCode, primaryId, secondaryId, text){
 	var ids = [6605156524408652638];
 	if (!_isContains(ids, primaryId)) {
 		tools.create_notification(templateCode, primaryId, text, secondaryId);
-		log('notificate: "templateCode": ' + templateCode + ', "primaryId": ' + primaryId + ', "text": ' + text + ', "secondaryId": ' + secondaryId);
+		log('Отправка уведомления "' + templateCode + '", сотруднику "' + primaryId + '"');
 	}
 }
 
@@ -97,15 +76,6 @@ function instruction(assessmentAppraiseId) {
 			)"
 	));
 	return q == undefined ? '' : q.instruction;
-}
-
-function statusNameByStatusId(statusId){
-	var q = ArrayOptFirstElem(XQuery("sql: \n\
-		select p.name \n\
-		from [common.assessment_appraise_participants] p \n\
-		where p.id = '" + statusId + "'"
-	));
-	return q == undefined ? q : q.name;
 }
 
 function docWvars(id){

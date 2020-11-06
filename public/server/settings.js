@@ -1,13 +1,16 @@
 function baseSettings(assessmentAppraiseId) {
 
-	//var ASSESSMENT_APPRAISE_ID = 6790263731625424310;
 	var doc = OpenDoc(UrlFromDocID(OptInt(assessmentAppraiseId)));
 	var obj = {
 		assessment_appraise_id: assessmentAppraiseId,
 		workflow_id: OptInt(doc.TopElem.workflow_id),
-		steps: {
-			first: 'first',
-			second: 'second'
+		blocks: {
+			'trains': 'trains',
+			'top': 'top',
+			'gk': 'gk',
+			'division_moscow': 'division_moscow',
+			'affilate': 'affilate',
+			'affiliate_manager': 'affiliate_manager'
 		}
 	}
 
