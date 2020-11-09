@@ -17,17 +17,32 @@
 	var Lists = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 
-	//var curUserID = 6711785032659205612; // me test
+	var curUserID = 6711785032659205612; // me test
 	//var curUserID = 6770996101418848653; // user test
-
 	//var curUserID = 6148914691236517121; // user prod
-
 	//var curUserID = 6605157354988654063; // пичугина prod
 
 	function post_Meta(queryObjects) {
 
-		function getConditions(userId, assessmentAppraiseId, competenceBlockId, assignImmediately, channelSelection, positionSelection, channelId, positionLevelId) {
+		function getConditions(
+			userId,
+			assessmentAppraiseId,
+			competenceBlockId,
+			assignImmediately,
+			channelSelection,
+			positionSelection,
+			channelId,
+			positionLevelId
+		) {
+			alert('competenceBlockId: ' + competenceBlockId);
+			alert('assignImmediately: ' + assignImmediately);
+			alert('channelSelection: ' + channelSelection);
+			alert('positionSelection: ' + positionSelection);
+			alert('channelId: ' + channelId);
+			alert('positionLevelId: ' + positionLevelId);
+
 			if (assignImmediately) {
+				alert('1111111111111111');
 				Assessment.create(userId, assessmentAppraiseId, channelId, positionLevelId);
 				return {
 					hasPa: true
@@ -46,6 +61,7 @@
 				} else if (channelSelection && positionSelection
 					&& channelId != null && positionLevelId != null) {
 					// create assessment
+					alert('22222222222');
 					Assessment.create(userId, assessmentAppraiseId, channelId, positionLevelId);
 					return {
 						hasPa: true
@@ -58,12 +74,18 @@
 						channels: channels
 					};
 				} else if (channelSelection && channelId != null) {
+					alert('33333333333');
 					Assessment.create(userId, assessmentAppraiseId, channelId);
 					return {
 						hasPa: true
 					};
 				} else if (positionSelection && positionLevelId == null) {
-					alert(1);
+					var channels = Assessment.getBlocksTree(competenceBlockId, false);
+					return {
+						hasPa: false,
+						channels: channels
+					};
+					//alert(1);
 					// return positions
 					// Автоматически определить вертикаль
 					/*return {
@@ -71,6 +93,7 @@
 						positions: positions
 					};*/
 				} else if (positionSelection && positionLevelId != null) {
+					alert('444444444');
 					Assessment.create(userId, assessmentAppraiseId, null, positionLevelId);
 					return {
 						hasPa: true
@@ -106,11 +129,23 @@
 			var blocks = bsettings.blocks;
 
 			var isPa = User.hasPa(curUserID, assessmentAppraiseId);
+			//alert('isPa: ' + tools.object_to_text(isPa, 'json'));
+
 			var gkBs = User.getBlockSub(curUserID, blocks.gk);
+			//alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
+
 			var topBg = User.getBlockGroup(curUserID, blocks.top);
+			//alert('topBg: ' + tools.object_to_text(topBg, 'json'));
+
 			var dmBs = User.getBlockSub(curUserID, blocks.division_moscow);
+			//alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
+
 			var aBs = User.getBlockSub(curUserID, blocks.affilate);
+			//alert('aBs: ' + tools.object_to_text(aBs, 'json'));
+
 			var amBs = User.getBlockSub(curUserID, blocks.affiliate_manager);
+			//alert('amBs: ' + tools.object_to_text(amBs, 'json'));
+
 			var cblock = null;
 
 			if (gkBs != undefined) {
@@ -153,7 +188,9 @@
 					cblock.TopElem.competence_block,
 					cblock.TopElem.assign_immediately,
 					cblock.TopElem.channel_selection,
-					cblock.TopElem.position_selection
+					cblock.TopElem.position_selection,
+					channelId,
+					positionLevelId
 				);
 
 				return Utils.setSuccess(conds);
@@ -164,7 +201,6 @@
 			return Utils.setError(e);
 		}
 	}
-
 
 	function get_Collaborators(queryObjects) {
 		var search = queryObjects.HasProperty('search') ? Trim(queryObjects.search) : '';
@@ -202,7 +238,6 @@
 		}
 
 		try {
-
 			var userData = User.getUser(userID, assessmentAppraiseId);
 			//var instruction = Utils.instruction(assessmentAppraiseId);
 			var managerData = User.getManager(userID, assessmentAppraiseId);
@@ -355,7 +390,6 @@
 		}
 
 		var bsettings = Settings.baseSettings(assessmentAppraiseId);
-
 		var q = XQuery("sql: \n\
 			select p.id \n\
 			from \n\
@@ -366,7 +400,6 @@
 		);
 
 		var planId = null;
-
 		for (p in q){
 			try {
 				docPaUser = OpenDoc(UrlFromDocID(Int(p.id)));

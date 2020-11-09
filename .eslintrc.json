@@ -2,7 +2,8 @@
   "parser": "babel-eslint",
   "extends": "react-app",
   "rules": {
-  	"no-unused-expressions": [0, {"allowTaggedTemplates": true, "allowShortCircuit": true, "allowTernary": true}]
+  	"no-unused-expressions": [0, {"allowTaggedTemplates": true, "allowShortCircuit": true, "allowTernary": true}],
+    "eqeqeq": 0
   },
   "parserOptions": {
     "sourceType": "module",

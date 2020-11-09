@@ -1,7 +1,7 @@
 function isInSub(userId, subId, excludeSubIds, positions, excludePositions) {
-	var joinSubs = ArrayMerge(ArrayUnion([subId], excludePositions), 'This', '),(');
-	var joinPositions = ArrayMerge(positions, 'This', '\'),(\'');
-	var joinExcludePositions = ArrayMerge(excludePositions, 'This', '\'),(\'');
+	var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', '),(');
+	var joinPositions = StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', '');
+	var joinExcludePositions = StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', '');
 
 	var q = XQuery("sql: \n\
 		select c.* \n\
@@ -17,9 +17,10 @@ function isInSub(userId, subId, excludeSubIds, positions, excludePositions) {
 				cs.id = " + OptInt(userId) + " \n\
 		) c \n\
 		where \n\
-			c.parent_sub_id in (" + joinSubs + ") \n\
-			and c.position_name in ('" + joinPositions + "') \n\
-			and c.position_name not in ('" + joinExcludePositions + "') \n\
+			1=1 \n\
+			" + (joinSubs.length > 0 ? "and c.parent_sub_id in (" + joinSubs + ")" : "") + " \n\
+			" + (joinPositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') in ('" + joinPositions + "')" : "") + " \n\
+			" + (joinExcludePositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') not in ('" + joinExcludePositions + "')" : "") + " \n\
 	");
 
 	return ArrayCount(q) == 1;
@@ -52,13 +53,20 @@ function getBlockSub(userId, block) {
 			ccabs.code = '" + block + "' \n\
 	");
 
+	//alert('sq: ' + tools.object_to_text(sq, 'json'));
+
 	for (el in sq) {
 		doc = OpenDoc(UrlFromDocID(el.id));
-		_subs = ArrayExtractKeys(doc.TopElem.exclude_subdivisions, 'exclude_subdivision_id');
+		_excSubs = ArrayExtractKeys(doc.TopElem.exclude_subdivisions, 'exclude_subdivision_id');
+		//alert('_excSubs: ' + tools.object_to_text(_excSubs, 'json'));
+	
 		_positions = String(doc.TopElem.positions).split(',');
-		_excludePositions = String(doc.TopElem.exclude_positions).split(',');
+		//alert('_positions: ' + tools.object_to_text(_positions, 'json'));
 
-		inSub = isInSub(userId, OptInt(el.subdivision), _subs, _positions, _excludePositions);
+		_excludePositions = String(doc.TopElem.exclude_positions).split(',');
+		//alert('_excludePositions: ' + tools.object_to_text(_excludePositions, 'json'));
+
+		inSub = isInSub(userId, OptInt(el.subdivision), _excSubs, _positions, _excludePositions);
 
 		if (inSub) {
 			return doc;

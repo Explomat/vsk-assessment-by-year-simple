@@ -1,16 +1,17 @@
 import { combineReducers } from 'redux';
 import { profileReducer } from './profile';
+import metaReducer from './profile/meta/metaReducer';
 import { subordinateReducer } from './subordinate';
-import { stepsReducer } from './steps';
+//import { stepsReducer } from './steps';
 import { constants as appConstants } from './appActions';
-import { uiSteps } from './config/steps';
+//import { uiSteps } from './config/steps';
 
 const ui = (state = {
 	isLoading: false,
 	error: null
 }, action) => {
 	switch(action.type) {
-		case appConstants.INITIAL_LOADING: {
+		case appConstants.LOADING: {
 			return {
 				...state,
 				isLoading: action.payload
@@ -27,14 +28,14 @@ const ui = (state = {
 	}
 }
 
-const step = (state = uiSteps.first, action) => {
+/*const step = (state = uiSteps.first, action) => {
 	switch(action.type) {
 		case appConstants.GET_STEP_SUCCESS: {
 			return action.step;
 		}
 		default: return state;
 	}
-}
+}*/
 
 const message = (state = null, action) => {
 	if (action.type === 'SET_MESSAGE') {
@@ -45,11 +46,12 @@ const message = (state = null, action) => {
 
 const assessmentReducer = combineReducers({
 	ui,
-	step,
+	//step,
 	message,
 	profile: profileReducer,
-	subordinate: subordinateReducer,
-	steps: stepsReducer
+	meta: metaReducer,
+	subordinate: subordinateReducer
+	//steps: stepsReducer
 });
 
 export default assessmentReducer;

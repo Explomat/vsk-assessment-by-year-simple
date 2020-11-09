@@ -3,14 +3,14 @@ import request from '../utils/request';
 import { getStepMock } from './mock';
 
 export const constants = {
-	'INITIAL_LOADING': 'INITIAL_LOADING',
+	'LOADING': 'LOADING',
 	'ERROR': 'ERROR',
 	...createRemoteActions('GET_STEP')
 }
 
-function loading(state){
+export function loading(state){
 	return {
-		type: constants.INITIAL_LOADING,
+		type: constants.LOADING,
 		payload: state
 	}
 }
@@ -22,30 +22,21 @@ export function error(err){
 	}
 }
 
-export function getStep(){
+/*export function getStep(){
 	return dispatch => {
 		request('UiStep')
-			.get()
-			.then(r => r.json())
-			.then(d => {
-				dispatch({
-					type: constants.GET_STEP_SUCCESS,
-					step: d.step
-				});
-				dispatch(loading(false));
-			})
-			.catch(e => {
-				console.error(e);
-				dispatch(error(e.message));
-			});
-
-		/*setTimeout(() => {
+		.get()
+		.then(r => r.json())
+		.then(d => {
 			dispatch({
 				type: constants.GET_STEP_SUCCESS,
-				step: getStepMock()
+				step: d.step
 			});
-
 			dispatch(loading(false));
-		}, 1000)*/
+		})
+		.catch(e => {
+			console.error(e);
+			dispatch(error(e.message));
+		});
 	}
-}
+}*/

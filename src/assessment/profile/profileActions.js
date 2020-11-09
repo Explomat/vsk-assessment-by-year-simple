@@ -80,29 +80,21 @@ export function setNewManager(id){
 		dispatch(setLoading(true));
 
 		request('ResetManager')
-			.post({}, {
-				assessment_appraise_id: id
-			})
-			.then(data => {
-				dispatch(setLoading(false));
-				dispatch({
-					type: appConstants.GET_STEP_SUCCESS,
-					step: 'first'
-				});
-			})
-			.catch(e => {
-				dispatch(setLoading(false));
-				console.error(e);
-				dispatch(error(e.message));
-			});
-
-		/*setTimeout(() => {
-			setStepMock('first');
+		.post({}, {
+			assessment_appraise_id: id
+		})
+		.then(data => {
+			dispatch(setLoading(false));
 			dispatch({
 				type: appConstants.GET_STEP_SUCCESS,
 				step: 'first'
 			});
-		}, 500);*/
+		})
+		.catch(e => {
+			dispatch(setLoading(false));
+			console.error(e);
+			dispatch(error(e.message));
+		});
 	}
 }
 
@@ -125,29 +117,11 @@ export function setTab(tabName){
 
 export function getInitialData(id){
 	return dispatch => {
-		request('ProfileData')
-			.get({ assessment_appraise_id: id })
-			.then(r => r.json())
-			.then(d => {
-				const ndata = normalize(d, app);
-				dispatch({
-					type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
-					payload: {
-						...ndata.entities,
-						result: ndata.result
-					}
-				});
-				dispatch(setLoading(false));
-			})
-			.catch(e => {
-				dispatch(setLoading(false));
-				console.error(e);
-				dispatch(error(e.message));
-			});
-
-		/*setTimeout(() => {
-			const ndata = normalize(mock, app);
-			console.log(JSON.stringify(ndata));
+		request('Profile')
+		.get({ assessment_appraise_id: id })
+		.then(r => r.json())
+		.then(d => {
+			const ndata = normalize(d, app);
 			dispatch({
 				type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
 				payload: {
@@ -156,7 +130,12 @@ export function getInitialData(id){
 				}
 			});
 			dispatch(setLoading(false));
-		}, 500);*/
+		})
+		.catch(e => {
+			dispatch(setLoading(false));
+			console.error(e);
+			dispatch(error(e.message));
+		});
 	}
 }
 

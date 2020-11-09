@@ -3,19 +3,13 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { HashRouter as Router, Route, Redirect } from 'react-router-dom';
 import Profile from './profile';
+import Meta from './profile/meta';
 import { Dimmer, Loader, Message, Modal } from 'semantic-ui-react';
-
-import { uiSteps } from './config/steps';
-import { getStep } from './appActions';
 
 class App extends Component {
 
-	/*componentDidMount(){
-		this.props.getStep();
-	}*/
-
 	render(){
-		const { step, ui } = this.props;
+		const { ui } = this.props;
 
 		if (ui.error){
 			return (
@@ -32,18 +26,19 @@ class App extends Component {
 			);
 		}
 
-		return ui.isLoading ? (
-			<Dimmer active inverted>
-				<Loader inverted>Loading</Loader>
-			</Dimmer>) : (
-			<Router>
-				<div className='app'>
-					<Route exact path='/:id' render={() => {
-						return <Profile />;
-					}} />
-				</div>
-			</Router>
-		)
+		return (
+			<div className='app'>
+				{ui.isLoading && <Dimmer active inverted>
+					<Loader inverted>Loading</Loader>
+				</Dimmer>}
+				<Route exact path='/meta/:id' render={() => {
+					return <Meta />;
+				}} />
+				<Route exact path='/profile/:id' render={() => {
+					return <Profile />;
+				}} />
+			</div>
+		);
 	}
 }
 
@@ -54,4 +49,4 @@ function mapStateToProps(state){
 	}
 }
 
-export default withRouter(connect(mapStateToProps, { getStep })(App));
+export default withRouter(connect(mapStateToProps)(App));

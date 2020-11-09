@@ -3,7 +3,7 @@ function _setComputedFields(curUserID, userId, bossId, step) {
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
 
 	var actions = User.getActions(curUserID, 'pa');
-	var updateAction = (ArrayOptFind(actions, 'This == "update"') != undefined;
+	var updateAction = (ArrayOptFind(actions, 'This == "update"') != undefined);
 
 	return {
 		curUserID: curUserID,
@@ -270,14 +270,14 @@ function getBlocksTree(rootBlockId, isChilds) {
 
 	function newBlock(el) {
 		return {
-			id: OptInt(el.id),
-			name: String(el.name),
+			key: OptInt(el.id),
+			label: String(el.name),
 			parent_object_id: OptInt(el.parent_object_id),
-			children: []
+			nodes: []
 		}
 	}
 
-	var children = getChildren(blockId);
+	var children = getChildren(rootBlockId);
 	var queue = [];
 
 	for (el in children) {
@@ -292,14 +292,14 @@ function getBlocksTree(rootBlockId, isChilds) {
 	var result = [];
 	while(queue.length > 0) {
 		node = ArrayOptFirstElem(queue);
-		node.children = [];
+		node.nodes = [];
 		queue.splice(0, 1);
 
-		children = getChildren(node.id);
+		children = getChildren(node.key);
 		for (el in children) {
 			ch = newBlock(el);
 			queue.push(ch);
-			node.children.push(ch);
+			node.nodes.push(ch);
 		}
 
 		if (ArrayCount(children) > 0) {
