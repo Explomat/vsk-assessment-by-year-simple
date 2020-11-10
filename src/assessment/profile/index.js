@@ -6,7 +6,7 @@ import Subordinate from './Subordinate';
 import SelectUser from './SelectUser';
 import { withRouter } from 'react-router';
 import { Menu, Segment, Input, List, Dimmer, Loader, Modal, Header, Button, Icon, Message } from 'semantic-ui-react';
-import { setTab, searchSubordinates, getInitialData, subordinateChecked, delegateUser } from './profileActions';
+import { setTab, getInitialData, /*searchSubordinates, subordinateChecked,*/ delegateUser } from './profileActions';
 import { connect } from 'react-redux';
 import { find } from 'lodash';
 
@@ -95,6 +95,7 @@ class Main extends Component {
 				</Dimmer>
 			)
 		}
+
 		return(
 			<div className='assessment-profile'>
 				<Menu attached='top' tabular>
@@ -208,7 +209,7 @@ class Main extends Component {
 
 function mapStateToProps(state){
 	const { profile } = state.app;
-	let subordinates = profile.result.user.subordinates.map(s => profile.subordinates[s]);
+	/*let subordinates = profile.result.subordinates.map(s => profile.subordinates[s]);
 
 	subordinates = subordinates.filter(s => {
 		const w = s.fullname.toLowerCase();
@@ -216,23 +217,23 @@ function mapStateToProps(state){
 		return ~w.indexOf(ss);
 	});
 
-	const checkedSubordinates = subordinates.filter(s => s.checked);
+	const checkedSubordinates = subordinates.filter(s => s.checked);*/
 
 	return {
 		user: profile.result.user,
 		delegateUser: profile.delegate.value,
-		ui: profile.ui,
-		subordinates: subordinates,
-		checkedSubordinates
+		ui: profile.ui
+		/*subordinates: subordinates,
+		checkedSubordinates*/
 	}
 }
 
 function mapDispatchProps(dispatch, ownProps) {
 	return {
 		onChangeTab: (e, data) => dispatch(setTab(data.name)),
-		onSearchSubordinates: (e, { value }) => dispatch(searchSubordinates(value)),
+		//onSearchSubordinates: (e, { value }) => dispatch(searchSubordinates(value)),
 		loadData: id => dispatch(getInitialData(id)),
-		selectToggleSubordinate: (subordinateId, checked) => dispatch(subordinateChecked(subordinateId, checked)),
+		//selectToggleSubordinate: (subordinateId, checked) => dispatch(subordinateChecked(subordinateId, checked)),
 		onDelegateUser: assessmentId => dispatch(delegateUser(assessmentId))
 	}
 }

@@ -168,12 +168,12 @@ const profileReducer = (state = {
 		value: null
 	},
 	result: {
-		user: {
-			subordinates: [],
-			assessment: {
-				pas: []
-			}
+		user: {},
+		subordinates: [],
+		assessment: {
+			pas: []
 		},
+		manager: {},
 		rules: [],
 		commonCompetences: []
 	},

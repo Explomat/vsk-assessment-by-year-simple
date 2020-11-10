@@ -52,9 +52,9 @@ class Profile extends Component {
 	}
 
 	_isAssessmentOpened(paId, index){
-		const { ui, user } = this.props;
+		const { ui, assessment } = this.props;
 		//return user.assessment.pas.length > 1 ? (index === 0 ? !ui.pas[paId] : !!ui.pas[paId]) : true;
-		return user.assessment.pas.length > 1 ? ui.pas[paId] : !ui.pas[paId];
+		return assessment.pas.length > 1 ? ui.pas[paId] : !ui.pas[paId];
 	}
 
 	render(){
@@ -66,12 +66,14 @@ class Profile extends Component {
 			legends,
 			meta,
 			user,
+			assessment,
+			manager,
 			instruction,
 			match,
 			ui
 		} = this.props;
 
-		const pasLen = user.assessment.pas.length;
+		const pasLen = assessment.pas.length;
 		const isCompleted = isCompetencesCompleted(this.props);
 		const { isShowInstruction } = this.state;
 		return (
@@ -90,23 +92,23 @@ class Profile extends Component {
 						</Card.Header>
 						<Card.Meta>{user.department} -> {user.position}</Card.Meta>
 						<Card.Description>
-							<span className='assessment-profile__description'>Название : </span><strong>{user.assessment.name}</strong>
+							<span className='assessment-profile__description'>Название : </span><strong>{assessment.name}</strong>
 						</Card.Description>
 						<Card.Description>
-							<span className='assessment-profile__description'>Период : </span><strong>{new Date(user.assessment.startDate).toLocaleDateString()} -  {new Date(user.assessment.finishDate).toLocaleDateString()}</strong>
+							<span className='assessment-profile__description'>Период : </span><strong>{new Date(assessment.startDate).toLocaleDateString()} -  {new Date(assessment.finishDate).toLocaleDateString()}</strong>
 						</Card.Description>
 						<Card.Description>
-							<span className='assessment-profile__description'>Этап : </span><strong>{user.assessment.stepName}</strong>
+							<span className='assessment-profile__description'>Этап : </span><strong>{assessment.stepName}</strong>
 						</Card.Description>
 						<Card.Description>
 							<span className='assessment-profile__description'>Руководитель {' : '}</span>
-							<Dropdown inline text={user.manager.fullname}>
+							<Dropdown inline text={manager.fullname}>
 								<Dropdown.Menu>
 									<Dropdown.Item
 										icon='address card'
 										text='Посмотреть профиль'
 										onClick={() => {
-											window.open(`/view_doc.html?mode=collaborator&object_id=${user.manager.id}`, '_blank');
+											window.open(`/view_doc.html?mode=collaborator&object_id=${manager.id}`, '_blank');
 										}}
 									/>
 								</Dropdown.Menu>
@@ -170,7 +172,7 @@ class Profile extends Component {
 				<Divider />
 				<div className='assessment-profile__pas'>
 					{
-						user.assessment.pas.map((p, index) => {
+						assessment.pas.map((p, index) => {
 							//const pa = pas[p];
 							//const resultMark = computeResultMark(p, this.props);
 							const isOpened = this._isAssessmentOpened(p, index);
@@ -180,7 +182,7 @@ class Profile extends Component {
 				</div>
 				<div className='assessment-profile__result'>
 					{
-						user.assessment.step == assessmentSteps.first && 
+						assessment.step == assessmentSteps.first && 
 						meta.curUserID === user.id && (
 							<div>
 								{ui.isShowBossButton && <Button
@@ -201,7 +203,7 @@ class Profile extends Component {
 						)
 					}
 					{
-						user.assessment.step == assessmentSteps.third && 
+						assessment.step == assessmentSteps.third && 
 						meta.curUserID === user.id &&
 						<Button.Group>
 							<Button
@@ -215,16 +217,16 @@ class Profile extends Component {
 						</Button.Group>
 					}
 					{
-						user.assessment.step == assessmentSteps.second &&
+						assessment.step == assessmentSteps.second &&
 						meta.curUserID === user.id &&
 						<Message info>
 							<Message.Content>
-								Вы не можете больше редактировать анкету, т.к. она находится на этапе "{user.assessment.stepName}"
+								Вы не можете больше редактировать анкету, т.к. она находится на этапе "{assessment.stepName}"
 							</Message.Content>
 						</Message>
 					}
 					{
-						user.assessment.step == assessmentSteps.fourth &&
+						assessment.step == assessmentSteps.fourth &&
 						meta.curUserID === user.id &&
 						<Message info>
 							<Message.Content>

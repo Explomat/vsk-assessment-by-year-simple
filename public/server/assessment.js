@@ -12,18 +12,21 @@ function _setComputedFields(curUserID, userId, bossId, step) {
 	}
 }
 
-function create(userId, assessmentAppraiseId) {
+function create(userId, assessmentAppraiseId, blockId) {
+	var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
+
 	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
 	var bsettings = Settings.baseSettings(assessmentAppraiseId);
 
-	var isBoss = User.isBoss(userId);
+	/*var isBoss = User.isBoss(userId);
 	var profileId = isBoss ? bsettings.GetOptProperty('manager_competence_profile_id') : bsettings.GetOptProperty('self_competence_profile_id');
 	if (profileId == undefined) {
 		throw 'Не найден профиль вашей оценки.';
 	}
 
-	var profileCompetences = OpenDoc(UrlFromDocID(profileId)).TopElem.competences;
+	var profileCompetences = OpenDoc(UrlFromDocID(profileId)).TopElem.competences;*/
 	var userBoss = User.getBoss(userId);
 	var userBossId = userBoss != undefined ? userBoss.person_id : null;
 
@@ -40,14 +43,38 @@ function create(userId, assessmentAppraiseId) {
 	//самооценка
 	var docSelf = tools.new_doc_by_name('pa');
 	docSelf.TopElem.assessment_appraise_type = 'competence_appraisal';
-	docSelf.TopElem.competence_profile_id = profileId;
+	//docSelf.TopElem.competence_profile_id = profileId;
 	docSelf.TopElem.status = 'self';
 	docSelf.TopElem.assessment_appraise_id = bsettings.assessment_appraise_id;
 	docSelf.TopElem.workflow_id = bsettings.workflow_id;
 	docSelf.TopElem.workflow_state = 1;
 	docSelf.TopElem.person_id = userId;
 	docSelf.TopElem.expert_person_id = userId;
-	docSelf.TopElem.competences.AssignElem(profileCompetences);
+
+	var comps = XQuery("sql: \n\
+		select c.id \n\
+		from competences c \n\
+		where c.competence_block_id = " + blockId + " \n\
+	");
+	for (el in comps) {
+		compChild = docSelf.TopElem.competences.AddChild();
+		compChild.competence_id = el.id;
+		compChild.weight = 0;
+
+		inds = XQuery("sql: \n\
+			select ids.id \n\
+			from indicators ids \n\
+			where ids.competence_id = " + el.id + " \n\
+		");
+
+		for (ind in inds) {
+			indChild = compChild.indicators.AddChild();
+			compChild.indicator_id = ind.id;
+			compChild.weight = 0;
+		}
+	}
+
+	//docSelf.TopElem.competences.AssignElem(profileCompetences);
 	docSelf.TopElem.assessment_plan_id = docPlan.DocID;
 	docSelf.BindToDb(DefaultDb);
 	docSelf.Save();
@@ -234,7 +261,7 @@ function getPa(paId){
 
 	for (c in doc.TopElem.competences){
 		cc = {
-			pa_id: String(p.id),
+			pa_id: String(paId),
 			competence_id: String(c.competence_id),
 			weight: String(c.weight),
 			mark_text: String(c.mark_text),
@@ -245,7 +272,7 @@ function getPa(paId){
 
 		for (i in c.indicators){
 			cc.indicators.push({
-				pa_id: String(p.id),
+				pa_id: String(paId),
 				indicator_id: String(i.indicator_id),
 				weight: String(i.weight),
 				mark_text: String(i.mark_text),
@@ -270,10 +297,10 @@ function getBlocksTree(rootBlockId, isChilds) {
 
 	function newBlock(el) {
 		return {
-			key: OptInt(el.id),
-			label: String(el.name),
+			id: OptInt(el.id),
+			name: String(el.name),
 			parent_object_id: OptInt(el.parent_object_id),
-			nodes: []
+			children: []
 		}
 	}
 
@@ -292,14 +319,14 @@ function getBlocksTree(rootBlockId, isChilds) {
 	var result = [];
 	while(queue.length > 0) {
 		node = ArrayOptFirstElem(queue);
-		node.nodes = [];
+		node.children = [];
 		queue.splice(0, 1);
 
-		children = getChildren(node.key);
+		children = getChildren(node.id);
 		for (el in children) {
 			ch = newBlock(el);
 			queue.push(ch);
-			node.nodes.push(ch);
+			node.children.push(ch);
 		}
 
 		if (ArrayCount(children) > 0) {

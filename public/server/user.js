@@ -159,7 +159,7 @@ function getPas(userId, status, assessmentAppraiseId) {
 		try {
 			objPa = Assessment.getPa(p.id);
 			result.push(objPa);
-		} catch(e) {}
+		} catch(e) { alert(e); }
 	}
 
 	return result;

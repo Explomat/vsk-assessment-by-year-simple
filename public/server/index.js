@@ -62,7 +62,7 @@
 					&& channelId != null && positionLevelId != null) {
 					// create assessment
 					alert('22222222222');
-					Assessment.create(userId, assessmentAppraiseId, channelId, positionLevelId);
+					Assessment.create(userId, assessmentAppraiseId, positionLevelId);
 					return {
 						hasPa: true
 					};
@@ -94,7 +94,7 @@
 					};*/
 				} else if (positionSelection && positionLevelId != null) {
 					alert('444444444');
-					Assessment.create(userId, assessmentAppraiseId, null, positionLevelId);
+					Assessment.create(userId, assessmentAppraiseId, positionLevelId);
 					return {
 						hasPa: true
 					};
@@ -107,11 +107,10 @@
 		}
 
 		var data = tools.read_object(queryObjects.Body);
-
 		var assessmentAppraiseId = queryObjects.HasProperty('assessment_appraise_id') ? queryObjects.assessment_appraise_id : null;
 		var isTrain = data.HasProperty('is_train') ? Utils.toBoolean(data.is_train) : null;
-		var channelId = data.HasProperty('channel_id') ? data.channel : null;
-		var positionLevelId = data.HasProperty('position_level_id') ? data.position_level : null;
+		var channelId = data.HasProperty('channel_id') ? data.channel_id : null;
+		var positionLevelId = data.HasProperty('position_level_id') ? data.position_level_id : null;
 
 		if (assessmentAppraiseId == null) {
 			return Utils.setError('Не указана процедура оценки.');

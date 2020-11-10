@@ -13,7 +13,6 @@ import {
 
 
 const rule = new schema.Entity('rules', {}, { idAttribute: 'scale' });
-const subordinate = new schema.Entity('subordinates');
 const commonIndicator = new schema.Entity('commonIndicators');
 const commonCompetence = new schema.Entity('commonCompetences', {
 	commonIndicators: [ commonIndicator ]
@@ -30,16 +29,16 @@ const competence = new schema.Entity('competences', {
 const pa = new schema.Entity('pas', {
 	competences: [ competence ]
 });
+const subordinate = new schema.Entity('subordinates');
 
 const app = new schema.Object({
 	commonCompetences: [ commonCompetence ],
 	rules: [ rule ],
-	user: new schema.Object({
-		assessment: new schema.Object({
-			pas: [ pa ]
-		}),
-		subordinates: [ subordinate ]
-	})
+	user: new schema.Object({}),
+	assessment: new schema.Object({
+		pas: [ pa ]
+	}),
+	manager: new schema.Object({})
 });
 
 export const constants = {
@@ -121,7 +120,7 @@ export function getInitialData(id){
 		.get({ assessment_appraise_id: id })
 		.then(r => r.json())
 		.then(d => {
-			const ndata = normalize(d, app);
+			const ndata = normalize(d.data, app);
 			dispatch({
 				type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
 				payload: {

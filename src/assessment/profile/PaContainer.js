@@ -9,7 +9,7 @@ function mapStateToProps(state, ownProps){
 	const { profile } = state.app;
 	const result = omit(profile, 'result');
 	const pa = result.pas[ownProps.id];
-	const isDisabled = profile.result.user.assessment.step > assessmentSteps.first;
+	const isDisabled = profile.result.assessment.step > assessmentSteps.first;
 	return {
 		CompetenceContainer,
 		isDisabled,

@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import Item from './Item';
-import TreeMenu from 'react-simple-tree-menu';
 import { withRouter, Redirect } from 'react-router';
-import { List } from 'semantic-ui-react';
-import { getMeta } from './metaActions';
+import { List, Card, Button, Modal, Header, Icon } from 'semantic-ui-react';
+import { getMeta, onChecked } from './metaActions';
 import { connect } from 'react-redux';
 
-import '../../../../node_modules/react-simple-tree-menu/dist/main.css';
+import './metaStyle.css';
 
 class Meta extends Component {
 
@@ -14,6 +13,12 @@ class Meta extends Component {
 		super(props);
 
 		this.renderChannels = this.renderChannels.bind(this);
+		this.handleShowConfirm = this.handleShowConfirm.bind(this);
+		this.handleCreateAssessment = this.handleCreateAssessment.bind(this);
+
+		this.state = {
+			isShowConfirm: false
+		}
 	}
 
 	componentDidMount() {
@@ -21,7 +26,22 @@ class Meta extends Component {
 		loadData(match.params.id);
 	}
 
+	handleCreateAssessment() {
+		const { match, loadData } = this.props;
+		loadData(match.params.id);
+
+		this.handleShowConfirm();
+	}
+
+	handleShowConfirm() {
+		this.setState({
+			isShowConfirm: !this.state.isShowConfirm
+		});
+	}
+
 	renderChannels(channels) {
+		const { onChecked } = this.props;
+
 		const queue = [];
 
 		for (var i = 0; i < channels.length; i++) {
@@ -35,18 +55,19 @@ class Meta extends Component {
 			var children = [];
 			for (var j = 0; j < node.children.length; j++) {
 				queue.push(node.children[j]);
-				children.push(<Item key={node.children[j].id} {...node.children[j]} />);
+				children.push(<Item onChange={onChecked} key={node.children[j].id} {...node.children[j]} />);
 			}
 
 			if (node.children.length > 0) {
-				result.push(<Item key={node.id} {...node}>{children}</Item>);
+				result.push(<Item onChange={onChecked} key={node.id} {...node}>{children}</Item>);
 			}
 		}
 
-		return result;
+		return <ul className='assessment-meta__root-ul'>{result}</ul>;
 	}
 
 	render() {
+		const { isShowConfirm } = this.state;
 		const { ui, meta, match } = this.props;
 
 		if (ui.isLoading) {
@@ -58,14 +79,29 @@ class Meta extends Component {
 		}
 
 		return (
-			<div className='assessment-meta'>
-				<TreeMenu
-					data={meta.channels}
-					hasSearch={false}
-				>
-					
-				</TreeMenu>
-				{/*this.renderChannels(meta.channels)*/}
+			<div>
+				<Card fluid className='assessment-meta'>
+					<Card.Content header='Выберите критерии для набора компетенций' />
+					<Card.Content>
+						{this.renderChannels(meta.channels)}
+					</Card.Content>
+					<Card.Content extra>
+						 <Button style={{float: 'right'}} onClick={this.handleShowConfirm} primary disabled={!meta.hasChecked}>Далее</Button>
+					</Card.Content>
+				</Card>
+				{isShowConfirm &&
+					<Modal open basic size='small'>
+						<Header content='Подтвердите действие' />
+						<Modal.Content>
+							<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}"`}</p>
+						</Modal.Content>
+						<Modal.Actions>
+							<Button onClick={this.handleCreateAssessment} primary inverted>
+								<Icon name='checkmark' /> Ok
+							</Button>
+						</Modal.Actions>
+					</Modal>
+				}
 			</div>
 		);
 	}
@@ -81,7 +117,8 @@ function mapStateToProps(state) {
 
 function mapDispatchProps(dispatch, ownProps) {
 	return {
-		loadData: id => dispatch(getMeta(id))
+		loadData: id => dispatch(getMeta(id)),
+		onChecked: (id, isChecked) => dispatch(onChecked(id, isChecked))
 	}
 }
 
