@@ -14,7 +14,6 @@ function mapStateToProps(state){
 		user: profile.result.user,
 		manager: profile.result.manager,
 		assessment: profile.result.assessment,
-		instruction: profile.result.instruction,
 		legends: profile.result.rules.map(r => profile.rules[r]),
 		...result
 	}

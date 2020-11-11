@@ -1,5 +1,4 @@
 import Competence from '../profile/Competence';
-//import { assessmentSteps } from '../config/steps';
 import { updatePa, setComment } from './subordinateActions';
 import { omit } from 'lodash';
 import { connect } from 'react-redux';

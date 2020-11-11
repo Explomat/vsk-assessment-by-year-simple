@@ -1,4 +1,4 @@
-function _setComputedFields(curUserID, userId, bossId, step) {
+function setComputedFields(curUserID, userId, bossId, step) {
 	var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
 
@@ -7,8 +7,9 @@ function _setComputedFields(curUserID, userId, bossId, step) {
 
 	return {
 		curUserID: curUserID,
-		canEditSelf: ((curUserID == userId && String(step) == '1') || updateAction != undefined),
-		canEditBoss: ((curUserID == bossId && String(step) == '2') || updateAction != undefined)
+		canEditSelf: ((curUserID == userId && String(step) == '1') || updateAction),
+		canEditBoss: ((curUserID == bossId && String(step) == '2') || updateAction),
+		isAssessmentCompleted: (String(step) == '4')
 	}
 }
 
@@ -50,6 +51,14 @@ function create(userId, assessmentAppraiseId, blockId) {
 	docSelf.TopElem.workflow_state = 1;
 	docSelf.TopElem.person_id = userId;
 	docSelf.TopElem.expert_person_id = userId;
+
+	var docMain = tools.new_doc_by_name('cc_assessment_main');
+	docMain.TopElem.code = docPlan.TopElem.person_id.OptForeignElem.code;
+	docMain.TopElem.user_id = userId;
+	docMain.TopElem.assessment_appraise_id = assessmentAppraiseId;
+	docMain.TopElem.competence_block_id = blockId;
+	docMain.BindToDb(DefaultDb);
+	docMain.Save();
 
 	var comps = XQuery("sql: \n\
 		select c.id \n\
@@ -178,21 +187,27 @@ function getAssessmentPlan(userId, assessmentAppraiseId){
 	return ArrayOptFirstElem(q);
 }
 
-function getCommonCompetences(assessmentAppraiseId) {
+function getCommonCompetences(userId, assessmentAppraiseId) {
+
+	var block = ArrayOptFirstElem(
+		XQuery("sql: \n\
+			select ccam.competence_block_id id \n\
+			from cc_assessment_mains ccam \n\
+			where \n\
+				ccam.user_id = " + userId + " \n\
+				and ccam.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+		")
+	);
+
+	if (block == undefined) {
+		throw 'Не найден блок компетенций';
+	}
 
 	var q = XQuery("sql: \n\
-		select cid.competence_id, cs.name \n\
-		from \n\
-			(select distinct\n\
-				t.p.query('competence_id').value('.','varchar(250)') competence_id \n\
-			from competence_profiles cps \n\
-			join pas p on p.competence_profile_id = cps.id \n\
-			join competence_profile cp on cp.id = cps.id \n\
-			cross apply cp.data.nodes('/competence_profile/competences/competence') AS t(p) \n\
-			where \n\
-				p.assessment_appraise_id = " + assessmentAppraiseId + ") cid \n\
-		join competences cs on cs.id = cid.competence_id \n\
-	"); 
+		select cs.id competence_id, cs.name \n\
+		from competences cs \n\
+		where cs.competence_block_id = " + block.id + " \n\
+	");
 
 	var result = [];
 	for (cp in q){

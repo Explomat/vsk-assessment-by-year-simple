@@ -184,7 +184,7 @@ function getManager(userId, assessmentAppraiseId){
 			) p \n\
 		where \n\
 			c.id = p.boss_id \n\
-	")
+	");
 
 	return ArrayOptFirstElem(q);
 }

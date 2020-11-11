@@ -46,7 +46,8 @@ export const constants = {
 		'PROFILE_GET_COLLABORATORS',
 		'PROFILE_GET_INITIAL_DATA',
 		'PROFILE_SECOND_STEP',
-		'PROFILE_FOURTH_STEP'
+		'PROFILE_FOURTH_STEP',
+		'PROFILE_GET_INSTRUCTION'
 	]),
 	'PROFILE_SET_USER': 'PROFILE_SET_USER',
 	'PROFILE_SET_TAB': 'PROFILE_SET_TAB',
@@ -127,6 +128,26 @@ export function getInitialData(id){
 					...ndata.entities,
 					result: ndata.result
 				}
+			});
+			dispatch(setLoading(false));
+		})
+		.catch(e => {
+			dispatch(setLoading(false));
+			console.error(e);
+			dispatch(error(e.message));
+		});
+	}
+}
+
+export function getInstruction(id){
+	return dispatch => {
+		request('Instruction')
+		.get({ assessment_appraise_id: id })
+		.then(r => r.json())
+		.then(d => {
+			dispatch({
+				type: constants.PROFILE_GET_INSTRUCTION_SUCCESS,
+				payload: d.data
 			});
 			dispatch(setLoading(false));
 		})

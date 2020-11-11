@@ -1,12 +1,11 @@
 import React from 'react';
-//import { assessmentSteps } from '../config/steps'; 
 import { assessmentSteps } from '../config/steps';
 import { Popup, Label, List, Image, Icon, Checkbox } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { computeScaleByPercent } from '../calculations';
 
-const Subordinate = ({ subordinate, rules, onShow, onSelect }) => {
+const Subordinate = ({ subordinate, rules, meta, onShow, onSelect }) => {
 	const handleClick = (event, data) => {
 		event.stopPropagation();
 		onSelect(subordinate.id, data.checked);
@@ -36,7 +35,7 @@ const Subordinate = ({ subordinate, rules, onShow, onSelect }) => {
 				/>
 			</List.Content>)}
 
-			{parseInt(subordinate.assessment.step, 10) < parseInt(assessmentSteps.third, 10) && <Checkbox checked={subordinate.checked} onClick={handleClick} className='assessment-profile-subordinate__check'/>}
+			{!meta.isAssessmentCompleted && <Checkbox checked={subordinate.checked} onClick={handleClick} className='assessment-profile-subordinate__check'/>}
 			{subordinate.avatarUrl ? <Image className='assessment-profile-subordinate__avatar-icon' avatar src={subordinate.avatarUrl} /> : <Icon className='assessment-profile-subordinate__avatar-icon' size='big' color='blue' name='user' />}
 			<List.Content>
 				<List.Header>{subordinate.fullname}</List.Header>
@@ -56,6 +55,7 @@ function mapStateToProps(state){
 	const { profile } = state.app;
 	return {
 		rules: profile.rules,
+		meta: profile.result.meta
 	}
 }
 

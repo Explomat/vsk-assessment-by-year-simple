@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import Instruction from './Instruction';
-//import { Collapse } from 'react-collapse';
-//import { presets } from 'react-motion';
 import { createBaseUrl } from '../../utils/request';
 import { Card, Image, Icon, Message, Table, Divider, Dropdown, Button, Label, Header } from 'semantic-ui-react';
-import { assessmentSteps } from '../config/steps';  
 import { isCompetencesCompleted } from '../calculations';
 
 import './profile.css';
@@ -68,7 +65,6 @@ class Profile extends Component {
 			user,
 			assessment,
 			manager,
-			instruction,
 			match,
 			ui
 		} = this.props;
@@ -126,7 +122,7 @@ class Profile extends Component {
 						</a>
 					</Card.Content>
 				</Card>
-				{isShowInstruction && <Instruction instruction={instruction} onClose={this.handleToggleInstruction} />}
+				{isShowInstruction && <Instruction onClose={this.handleToggleInstruction} />}
 				<Message warning>
 					<Message.Header>Внимательно прочитайте инструкцию перед заполнением!</Message.Header>
 					<Table celled size='small'>
@@ -182,8 +178,7 @@ class Profile extends Component {
 				</div>
 				<div className='assessment-profile__result'>
 					{
-						assessment.step == assessmentSteps.first && 
-						meta.curUserID === user.id && (
+						meta.canEditSelf && (
 							<div>
 								{ui.isShowBossButton && <Button
 									disabled={!isCompleted}
@@ -203,7 +198,15 @@ class Profile extends Component {
 						)
 					}
 					{
-						assessment.step == assessmentSteps.third && 
+						(!meta.canEditSelf && meta.canEditBoss) &&
+						<Message info>
+							<Message.Content>
+								Вы не можете больше редактировать анкету, т.к. она находится на этапе "{assessment.stepName}"
+							</Message.Content>
+						</Message>
+					}
+					{
+						/*assessment.step == assessmentSteps.third && 
 						meta.curUserID === user.id &&
 						<Button.Group>
 							<Button
@@ -214,20 +217,10 @@ class Profile extends Component {
 							>
 								Ознакомлен с оценкой
 							</Button>
-						</Button.Group>
+						</Button.Group>*/
 					}
 					{
-						assessment.step == assessmentSteps.second &&
-						meta.curUserID === user.id &&
-						<Message info>
-							<Message.Content>
-								Вы не можете больше редактировать анкету, т.к. она находится на этапе "{assessment.stepName}"
-							</Message.Content>
-						</Message>
-					}
-					{
-						assessment.step == assessmentSteps.fourth &&
-						meta.curUserID === user.id &&
+						meta.isAssessmentCompleted &&
 						<Message info>
 							<Message.Content>
 								Ваша оценка завершена

@@ -34,15 +34,15 @@
 			channelId,
 			positionLevelId
 		) {
-			alert('competenceBlockId: ' + competenceBlockId);
+			/*alert('competenceBlockId: ' + competenceBlockId);
 			alert('assignImmediately: ' + assignImmediately);
 			alert('channelSelection: ' + channelSelection);
 			alert('positionSelection: ' + positionSelection);
 			alert('channelId: ' + channelId);
-			alert('positionLevelId: ' + positionLevelId);
+			alert('positionLevelId: ' + positionLevelId);*/
 
 			if (assignImmediately) {
-				alert('1111111111111111');
+				//alert('1111111111111111');
 				Assessment.create(userId, assessmentAppraiseId, channelId, positionLevelId);
 				return {
 					hasPa: true
@@ -61,7 +61,7 @@
 				} else if (channelSelection && positionSelection
 					&& channelId != null && positionLevelId != null) {
 					// create assessment
-					alert('22222222222');
+					//alert('22222222222');
 					Assessment.create(userId, assessmentAppraiseId, positionLevelId);
 					return {
 						hasPa: true
@@ -74,7 +74,7 @@
 						channels: channels
 					};
 				} else if (channelSelection && channelId != null) {
-					alert('33333333333');
+					//alert('33333333333');
 					Assessment.create(userId, assessmentAppraiseId, channelId);
 					return {
 						hasPa: true
@@ -93,7 +93,7 @@
 						positions: positions
 					};*/
 				} else if (positionSelection && positionLevelId != null) {
-					alert('444444444');
+					//alert('444444444');
 					Assessment.create(userId, assessmentAppraiseId, positionLevelId);
 					return {
 						hasPa: true
@@ -242,7 +242,7 @@
 			var managerData = User.getManager(userID, assessmentAppraiseId);
 			var planData = Assessment.getAssessmentPlan(userID, assessmentAppraiseId);
 			var pasData = User.getPas(userID, undefined, assessmentAppraiseId);
-			var commonCompetencesData = Assessment.getCommonCompetences(assessmentAppraiseId);
+			var commonCompetences = Assessment.getCommonCompetences(userID, assessmentAppraiseId);
 			var _rules = Utils.docWvars(queryObjects.DocID);
 
 			var manager = {};
@@ -271,12 +271,12 @@
 			}
 
 			return Utils.setSuccess({
-				meta: Assessment._setComputedFields(assessmentAppraiseId, curUserID, userID, manager.id, planData.step),
+				meta: Assessment.setComputedFields(curUserID, userID, manager.id, planData.step),
 				//instruction: String(instruction),
 				user: userData,
 				manager: manager,
 				assessment: ast,
-				commonCompetences: commonCompetencesData,
+				commonCompetences: commonCompetences,
 				rules: _rules
 			});
 		} catch(e) {
@@ -348,7 +348,7 @@
 		var docPaUser = OpenDoc(UrlFromDocID(Int(paId)));
 		var profileId = docPaUser.TopElem.competence_profile_id;
 		var profileCompetences = OpenDoc(UrlFromDocID(profileId)).TopElem.competences;
-
+		
 		var docPlan = OpenDoc(UrlFromDocID(docPaUser.TopElem.assessment_plan_id));
 		docPlan.TopElem.workflow_state = 2;
 		docPlan.Save();

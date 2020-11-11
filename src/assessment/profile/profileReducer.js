@@ -167,6 +167,7 @@ const profileReducer = (state = {
 		results: [],
 		value: null
 	},
+	instruction: '',
 	result: {
 		user: {},
 		subordinates: [],
@@ -175,7 +176,8 @@ const profileReducer = (state = {
 		},
 		manager: {},
 		rules: [],
-		commonCompetences: []
+		commonCompetences: [],
+		meta: {}
 	},
 	ui: {
 		isLoading: true,
@@ -237,6 +239,13 @@ const profileReducer = (state = {
 					...state.ui,
 					isShowBossButton: action.payload
 				}
+			}
+		}
+
+		case constants.PROFILE_GET_INSTRUCTION_SUCCESS: {
+			return {
+				...state,
+				instruction: action.payload
 			}
 		}
 
