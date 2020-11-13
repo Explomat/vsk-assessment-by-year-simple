@@ -163,6 +163,7 @@ const profileReducer = (state = {
 	competences: {},
 	subordinates: {},
 	pas: {},
+	shouldHasPa: true,
 	delegate: {
 		results: [],
 		value: null

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { assessmentSteps } from '../config/steps';
 import ProfileContainer from './ProfileContainer';
 import ViewSubordinate from '../subordinate';
-import Subordinate from './Subordinate';
+import Subordinates from './Subordinates';
 import SelectUser from './SelectUser';
 import { withRouter } from 'react-router';
 import { Menu, Segment, Input, List, Dimmer, Loader, Modal, Header, Button, Icon, Message } from 'semantic-ui-react';
@@ -85,7 +85,7 @@ class Main extends Component {
 	}
 
 	render(){
-		const { ui, user, delegateUser, subordinates, checkedSubordinates, onChangeTab, onSearchSubordinates, onDelegateUser } = this.props;
+		const { ui, user, delegateUser, shouldHasPa, subordinates, checkedSubordinates, onChangeTab, onSearchSubordinates, onDelegateUser } = this.props;
 		const { isShowDelegate, isShowSubordinate, isManagerCanNotEstimate, curSubordinate, subordinateId } = this.state;
 
 		if (ui.isLoading) {
@@ -96,12 +96,12 @@ class Main extends Component {
 			)
 		}
 
-		return(
+		return (
 			<div className='assessment-profile'>
 				<Menu attached='top' tabular>
 					<Menu.Item
 						name='profile'
-						active={ui.activeTab === 'profile'}
+						active={ui.activeTab === 'profile' && shouldHasPa}
 						onClick={onChangeTab}
 					>
 						Моя анкета
@@ -130,10 +130,9 @@ class Main extends Component {
 				</Menu>
 
 				<Segment attached='bottom'>
-					{
-						ui.activeTab === 'profile' ? (
-							<ProfileContainer />
-						) : (
+						{(ui.activeTab === 'profile' && shouldHasPa) && <ProfileContainer />}
+						{ui.activeTab === 'subordinates' && <Subordinates />}
+						{/*
 							subordinates.length > 0 ? (
 								<div>
 									<Button disabled={!(checkedSubordinates.length > 0)} color='blue' onClick={this.onShowDelegate}>
@@ -157,8 +156,8 @@ class Main extends Component {
 									<Message.Content>У вас еще нет подчиненных</Message.Content>
 								</Message>
 							)
-						) 
-					}
+						 */}
+					
 				</Segment>
 				{isShowSubordinate && (
 					<ViewSubordinate
@@ -222,7 +221,8 @@ function mapStateToProps(state){
 	return {
 		user: profile.result.user,
 		delegateUser: profile.delegate.value,
-		ui: profile.ui
+		ui: profile.ui,
+		shouldHasPa: profile.shouldHasPa
 		/*subordinates: subordinates,
 		checkedSubordinates*/
 	}

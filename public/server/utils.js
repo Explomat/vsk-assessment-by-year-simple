@@ -1,20 +1,31 @@
-function toJSON(data){
+function getSystemSettings() {
+	var el = ArrayOptFirstElem(
+		XQuery("sql: \n\
+			select s.id \n\
+			from cc_assessment_settings s \n\
+		")
+	);
+
+	return OpenDoc(UrlFromDocID(Int(el.id)));
+}
+
+function toJSON(data) {
 	return tools.object_to_text(data, 'json');
 }
 
-function log(message){
+function log(message) {
 	EnableLog('assessment');
 	LogEvent('assessment', message);
 }
 
-function setMessage(type, message){
+function setMessage(type, message) {
 	return {
 		type: type,
 		message: String(message)
 	}
 }
 
-function setSuccess(data){
+function setSuccess(data) {
 	var m = setMessage('success');
 	m.data = data;
 	return toJSON(m);
@@ -46,7 +57,7 @@ function _isContains(_ids, _id) {
 	return false;
 }
 
-function notificate(templateCode, primaryId, secondaryId, text){
+function notificate(templateCode, primaryId, secondaryId, text) {
 	var ids = [6605156524408652638];
 	if (!_isContains(ids, primaryId)) {
 		tools.create_notification(templateCode, primaryId, text, secondaryId);
@@ -78,7 +89,7 @@ function instruction(assessmentAppraiseId) {
 	return q == undefined ? '' : q.instruction;
 }
 
-function docWvars(id){
+function docWvars(id) {
 	var doc = OpenDoc(UrlFromDocID(Int(id)));
 
 	var legends = ArrayOptFind(doc.TopElem.wvars, "This.name == 'assessment_by_year.legends'");

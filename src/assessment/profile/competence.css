@@ -1,0 +1,37 @@
+.assessment-profile__competence-description-a {
+	color: rgba(0,0,0,.4);
+	cursor: pointer;
+}
+
+.assessment-profile__competence-description-container {
+	margin-top: 20px;
+}
+
+.ui.modal>.content>.description {
+	position: 'relative';
+	line-height: 22px;
+}
+
+.assessment-profile__competence-description-header {
+	border-radius: 4px;
+    padding: 4px !important;
+    text-align: center;
+    margin-bottom: 8px !important;
+    border: 1px solid #cccccc82 !important;
+}
+
+.assessment-profile__competence-description-header--positive {
+	background-color: #02b402b3;
+	color: #fff !important;
+}
+
+.assessment-profile__competence-description-header--overdeveloped {
+	background-color: #b6b6b6;
+	color: #fff !important;
+}
+
+.assessment-profile__competence-description-header--negative {
+	background-color: #f2711cb8;
+    color: #fff !important;;
+}
+

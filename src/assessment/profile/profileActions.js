@@ -121,15 +121,28 @@ export function getInitialData(id){
 		.get({ assessment_appraise_id: id })
 		.then(r => r.json())
 		.then(d => {
-			const ndata = normalize(d.data, app);
-			dispatch({
-				type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
-				payload: {
-					...ndata.entities,
-					result: ndata.result
-				}
-			});
-			dispatch(setLoading(false));
+			if (d.type === 'error') {
+				dispatch(setLoading(false));
+				throw d.message;
+			}
+
+			if (!d.data.shouldHasPa) {
+				dispatch(setLoading(false));
+				dispatch({
+					type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
+					payload: d.data
+				});
+			} else {
+				const ndata = normalize(d.data, app);
+				dispatch({
+					type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
+					payload: {
+						...ndata.entities,
+						result: ndata.result
+					}
+				});
+				dispatch(setLoading(false));
+			}
 		})
 		.catch(e => {
 			dispatch(setLoading(false));

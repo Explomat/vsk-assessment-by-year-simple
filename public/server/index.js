@@ -17,14 +17,18 @@
 	var Lists = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 
-	var curUserID = 6711785032659205612; // me test
+	//var curUserID = 6711785032659205612; // me test
+	var curUserID = 6719948507670014353; // hrbp test
 	//var curUserID = 6770996101418848653; // user test
 	//var curUserID = 6148914691236517121; // user prod
 	//var curUserID = 6605157354988654063; // пичугина prod
 
+	var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
+
 	function post_Meta(queryObjects) {
 
 		function getConditions(
+			blockSubId,
 			userId,
 			assessmentAppraiseId,
 			competenceBlockId,
@@ -43,9 +47,10 @@
 
 			if (assignImmediately) {
 				//alert('1111111111111111');
-				Assessment.create(userId, assessmentAppraiseId, channelId, positionLevelId);
+				Assessment.create(userId, assessmentAppraiseId, blockSubId, channelId, positionLevelId);
 				return {
-					hasPa: true
+					hasPa: true,
+					shouldHasPa: true
 				};
 			} else {
 				if (
@@ -56,33 +61,38 @@
 					var channels = Assessment.getBlocksTree(competenceBlockId);
 					return {
 						hasPa: false,
+						shouldHasPa: true,
 						channels: channels
 					};
 				} else if (channelSelection && positionSelection
 					&& channelId != null && positionLevelId != null) {
 					// create assessment
 					//alert('22222222222');
-					Assessment.create(userId, assessmentAppraiseId, positionLevelId);
+					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
-						hasPa: true
+						hasPa: true,
+						shouldHasPa: true
 					};
 				} else if (channelSelection && channelId == null) {
 					// return channels
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
+						shouldHasPa: true,
 						channels: channels
 					};
 				} else if (channelSelection && channelId != null) {
 					//alert('33333333333');
-					Assessment.create(userId, assessmentAppraiseId, channelId);
+					Assessment.create(userId, assessmentAppraiseId, blockSubId, channelId);
 					return {
-						hasPa: true
+						hasPa: true,
+						shouldHasPa: true
 					};
 				} else if (positionSelection && positionLevelId == null) {
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
+						shouldHasPa: true,
 						channels: channels
 					};
 					//alert(1);
@@ -94,15 +104,17 @@
 					};*/
 				} else if (positionSelection && positionLevelId != null) {
 					//alert('444444444');
-					Assessment.create(userId, assessmentAppraiseId, positionLevelId);
+					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
-						hasPa: true
+						hasPa: true,
+						shouldHasPa: true
 					};
 				}
 			}
 
 			return {
-				hasPa: false
+				hasPa: false,
+				shouldHasPa: false
 			}
 		}
 
@@ -119,16 +131,22 @@
 		var hasPa = User.hasPa(curUserID, assessmentAppraiseId);
 		if (hasPa) {
 			return Utils.setSuccess({
-				hasPa: true
+				hasPa: true,
+				shouldHasPa: true
+			});
+		}
+
+		var systemSettings = Utils.getSystemSettings();
+		if (curUser.hire_date > systemSettings.TopElem.stop_hire_date) {
+			return Utils.setSuccess({
+				hasPa: false,
+				shouldHasPa: false
 			});
 		}
 
 		try {
 			var bsettings = Settings.baseSettings(assessmentAppraiseId);
 			var blocks = bsettings.blocks;
-
-			var isPa = User.hasPa(curUserID, assessmentAppraiseId);
-			//alert('isPa: ' + tools.object_to_text(isPa, 'json'));
 
 			var gkBs = User.getBlockSub(curUserID, blocks.gk);
 			//alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
@@ -182,6 +200,7 @@
 
 			if (cblock != null) {
 				var conds = getConditions(
+					cblock.DocID,
 					curUserID,
 					assessmentAppraiseId,
 					cblock.TopElem.competence_block,
@@ -221,7 +240,8 @@
 			var min = (page - 1) * pageSize;
 			var max = min + pageSize;
 
-			var subList = User.getSubordinates(curUserID, assessmentAppraiseId, search, min, max, pageSize);		
+			var systemSettings = Utils.getSystemSettings();
+			var subList = User.getSubordinates(curUserID, assessmentAppraiseId, systemSettings.TopElem.stop_hire_date, search, min, max, pageSize);		
 			Utils.setSuccess(subList);
 		} catch(e) {
 			return Utils.setError(e);
@@ -237,6 +257,13 @@
 		}
 
 		try {
+			var systemSettings = Utils.getSystemSettings();
+			if (curUser.hire_date > systemSettings.TopElem.stop_hire_date) {
+				return Utils.setSuccess({
+					shouldHasPa: false
+				});
+			}
+
 			var userData = User.getUser(userID, assessmentAppraiseId);
 			//var instruction = Utils.instruction(assessmentAppraiseId);
 			var managerData = User.getManager(userID, assessmentAppraiseId);
@@ -277,7 +304,8 @@
 				manager: manager,
 				assessment: ast,
 				commonCompetences: commonCompetences,
-				rules: _rules
+				rules: _rules,
+				shouldHasPa: true
 			});
 		} catch(e) {
 			return Utils.setError(e);

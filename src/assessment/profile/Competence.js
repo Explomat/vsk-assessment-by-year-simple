@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Icon, Table, Label, Popup, List, Segment, Header } from 'semantic-ui-react';
+import { Icon, Table, Label, Popup, List, Segment, Header, Modal } from 'semantic-ui-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import pSBC from '../../utils/pSBC';
 import cs from 'classnames';
@@ -9,6 +9,8 @@ import {
 	commonId
 } from '../calculations';
 
+import './competence.css';
+
 
 class Competence extends PureComponent {
 
@@ -17,8 +19,19 @@ class Competence extends PureComponent {
 
 		this.handleChangeMark = this.handleChangeMark.bind(this);
 		this.handleFocus = this.handleFocus.bind(this);
+		this.handleToggDescription = this.handleToggDescription.bind(this);
 
 		this.compRef = React.createRef();
+
+		this.state = {
+			isShowDescription: false
+		}
+	}
+
+	handleToggDescription() {
+		this.setState({
+			isShowDescription: !this.state.isShowDescription
+		});
 	}
 
 	handleFocus(compId, markName){
@@ -52,6 +65,7 @@ class Competence extends PureComponent {
 		const commonComp = commonCompetences[commonId(id)];
 		const mark = userComp.mark_text;
 		const isRequireComment = isCommentRequire(commonComp.scales, userComp.mark_text) && userComp.comment.trim() == '';
+		const { isShowDescription } = this.state;
 		//const mark = computeCompetenceMark(id, this.props);
 
 		return(
@@ -140,7 +154,8 @@ class Competence extends PureComponent {
 						</Table.Row>
 					</Table.Body>
 				</Table>
-				<div className='assessment-profile__indicators-container'>
+				{/*<div className='assessment-profile__indicators-container'>
+
 					<Header as='h4'>Индикаторы</Header>
 					<List ordered>
 						{
@@ -152,7 +167,38 @@ class Competence extends PureComponent {
 							})
 						}
 					</List>
+				</div>*/}
+				<div className='assessment-profile__competence-description-container'>
+					<a className='assessment-profile__competence-description-a' onClick={this.handleToggDescription}>
+						<Icon name='file alternate outline' />
+						Описание
+					</a>
 				</div>
+				{isShowDescription &&
+					<Modal size='large' open closeIcon onClose={this.handleToggDescription}>
+						<Modal.Header>{commonComp.name}</Modal.Header>
+						<Modal.Content scrolling>
+							<Modal.Description>
+								<Segment basic>
+									<Header as='h4' className='assessment-profile__competence-description-header'>Описание</Header>
+									{userComp.common_comment}
+								</Segment>
+								<Segment basic>
+									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--positive'>Развита</Header>
+									{userComp.common_positive_comment}
+								</Segment>
+								<Segment basic>
+									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--overdeveloped'>Чрезмерно развита</Header>
+									{userComp.common_overdeveloped_comment}
+								</Segment>
+								<Segment basic>
+									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--negative'>Не развита</Header>
+									{userComp.common_negative_comment}
+								</Segment>
+							</Modal.Description>
+						</Modal.Content>
+					</Modal>
+				}
 			</Segment>
 		);
 	}

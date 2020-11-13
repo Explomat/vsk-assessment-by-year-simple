@@ -1,7 +1,8 @@
-function isInSub(userId, subId, excludeSubIds, positions, excludePositions) {
+function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excludeCollaborators) {
 	var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', '),(');
 	var joinPositions = StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', '');
 	var joinExcludePositions = StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', '');
+	var joinCollaborators = ArrayMerge(excludeCollaborators, 'This', '),(');
 
 	var q = XQuery("sql: \n\
 		select c.* \n\
@@ -21,12 +22,13 @@ function isInSub(userId, subId, excludeSubIds, positions, excludePositions) {
 			" + (joinSubs.length > 0 ? "and c.parent_sub_id in (" + joinSubs + ")" : "") + " \n\
 			" + (joinPositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') in ('" + joinPositions + "')" : "") + " \n\
 			" + (joinExcludePositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') not in ('" + joinExcludePositions + "')" : "") + " \n\
+			" + (joinCollaborators.length > 0 ? "and cs.id in (" + joinCollaborators + ")" : "") + " \n\
 	");
 
 	return ArrayCount(q) == 1;
 }
 
-function getBlockGroup(userId, block) {
+function getBlockGroup(userId, blockCode) {
 	var q = XQuery("sql: \n\
 		select \n\
 			ccabs.id, \n\
@@ -34,7 +36,7 @@ function getBlockGroup(userId, block) {
 		from cc_assessment_block_subs ccabs \n\
 		inner join group_collaborators gcs on gcs.group_id = ccabs.[group] \n\
 		where \n\
-			ccabs.code = '" + block + "' \n\
+			ccabs.code = '" + blockCode + "' \n\
 			and gcs.collaborator_id = " + userId + " \n\
 	");
 
@@ -44,15 +46,20 @@ function getBlockGroup(userId, block) {
 	}
 }
 
-function getBlockSub(userId, block) {
+function getBlockSub(userId, blockCode) {
 	var sq = XQuery("sql: \n\
 		select \n\
 			ccabs.* \n\
 		from cc_assessment_block_subs ccabs \n\
 		where \n\
-			ccabs.code = '" + block + "' \n\
+			ccabs.code = '" + blockCode + "' \n\
 	");
 
+	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
+
+	var settingsDoc = Utils.getSystemSettings();
+	var _excCollaborators = ArrayExtractKeys(settingsDoc.TopElem.exclude_collaborators, 'exclude_collaborator_id');
 	//alert('sq: ' + tools.object_to_text(sq, 'json'));
 
 	for (el in sq) {
@@ -66,7 +73,7 @@ function getBlockSub(userId, block) {
 		_excludePositions = String(doc.TopElem.exclude_positions).split(',');
 		//alert('_excludePositions: ' + tools.object_to_text(_excludePositions, 'json'));
 
-		inSub = isInSub(userId, OptInt(el.subdivision), _excSubs, _positions, _excludePositions);
+		inSub = isInSub(userId, OptInt(el.subdivision), _excSubs, _positions, _excludePositions, _excCollaborators);
 
 		if (inSub) {
 			return doc;
@@ -213,7 +220,7 @@ function getUser(userId, assessmentAppraiseId) {
 	return ArrayOptFirstElem(q);
 }
 
-function getSubordinates(userId, assessmentAppraiseId, search, minRow, maxRow, pageSize) {
+function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, minRow, maxRow, pageSize) {
 	var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
 
@@ -227,20 +234,28 @@ function getSubordinates(userId, assessmentAppraiseId, search, minRow, maxRow, p
 			from ( \n\
 				select \n\
 					count(c.id) over() total, \n\
+					p.id pa_id, \n\
 					c.id, \n\
 					c.fullname, \n\
+					c.is_dismiss, \n\
 					c.position_name as position, \n\
 					c.position_parent_name as department, \n\
 					p.overall \n\
-				from \n\
-					collaborators c \n\
-				join \n\
-					pas p on p.person_id = c.id \n\
+				from func_managers fms \n\
+				inner join collaborators c on c.id = fms.[object_id] \n\
+				left join pas p on (p.person_id = c.id and p.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+				left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
+				left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
 				where \n\
 					c.fullname like '%'+@s+'%' \n\
-					and p.expert_person_id = " + userId + " \n\
-					and p.person_id <> " + userId + " \n\
-					and p.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+					and convert(date, c.hire_date, 105) < convert(date, " + DateNewTime(stopHireDate) + ", 105) \n\
+					and ( \n\
+						fms.person_id = " + userId + " \n\
+						or ( \n\
+							ccaa.[action] in ('update') \n\
+							and ccaa.object_type = 'pa' \n\
+						) \n\
+					) \n\
 			) c \n\
 		) d \n\
 		where \n\
@@ -250,24 +265,37 @@ function getSubordinates(userId, assessmentAppraiseId, search, minRow, maxRow, p
 
 	var result = [];
 	for (s in sq){
-		plan = Assessment.getAssessmentPlan(String(s.id), assessmentAppraiseId);
-		data = {
-			id: String(s.id),
-			fullname: String(s.fullname),
-			position: String(s.position),
-			department: String(s.department),
-			assessment: {}
-		}
+		blockSub = ArrayOptFirstElem(XQuery("sql: \n\
+			select ccab.code \n\
+			from cc_assessment_mains ccam \n\
+			inner join cc_assessment_block_subs ccab on ccab.id = ccam.block_sub_id \n\
+			where ccam.[user_id] = " + Int(s.id) + " \n\
+		"));
 
-		if (plan != undefined){
-			data.assessment = {
-				step: String(plan.step),
-				stepName: String(plan.stepName),
-				overall: String(s.overall)
+		if (blockSub != undefined) {
+			inSub = getBlockSub(Int(s.id), String(blockSub.code));
+
+			if (inSub != undefined) {
+				data = {
+					id: String(s.id),
+					fullname: String(s.fullname),
+					position: String(s.position),
+					department: String(s.department),
+					assessment: {}
+				}
+
+				plan = Assessment.getAssessmentPlan(String(s.id), assessmentAppraiseId);
+				if (plan != undefined){
+					data.assessment = {
+						step: String(plan.step),
+						stepName: String(plan.stepName),
+						overall: String(s.overall)
+					}
+				}
+
+				result.push(data);
 			}
 		}
-
-		result.push(data);
 	}
 
 	var total = 0;

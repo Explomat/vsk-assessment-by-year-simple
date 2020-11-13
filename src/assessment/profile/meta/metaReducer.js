@@ -5,6 +5,7 @@ const metaReducer = (state = {
 	selectedNode: null,
 	parentNode: null,
 	hasPa: false,
+	shouldHasPa: false,
 	channels: [],
 	is_train: false,
 	channel_id: null,

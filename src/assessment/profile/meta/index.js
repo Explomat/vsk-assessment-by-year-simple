@@ -74,7 +74,7 @@ class Meta extends Component {
 			return null;
 		}
 
-		if (meta.hasPa) {
+		if (meta.hasPa || (meta.hasPa && !meta.shouldHasPa)) {
 			return <Redirect to={`/profile/${match.params.id}`} />
 		}
 

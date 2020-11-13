@@ -13,7 +13,7 @@ function setComputedFields(curUserID, userId, bossId, step) {
 	}
 }
 
-function create(userId, assessmentAppraiseId, blockId) {
+function create (userId, assessmentAppraiseId, blockSubId, blockId) {
 	var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
 
@@ -57,6 +57,7 @@ function create(userId, assessmentAppraiseId, blockId) {
 	docMain.TopElem.user_id = userId;
 	docMain.TopElem.assessment_appraise_id = assessmentAppraiseId;
 	docMain.TopElem.competence_block_id = blockId;
+	docMain.TopElem.block_sub_id = blockSubId;
 	docMain.BindToDb(DefaultDb);
 	docMain.Save();
 
@@ -275,6 +276,8 @@ function getPa(paId){
 	};
 
 	for (c in doc.TopElem.competences){
+		compDoc = OpenDoc(UrlFromDocID(Int(c.competence_id)));
+
 		cc = {
 			pa_id: String(paId),
 			competence_id: String(c.competence_id),
@@ -282,6 +285,10 @@ function getPa(paId){
 			mark_text: String(c.mark_text),
 			mark_value: String(c.mark_value),
 			comment: String(c.comment),
+			common_positive_comment: String(compDoc.TopElem.positive_comment),
+			common_overdeveloped_comment: String(compDoc.TopElem.custom_elems.ObtainChildByKey('overdeveloped').value),
+			common_negative_comment: String(compDoc.TopElem.negative_comment),
+			common_comment: String(compDoc.TopElem.comment),
 			indicators: []
 		}
 
