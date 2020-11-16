@@ -74,36 +74,36 @@ class Meta extends Component {
 			return null;
 		}
 
-		if (meta.hasPa || (meta.hasPa && !meta.shouldHasPa)) {
+		if (!meta.hasPa && meta.shouldHasPa) {
+			return (
+				<div>
+					<Card fluid className='assessment-meta'>
+						<Card.Content header='Выберите критерии для набора компетенций' />
+						<Card.Content>
+							{this.renderChannels(meta.channels)}
+						</Card.Content>
+						<Card.Content extra>
+							 <Button style={{float: 'right'}} onClick={this.handleShowConfirm} primary disabled={!meta.hasChecked}>Далее</Button>
+						</Card.Content>
+					</Card>
+					{isShowConfirm &&
+						<Modal open basic size='small'>
+							<Header content='Подтвердите действие' />
+							<Modal.Content>
+								<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}"`}</p>
+							</Modal.Content>
+							<Modal.Actions>
+								<Button onClick={this.handleCreateAssessment} primary inverted>
+									<Icon name='checkmark' /> Ok
+								</Button>
+							</Modal.Actions>
+						</Modal>
+					}
+				</div>
+			);
+		} else {
 			return <Redirect to={`/profile/${match.params.id}`} />
 		}
-
-		return (
-			<div>
-				<Card fluid className='assessment-meta'>
-					<Card.Content header='Выберите критерии для набора компетенций' />
-					<Card.Content>
-						{this.renderChannels(meta.channels)}
-					</Card.Content>
-					<Card.Content extra>
-						 <Button style={{float: 'right'}} onClick={this.handleShowConfirm} primary disabled={!meta.hasChecked}>Далее</Button>
-					</Card.Content>
-				</Card>
-				{isShowConfirm &&
-					<Modal open basic size='small'>
-						<Header content='Подтвердите действие' />
-						<Modal.Content>
-							<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}"`}</p>
-						</Modal.Content>
-						<Modal.Actions>
-							<Button onClick={this.handleCreateAssessment} primary inverted>
-								<Icon name='checkmark' /> Ok
-							</Button>
-						</Modal.Actions>
-					</Modal>
-				}
-			</div>
-		);
 	}
 }
 

@@ -87,16 +87,16 @@ class Profile extends Component {
 							{user.fullname}
 						</Card.Header>
 						<Card.Meta>{user.department} -> {user.position}</Card.Meta>
-						<Card.Description>
+						{user.shouldHasPa && <Card.Description>
 							<span className='assessment-profile__description'>Название : </span><strong>{assessment.name}</strong>
-						</Card.Description>
-						<Card.Description>
+						</Card.Description>}
+						{user.shouldHasPa && <Card.Description>
 							<span className='assessment-profile__description'>Период : </span><strong>{new Date(assessment.startDate).toLocaleDateString()} -  {new Date(assessment.finishDate).toLocaleDateString()}</strong>
-						</Card.Description>
-						<Card.Description>
+						</Card.Description>}
+						{user.shouldHasPa && <Card.Description>
 							<span className='assessment-profile__description'>Этап : </span><strong>{assessment.stepName}</strong>
-						</Card.Description>
-						<Card.Description>
+						</Card.Description>}
+						{user.shouldHasPa && <Card.Description>
 							<span className='assessment-profile__description'>Руководитель {' : '}</span>
 							<Dropdown inline text={manager.fullname}>
 								<Dropdown.Menu>
@@ -109,7 +109,7 @@ class Profile extends Component {
 									/>
 								</Dropdown.Menu>
 							</Dropdown>
-						</Card.Description>
+						</Card.Description>}
 					</Card.Content>
 					<Card.Content className='assessment-profile__card-actions' extra>
 						<a className='assessment-profile__card-actions_action-a' onClick={this.handleToggleInstruction}>
@@ -182,7 +182,7 @@ class Profile extends Component {
 							<div>
 								{ui.isShowBossButton && <Button
 									disabled={!isCompleted}
-									color='blue'
+									color='blue' 
 									onClick={this.handleSecondStep}
 								>
 									Перевести на оценку руководителя
@@ -198,7 +198,7 @@ class Profile extends Component {
 						)
 					}
 					{
-						(!meta.canEditSelf && meta.canEditBoss) &&
+						(user.shouldHasPa && !meta.canEditSelf && meta.canEditBoss) &&
 						<Message info>
 							<Message.Content>
 								Вы не можете больше редактировать анкету, т.к. она находится на этапе "{assessment.stepName}"
@@ -220,10 +220,17 @@ class Profile extends Component {
 						</Button.Group>*/
 					}
 					{
-						meta.isAssessmentCompleted &&
+						user.shouldHasPa && meta.isAssessmentCompleted &&
 						<Message info>
 							<Message.Content>
 								Ваша оценка завершена
+							</Message.Content>
+						</Message>
+					}
+					{!user.shouldHasPa && 
+						<Message info>
+							<Message.Content>
+								Вы не можете проходить оценку, но можете оценивать своих сотрудников
 							</Message.Content>
 						</Message>
 					}

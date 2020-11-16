@@ -18,7 +18,8 @@
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 
 	//var curUserID = 6711785032659205612; // me test
-	var curUserID = 6719948507670014353; // hrbp test
+	var curUserID = 6719947231785930663; // boss test
+	//var curUserID = 6719948507670014353; // hrbp test
 	//var curUserID = 6770996101418848653; // user test
 	//var curUserID = 6148914691236517121; // user prod
 	//var curUserID = 6605157354988654063; // пичугина prod
@@ -236,13 +237,32 @@
 			var search = queryObjects.HasProperty('search') ? queryObjects.search : '';
 			var page = queryObjects.HasProperty('page') ? OptInt(queryObjects.page) : 1;
 			var pageSize = queryObjects.HasProperty('page_size') ? OptInt(queryObjects.page_size) : 10;
+			var minRow = queryObjects.HasProperty('min_row') ? OptInt(queryObjects.min_row) : 0;
+			var maxRow = queryObjects.HasProperty('max_row') ? OptInt(queryObjects.max_row) : 10;
+			var isPrev = queryObjects.HasProperty('is_prev') ? Utils.toBoolean(queryObjects.is_prev) : false;
+			var isNext = queryObjects.HasProperty('is_next') ? Utils.toBoolean(queryObjects.is_next) : true;
 
-			var min = (page - 1) * pageSize;
-			var max = min + pageSize;
+			alert('initial_minRow: ' + minRow + ' initial_maxRow: ' + maxRow);
+
+			if (isNext) {
+				alert('isNext');
+				minRow = maxRow;
+				maxRow = minRow + pageSize;
+				alert('minRow: ' + minRow + ' maxRow: ' + maxRow);
+			} else if (isPrev) {
+				alert('isPrev');
+				maxRow = minRow;
+				var temp = maxRow - pageSize;
+				minRow = temp < 0 ? 0 : temp;
+				alert('minRow: ' + minRow + ' maxRow: ' + maxRow);
+			}
+
+			/*var min = (page - 1) * pageSize;
+			var max = min + pageSize;*/
 
 			var systemSettings = Utils.getSystemSettings();
-			var subList = User.getSubordinates(curUserID, assessmentAppraiseId, systemSettings.TopElem.stop_hire_date, search, min, max, pageSize);		
-			Utils.setSuccess(subList);
+			var subList = User.getSubordinates(curUserID, assessmentAppraiseId, systemSettings.TopElem.stop_hire_date, search, minRow, maxRow, pageSize);		
+			return Utils.setSuccess(subList);
 		} catch(e) {
 			return Utils.setError(e);
 		}
@@ -259,20 +279,38 @@
 		try {
 			var systemSettings = Utils.getSystemSettings();
 			if (curUser.hire_date > systemSettings.TopElem.stop_hire_date) {
+				var user = User.getUser(userID, assessmentAppraiseId);
+				user.shouldHasPa = false;
+
+				var manager = User.getManager(userID, assessmentAppraiseId);
+				var _rules = Utils.docWvars(queryObjects.DocID);
+
 				return Utils.setSuccess({
-					shouldHasPa: false
+					meta: {
+						curUserID: curUserID,
+						canEditSelf: false,
+						canEditBoss: true,
+						isAssessmentCompleted: false
+					},
+					user: user,
+					manager: manager,
+					assessment: {pas:[]},
+					commonCompetences: [],
+					rules: _rules
 				});
 			}
 
-			var userData = User.getUser(userID, assessmentAppraiseId);
+			var user = User.getUser(userID, assessmentAppraiseId);
+			user.shouldHasPa = true;
 			//var instruction = Utils.instruction(assessmentAppraiseId);
-			var managerData = User.getManager(userID, assessmentAppraiseId);
-			var planData = Assessment.getAssessmentPlan(userID, assessmentAppraiseId);
+			var manager = User.getManager(userID, assessmentAppraiseId);
+			var plan = Assessment.getAssessmentPlan(userID, assessmentAppraiseId);
+			var meta = Assessment.setComputedFields(curUserID, userID, manager.id, plan.step);
 			var pasData = User.getPas(userID, undefined, assessmentAppraiseId);
 			var commonCompetences = Assessment.getCommonCompetences(userID, assessmentAppraiseId);
 			var _rules = Utils.docWvars(queryObjects.DocID);
 
-			var manager = {};
+			/*var manager = {};
 			if (managerData != undefined){
 				manager = {
 					id: String(managerData.id),
@@ -280,32 +318,31 @@
 					position: String(managerData.position),
 					department: String(managerData.department)
 				}
-			} 
+			} */
 
 			var ast = {};
-			if (planData != undefined){
+			if (plan != undefined){
 				var aapDoc = OpenDoc(UrlFromDocID(Int(assessmentAppraiseId)));
 
 				ast = {
 					name: String(aapDoc.TopElem.name),
-					step: String(planData.step),
+					step: String(plan.step),
 					startDate: StrXmlDate(Date(aapDoc.TopElem.start_date)),
 					finishDate: StrXmlDate(Date(aapDoc.TopElem.end_date)),
-					stepName: String(planData.stepName),
-					overall: String(planData.overall),
+					stepName: String(plan.stepName),
+					overall: String(plan.overall),
 					pas: pasData
 				}
 			}
 
 			return Utils.setSuccess({
-				meta: Assessment.setComputedFields(curUserID, userID, manager.id, planData.step),
+				meta: meta,
 				//instruction: String(instruction),
-				user: userData,
+				user: user,
 				manager: manager,
 				assessment: ast,
 				commonCompetences: commonCompetences,
-				rules: _rules,
-				shouldHasPa: true
+				rules: _rules
 			});
 		} catch(e) {
 			return Utils.setError(e);

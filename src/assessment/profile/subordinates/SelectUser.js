@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { searchUsers, setUser } from './profileActions';
+import { searchUsers, setUser } from './subordinatesActions';
 import { connect } from 'react-redux';
 import { Search, Grid, Segment } from 'semantic-ui-react';
 import { debounce } from 'lodash';
@@ -60,7 +60,7 @@ class SelectUser extends Component {
 }
 
 function mapStateToProps(state){
-    return state.app.profile.delegate;
+    return state.app.subordinates.delegate;
 }
 
 export default connect(mapStateToProps, { searchUsers, setUser })(SelectUser);

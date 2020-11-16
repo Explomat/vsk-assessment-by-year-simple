@@ -55,7 +55,6 @@ export const constants = {
 	'PROFILE_SET_MARK': 'PROFILE_SET_MARK',
 	'PROFILE_UPDATE_PA': 'PROFILE_UPDATE_PA',
 	'PROFILE_SET_COMMENT': 'PROFILE_SET_COMMENT',
-	'PROFILE_SEARCH_SUBORDINATES': 'PROFILE_SEARCH_SUBORDINATES',
 	'PROFILE_TOGGLE_PA': 'PROFILE_TOGGLE_PA',
 	'PROFILE_TOGGLE_CHECK_SUBORDINATE': 'PROFILE_TOGGLE_CHECK_SUBORDINATE',
 	'PROFILE_TOGGLE_BOSS_BUTTON': 'PROFILE_TOGGLE_BOSS_BUTTON'
@@ -65,13 +64,6 @@ export function togglePa(paId){
 	return {
 		type: constants.PROFILE_TOGGLE_PA,
 		payload: paId
-	}
-}
-
-export function searchSubordinates(val){
-	return {
-		type: constants.PROFILE_SEARCH_SUBORDINATES,
-		payload: val
 	}
 }
 
@@ -126,23 +118,15 @@ export function getInitialData(id){
 				throw d.message;
 			}
 
-			if (!d.data.shouldHasPa) {
-				dispatch(setLoading(false));
-				dispatch({
-					type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
-					payload: d.data
-				});
-			} else {
-				const ndata = normalize(d.data, app);
-				dispatch({
-					type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
-					payload: {
-						...ndata.entities,
-						result: ndata.result
-					}
-				});
-				dispatch(setLoading(false));
-			}
+			const ndata = normalize(d.data, app);
+			dispatch({
+				type: constants.PROFILE_GET_INITIAL_DATA_SUCCESS,
+				payload: {
+					...ndata.entities,
+					result: ndata.result
+				}
+			});
+			dispatch(setLoading(false));
 		})
 		.catch(e => {
 			dispatch(setLoading(false));
@@ -218,8 +202,7 @@ export function secondStep(assessmentId){
 		dispatch(setLoading(true));
 
 		const { app } = getState();
-		const { competences, indicators, pas } = app.profile;
-		const { user } = app.profile.result;
+		const { competences, indicators, pas, result } = app.profile;
 
 		/*const indicator = new schema.Entity('indicators', {}, { idAttribute: 'indicator_id'});
 		const competence = new schema.Entity('competences', {
@@ -234,7 +217,7 @@ export function secondStep(assessmentId){
 		};
 		const denormalizedData = denormalize({pas: Object.keys(pas)}, competence, entities);*/
 
-		const pa = find(user.assessment.pas.map(p => pas[p]), { status: 'self' });
+		const pa = find(result.assessment.pas.map(p => pas[p]), { status: 'self' });
 		if (pa !== undefined){
 			const comps = pa.competences.map(c => {
 				const comp = competences[c];
@@ -292,75 +275,6 @@ export function fourthStep(isAgree, assessmentId){
 			})
 			.catch(e => {
 				dispatch(setLoading(false));
-				console.error(e);
-				dispatch(error(e.message));
-			});
-	}
-}
-
-export function setUser(result){
-	return {
-		type: constants.PROFILE_SET_USER,
-		payload: result
-	}
-};
-
-export function searchUsers(value){
-	return dispatch => {
-
-		request('Collaborators')
-			.get({ search: value })
-			.then(r => r.json())
-			.then(d => {
-				dispatch({
-					type: constants.PROFILE_GET_COLLABORATORS_SUCCESS,
-					payload: d
-				});
-			})
-			.catch(e => {
-				console.error(e);
-				dispatch(error(e.message));
-			});
-	}
-};
-
-export function subordinateChecked(subordinateId, checked) {
-	return {
-		type: constants.PROFILE_TOGGLE_CHECK_SUBORDINATE,
-		payload: {
-			subordinateId,
-			checked
-		}
-	}
-}
-
-
-export function delegateUser(assessmentId) {
-	return (dispatch, getState) => {
-		const state = getState();
-		const user = state.app.profile.delegate.value;
-		const checkedSubordinates = Object.keys(state.app.profile.subordinates).filter(k => {
-			const s = state.app.profile.subordinates[k];
-			return s.checked;
-		});
-
-		//dispatch(setLoading(true));
-
-		request('DelegateUser')
-			.post({
-				user_id: user.id,
-				subordinates: checkedSubordinates
-			}, {
-				assessment_appraise_id: assessmentId
-			})
-			.then(d => {
-				//window.location.href = window.location.pathname + window.location.search + window.location.hash;
-				//dispatch(getInitialData(assessmentId));
-				window.location.reload(true);
-				//dispatch(setLoading(false));
-			})
-			.catch(e => {
-				//dispatch(setLoading(false));
 				console.error(e);
 				dispatch(error(e.message));
 			});

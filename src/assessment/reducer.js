@@ -1,6 +1,7 @@
 import { combineReducers } from 'redux';
 import { profileReducer } from './profile';
 import metaReducer from './profile/meta/metaReducer';
+import subordinatesReducer from './profile/subordinates/subordinatesReducer';
 import { subordinateReducer } from './subordinate';
 //import { stepsReducer } from './steps';
 import { constants as appConstants } from './appActions';
@@ -50,6 +51,7 @@ const assessmentReducer = combineReducers({
 	message,
 	profile: profileReducer,
 	meta: metaReducer,
+	subordinates: subordinatesReducer,
 	subordinate: subordinateReducer
 	//steps: stepsReducer
 });

@@ -135,26 +135,6 @@ const subordinatesReducer = (state = {}, action) => {
 	}
 }
 
-const delegateReducer = (state = {}, action) => {
-	switch(action.type) {
-		case constants.PROFILE_SET_USER: {
-			return {
-				...state,
-				value: action.payload
-			}
-		}
-
-		case constants.PROFILE_GET_COLLABORATORS_SUCCESS: {
-			return {
-				...state,
-				results: action.payload
-			}
-		}
-
-		default: return state;
-	}
-}
-
 const profileReducer = (state = {
 	commonIndicators: {},
 	commonCompetences: {},
@@ -163,11 +143,6 @@ const profileReducer = (state = {
 	competences: {},
 	subordinates: {},
 	pas: {},
-	shouldHasPa: true,
-	delegate: {
-		results: [],
-		value: null
-	},
 	instruction: '',
 	result: {
 		user: {},
@@ -215,21 +190,6 @@ const profileReducer = (state = {
 				/*indicators: indicatorsReducer(state.indicators, action),*/
 				competences: competencesReducer(state.competences, action),
 				pas: pasReducer(state.pas, action)
-			}
-		}
-
-		case constants.PROFILE_TOGGLE_CHECK_SUBORDINATE: {
-			return {
-				...state,
-				subordinates: subordinatesReducer(state.subordinates, action)
-			}
-		}
-
-		case constants.PROFILE_SET_USER:
-		case constants.PROFILE_GET_COLLABORATORS_SUCCESS: {
-			return {
-				...state,
-				delegate: delegateReducer(state.delegate, action)
 			}
 		}
 

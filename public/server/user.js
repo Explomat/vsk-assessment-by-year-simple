@@ -81,6 +81,21 @@ function getBlockSub(userId, blockCode) {
 	}
 }
 
+function searchBlockSub(userId) {
+	var sq = XQuery("sql: \n\
+		select code \n\
+		from cc_assessment_block_subs \n\
+		where subdivision is not null \n\
+	");
+
+	for (el in sq) {
+		s1 = getBlockSub(userId, String(el.code));
+		if (s1 != undefined) {
+			return s1;
+		}
+	}
+}
+
 function hasPa(userId, assessmentAppraiseId) {
 	var pa = ArrayOptFirstElem(XQuery("sql: \n\
 		select \n\
@@ -193,108 +208,141 @@ function getManager(userId, assessmentAppraiseId){
 			c.id = p.boss_id \n\
 	");
 
-	return ArrayOptFirstElem(q);
+	var m = ArrayOptFirstElem(q);
+
+	return m != undefined ? m : {};
 }
 
 function getUser(userId, assessmentAppraiseId) {
 	var q = XQuery("sql: \n\
 		select \n\
-			c.id, \n\
-			c.fullname, \n\
-			c.position_name as position, \n\
-			c.position_parent_name as department, \n\
+			cs.id, \n\
+			cs.fullname, \n\
+			cs.position_name as position, \n\
+			cs.position_parent_name as department, \n\
 			m.[count] \n\
 		from \n\
-			collaborators c, \n\
+			collaborators cs, \n\
 			( \n\
 				select count(*) as [count] \n\
-				from assessment_plans ap \n\
+				from func_managers fms \n\
+				inner join collaborators c on c.id = fms.[object_id] \n\
+				left join assessment_plans p on (p.boss_id = c.id and p.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+				left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
+				left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
 				where \n\
-					ap.boss_id = " + userId + " \n\
-					and ap.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+					fms.person_id = " + userId + " \n\
+					or ( \n\
+						ccaa.[action] in ('view') \n\
+						and ccaa.object_type = 'pa' \n\
+					) \n\
 			) m \n\
-		where \n\
-			c.id = " + userId
+		where cs.id = " + userId
 	);
 
-	return ArrayOptFirstElem(q);
+	var col = ArrayOptFirstElem(q);
+	if (col != undefined) {
+		return {
+			id: String(col.id),
+			fullname: String(col.fullname),
+			position: String(col.position),
+			department: String(col.department),
+			isManager: OptInt(col.count) > 1
+		}
+	}
+
+	return {};
 }
 
 function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, minRow, maxRow, pageSize) {
 	var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
 
-	var sq = XQuery("sql: \n\
-		declare @s varchar(300) = '" + search + "'; \n\
-		select d.* \n\
-		from ( \n\
-			select \n\
-				c.*, \n\
-				row_number() over (order by c." + sort + " " + sortDirection + ") as [row_number] \n\
+	function getS(minRow, maxRow) {
+		return XQuery("sql: \n\
+			declare @s varchar(300) = '" + search + "'; \n\
+			select d.* \n\
 			from ( \n\
 				select \n\
-					count(c.id) over() total, \n\
-					p.id pa_id, \n\
-					c.id, \n\
-					c.fullname, \n\
-					c.is_dismiss, \n\
-					c.position_name as position, \n\
-					c.position_parent_name as department, \n\
-					p.overall \n\
-				from func_managers fms \n\
-				inner join collaborators c on c.id = fms.[object_id] \n\
-				left join pas p on (p.person_id = c.id and p.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
-				left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
-				left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
-				where \n\
-					c.fullname like '%'+@s+'%' \n\
-					and convert(date, c.hire_date, 105) < convert(date, " + DateNewTime(stopHireDate) + ", 105) \n\
-					and ( \n\
-						fms.person_id = " + userId + " \n\
-						or ( \n\
-							ccaa.[action] in ('update') \n\
-							and ccaa.object_type = 'pa' \n\
+					c.*, \n\
+					row_number() over (order by c.fullname asc) as [row_number] \n\
+				from ( \n\
+					select \n\
+						count(c.id) over() total, \n\
+						p.id pa_id, \n\
+						c.id, \n\
+						c.fullname, \n\
+						c.is_dismiss, \n\
+						c.position_name as position, \n\
+						c.position_parent_name as department, \n\
+						p.overall \n\
+					from func_managers fms \n\
+					inner join collaborators c on c.id = fms.[object_id] \n\
+					left join pas p on (p.person_id = c.id and p.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+					left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
+					left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
+					where \n\
+						c.fullname like '%'+@s+'%' \n\
+						and convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
+						and ( \n\
+							fms.person_id = " + userId + " \n\
+							or ( \n\
+								ccaa.[action] in ('view') \n\
+								and ccaa.object_type = 'pa' \n\
+							) \n\
 						) \n\
-					) \n\
-			) c \n\
-		) d \n\
-		where \n\
-			d.[row_number] > " + minRow + " and d.[row_number] <= " + maxRow + " \n\
-		order by d." + sort + " " + sortDirection
-	);
+				) c \n\
+			) d \n\
+			where \n\
+				d.[row_number] > " + minRow + " and d.[row_number] <= " + maxRow + " \n\
+			order by d.fullname asc"
+		);
+	}
 
+	var sq = ArrayDirect(getS(minRow, maxRow));
 	var result = [];
-	for (s in sq){
-		blockSub = ArrayOptFirstElem(XQuery("sql: \n\
-			select ccab.code \n\
-			from cc_assessment_mains ccam \n\
-			inner join cc_assessment_block_subs ccab on ccab.id = ccam.block_sub_id \n\
-			where ccam.[user_id] = " + Int(s.id) + " \n\
-		"));
+	var i = 0;
 
-		if (blockSub != undefined) {
-			inSub = getBlockSub(Int(s.id), String(blockSub.code));
+	while (ArrayCount(sq) > 0 && result.length != pageSize) {
+		//alert('result.length: ' + result.length);
+		//alert('i: ' + i);
 
-			if (inSub != undefined) {
-				data = {
-					id: String(s.id),
-					fullname: String(s.fullname),
-					position: String(s.position),
-					department: String(s.department),
-					assessment: {}
-				}
+		try {
+			s = sq[i];
+		} catch(e) { break; }
 
-				plan = Assessment.getAssessmentPlan(String(s.id), assessmentAppraiseId);
-				if (plan != undefined){
-					data.assessment = {
-						step: String(plan.step),
-						stepName: String(plan.stepName),
-						overall: String(s.overall)
-					}
-				}
-
-				result.push(data);
+		blockSub = searchBlockSub(userId);
+		//isCont = (i % 2) == 0;
+		if (blockSub != undefined/* && isCont*/) {
+			data = {
+				id: String(s.id),
+				fullname: String(s.fullname),
+				position: String(s.position),
+				department: String(s.department),
+				shouldHasPa: true,
+				hasPa: (s.pa_id != null),
+				assessment: {}
 			}
+
+			plan = Assessment.getAssessmentPlan(String(s.id), assessmentAppraiseId);
+			if (plan != undefined) {
+				data.assessment = {
+					step: String(plan.step),
+					stepName: String(plan.stepName),
+					overall: String(s.overall)
+				}
+			}
+			result.push(data);
+		}
+
+		i = i + 1;
+		if (i == pageSize && result.length < pageSize) {
+			//alert('result: ' + tools.object_to_text(result, 'json'));
+
+			i = 0;
+			minRow = maxRow + 1;
+			maxRow = minRow + pageSize;
+			sq = ArrayDirect(getS(minRow, maxRow));
 		}
 	}
 
@@ -307,7 +355,9 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 	return {
 		meta: {
 			total: Int(total),
-			pageSize: pageSize
+			pageSize: pageSize,
+			min_row: minRow,
+			max_row: maxRow
 		},
 		subordinates: result
 	}

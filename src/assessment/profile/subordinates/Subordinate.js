@@ -1,9 +1,9 @@
 import React from 'react';
-import { assessmentSteps } from '../config/steps';
+import { assessmentSteps } from '../../config/steps';
 import { Popup, Label, List, Image, Icon, Checkbox } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { computeScaleByPercent } from '../calculations';
+import { computeScaleByPercent } from '../../calculations';
 
 const Subordinate = ({ subordinate, rules, meta, onShow, onSelect }) => {
 	const handleClick = (event, data) => {
@@ -13,7 +13,7 @@ const Subordinate = ({ subordinate, rules, meta, onShow, onSelect }) => {
 
 	const overallMark = computeScaleByPercent(subordinate.assessment.overall, { rules });
 	return (
-		<List.Item key={subordinate.id} className='assessment-profile-subordinate' onClick={() => onShow(subordinate.id)}>
+		<List.Item key={subordinate.id} disabled={!subordinate.hasPa} className='assessment-profile-subordinate' onClick={() => onShow(subordinate.id)}>
 			{overallMark && (<List.Content floated='right'>
 				<Popup
 					key={subordinate.id}
@@ -45,6 +45,7 @@ const Subordinate = ({ subordinate, rules, meta, onShow, onSelect }) => {
 						{subordinate.assessment.stepName}
 					</p>
 				</List.Description>
+				{!subordinate.hasPa && <List.Description className='assessment-profile-subordinate__decription-last'>Самооценка не завершена</List.Description>}
 			</List.Content>
 			
 		</List.Item>
