@@ -20,14 +20,14 @@ export function changeSearch(val){
 	}
 }
 
-export function searchSubordinates(id) {
+export function searchSubordinates(assessmentId) {
 	return (dispatch, getState) => {
 		const { subordinates } = getState().app;
-		dispatch(loadData(id, subordinates.meta.search));
+		dispatch(loadData(assessmentId, subordinates.meta.search));
 	}
 }
 
-export function loadData(id, search = '', isPrev = false, isNext = false){
+export function loadData(assessmentId, search = '', isPrev = false, isNext = false){
 	return (dispatch, getState) => {
 		dispatch(loading(true));
 
@@ -35,7 +35,7 @@ export function loadData(id, search = '', isPrev = false, isNext = false){
 
 		request('Subordinates')
 		.get({
-			assessment_appraise_id: id,
+			assessment_appraise_id: assessmentId,
 			is_prev: isPrev,
 			is_next: isNext,
 			...app.subordinates.meta
@@ -47,14 +47,9 @@ export function loadData(id, search = '', isPrev = false, isNext = false){
 				throw d.message;
 			}
 
-			//const ndata = normalize(d.data, app);
 			dispatch({
 				type: constants.SUBORDINATES_GET_INITIAL_DATA_SUCCESS,
 				payload: d.data
-				/*payload: {
-					...ndata.entities,
-					result: ndata.result
-				}*/
 			});
 			dispatch(loading(false));
 		})
@@ -90,6 +85,11 @@ export function searchUsers(value){
 			.get({ search: value })
 			.then(r => r.json())
 			.then(d => {
+				if (d.type === 'error') {
+					dispatch(loading(false));
+					throw d.message;
+				}
+
 				dispatch({
 					type: constants.SUBORDINATES_GET_COLLABORATORS_SUCCESS,
 					payload: d.data
@@ -110,18 +110,24 @@ export function delegateUser(assessmentId) {
 
 		//dispatch(setLoading(true));
 
-		request('DelegateUser')
+		request('DelegateUser', { assessment_appraise_id: assessmentId })
 			.post({
 				user_id: user.id,
 				subordinates: app.subordinates.checkedSubordinates
-			}, {
-				assessment_appraise_id: assessmentId
 			})
+			.then(r => r.json())
 			.then(d => {
+				if (d.type === 'error') {
+					dispatch(loading(false));
+					throw d.message;
+				}
+
 				//window.location.href = window.location.pathname + window.location.search + window.location.hash;
 				//dispatch(getInitialData(assessmentId));
-				window.location.reload(true);
+				//window.location.reload(true);
 				//dispatch(setLoading(false));
+
+				dispatch(loadData(assessmentId, app.subordinates.meta.search));
 			})
 			.catch(e => {
 				//dispatch(setLoading(false));

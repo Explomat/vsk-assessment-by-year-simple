@@ -31,12 +31,8 @@ class App extends Component {
 				{ui.isLoading && <Dimmer active inverted>
 					<Loader inverted>Loading</Loader>
 				</Dimmer>}
-				<Route exact path='/meta/:id' render={() => {
-					return <Meta />;
-				}} />
-				<Route exact path='/profile/:id' render={() => {
-					return <Profile />;
-				}} />
+				<Route exact path='/meta/:id' render={() => <Meta />} />
+				<Route exact path='/profile/:id' render={() => <Profile />} />
 			</div>
 		);
 	}
@@ -44,7 +40,6 @@ class App extends Component {
 
 function mapStateToProps(state){
 	return {
-		step: state.app.step,
 		ui: state.app.ui
 	}
 }

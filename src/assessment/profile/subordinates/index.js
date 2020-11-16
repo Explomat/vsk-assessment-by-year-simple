@@ -6,7 +6,7 @@ import ViewSubordinate from '../../subordinate';
 import SelectUser from './SelectUser';
 import Subordinate from './Subordinate';
 import { Input, List, Dimmer, Loader, Header, Button, Icon, Message, Modal } from 'semantic-ui-react';
-import { loadData, subordinateChecked, changeSearch, searchSubordinates } from './subordinatesActions';
+import { loadData, subordinateChecked, changeSearch, searchSubordinates, delegateUser } from './subordinatesActions';
 import { find } from 'lodash';
 
 import './subordinates.css';
@@ -22,6 +22,7 @@ class Subordinates extends Component {
 			curSubordinate: {}
 		}
 
+		this.handleDelegateUser = this.handleDelegateUser.bind(this);
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
 		this.handleSearch = this.handleSearch.bind(this);
 		this.handleLoadData = this.handleLoadData.bind(this);
@@ -53,8 +54,11 @@ class Subordinates extends Component {
 	}
 
 	handleDelegateUser() {
-		const { match, onDelegateUser } = this.props;
-		onDelegateUser(match.params.id);
+		const { match, delegateUser } = this.props;
+		delegateUser(match.params.id);
+		this.setState({
+			isShowDelegate: !this.state.isShowDelegate
+		});
 	}
 
 	handleShowDelegate() {
@@ -195,4 +199,4 @@ function mapStateToProps(state){
 	}
 }
 
-export default withRouter(connect(mapStateToProps, { loadData, subordinateChecked, changeSearch, searchSubordinates })(Subordinates));
+export default withRouter(connect(mapStateToProps, { loadData, subordinateChecked, changeSearch, searchSubordinates, delegateUser })(Subordinates));

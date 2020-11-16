@@ -18,7 +18,9 @@
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 
 	//var curUserID = 6711785032659205612; // me test
-	var curUserID = 6719947231785930663; // boss test
+	var curUserID = 6719948502038810952; // volkov test
+	//var curUserID = 6719947231785930663; // boss test
+	//var curUserID = 6719948119925684121; //baturin test
 	//var curUserID = 6719948507670014353; // hrbp test
 	//var curUserID = 6770996101418848653; // user test
 	//var curUserID = 6148914691236517121; // user prod
@@ -242,19 +244,19 @@
 			var isPrev = queryObjects.HasProperty('is_prev') ? Utils.toBoolean(queryObjects.is_prev) : false;
 			var isNext = queryObjects.HasProperty('is_next') ? Utils.toBoolean(queryObjects.is_next) : true;
 
-			alert('initial_minRow: ' + minRow + ' initial_maxRow: ' + maxRow);
+			//alert('initial_minRow: ' + minRow + ' initial_maxRow: ' + maxRow);
 
 			if (isNext) {
-				alert('isNext');
+				//alert('isNext');
 				minRow = maxRow;
 				maxRow = minRow + pageSize;
-				alert('minRow: ' + minRow + ' maxRow: ' + maxRow);
+				//alert('minRow: ' + minRow + ' maxRow: ' + maxRow);
 			} else if (isPrev) {
-				alert('isPrev');
+				//alert('isPrev');
 				maxRow = minRow;
 				var temp = maxRow - pageSize;
 				minRow = temp < 0 ? 0 : temp;
-				alert('minRow: ' + minRow + ' maxRow: ' + maxRow);
+				//alert('minRow: ' + minRow + ' maxRow: ' + maxRow);
 			}
 
 			/*var min = (page - 1) * pageSize;
@@ -278,12 +280,12 @@
 
 		try {
 			var systemSettings = Utils.getSystemSettings();
-			if (curUser.hire_date > systemSettings.TopElem.stop_hire_date) {
-				var user = User.getUser(userID, assessmentAppraiseId);
-				user.shouldHasPa = false;
+			var user = User.getUser(userID, assessmentAppraiseId, systemSettings.TopElem.stop_hire_date);
+			var managers = User.getManagers(userID, assessmentAppraiseId);
+			var _rules = Utils.docWvars(queryObjects.DocID);
 
-				var manager = User.getManager(userID, assessmentAppraiseId);
-				var _rules = Utils.docWvars(queryObjects.DocID);
+			if (curUser.hire_date > systemSettings.TopElem.stop_hire_date) {
+				user.shouldHasPa = false;
 
 				return Utils.setSuccess({
 					meta: {
@@ -293,32 +295,18 @@
 						isAssessmentCompleted: false
 					},
 					user: user,
-					manager: manager,
-					assessment: {pas:[]},
+					managers: managers,
+					assessment: { pas:[] },
 					commonCompetences: [],
 					rules: _rules
 				});
 			}
 
-			var user = User.getUser(userID, assessmentAppraiseId);
 			user.shouldHasPa = true;
-			//var instruction = Utils.instruction(assessmentAppraiseId);
-			var manager = User.getManager(userID, assessmentAppraiseId);
 			var plan = Assessment.getAssessmentPlan(userID, assessmentAppraiseId);
-			var meta = Assessment.setComputedFields(curUserID, userID, manager.id, plan.step);
+			var meta = Assessment.setComputedFields(curUserID, userID, plan.boss_id, plan.step);
 			var pasData = User.getPas(userID, undefined, assessmentAppraiseId);
 			var commonCompetences = Assessment.getCommonCompetences(userID, assessmentAppraiseId);
-			var _rules = Utils.docWvars(queryObjects.DocID);
-
-			/*var manager = {};
-			if (managerData != undefined){
-				manager = {
-					id: String(managerData.id),
-					fullname: String(managerData.fullname),
-					position: String(managerData.position),
-					department: String(managerData.department)
-				}
-			} */
 
 			var ast = {};
 			if (plan != undefined){
@@ -337,9 +325,8 @@
 
 			return Utils.setSuccess({
 				meta: meta,
-				//instruction: String(instruction),
 				user: user,
-				manager: manager,
+				managers: managers,
 				assessment: ast,
 				commonCompetences: commonCompetences,
 				rules: _rules
@@ -407,38 +394,19 @@
 		var overall = data.HasProperty('overall') ? data.overall : '';
 		var _competences = data.HasProperty('competences') ? data.competences : null;
 
-		// type 2 типов user и boss ( кто сохраняет)
-
-		//оценка руководителя
-		var docPaUser = OpenDoc(UrlFromDocID(Int(paId)));
-		var profileId = docPaUser.TopElem.competence_profile_id;
-		var profileCompetences = OpenDoc(UrlFromDocID(profileId)).TopElem.competences;
-		
-		var docPlan = OpenDoc(UrlFromDocID(docPaUser.TopElem.assessment_plan_id));
-		docPlan.TopElem.workflow_state = 2;
-		docPlan.Save();
-
-		var docManager = tools.new_doc_by_name('pa');
-		docManager.TopElem.assessment_appraise_type = 'competence_appraisal';
-		docManager.TopElem.competence_profile_id = profileId;
-		docManager.TopElem.status = 'manager';
-		docManager.TopElem.assessment_appraise_id = bsettings.assessment_appraise_id;
-		docManager.TopElem.workflow_id = bsettings.workflow_id;
-		docManager.TopElem.workflow_state = 2;
-		docManager.TopElem.person_id = curUserID;
-		docManager.TopElem.expert_person_id = docPlan.TopElem.boss_id;
-		docManager.TopElem.competences.AssignElem(profileCompetences);
-		docManager.TopElem.assessment_plan_id = docPlan.DocID;
-		docManager.BindToDb(DefaultDb);
-		docManager.Save();
+		if (paId == null) {
+			return Utils.setError('Анкета не найдена');
+		}
 
 		try {
 			var curPaCard = Assessment.update(Int(paId), _competences, overall, 2);
+			//оценка руководителя
+			var docManager = Assessment.createBoss(paId, assessmentAppraiseId);
 
 			var objToSend = tools.object_to_text({
 				assessmentAppraiseId: assessmentAppraiseId
 			}, 'json');
-			Utils.notificate('oc_2', docPlan.TopElem.boss_id, curUserID, objToSend);
+			Utils.notificate('oc_2', docManager.TopElem.expert_person_id, curUserID, objToSend);
 
 		} catch(e){ return Utils.setError(e); }
 

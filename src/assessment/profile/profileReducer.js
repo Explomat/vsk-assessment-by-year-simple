@@ -63,8 +63,9 @@ const competencesReducer = (state = {}, action) => {
 				...state,
 				[action.payload.competenceId]: {
 					...state[action.payload.competenceId],
-					mark_text: action.payload.markText,
-					mark_value: action.payload.markValue
+					mark: action.payload.id,
+					mark_text: action.payload.name,
+					mark_value: action.payload.percent,
 				}
 			}
 		}
@@ -119,38 +120,20 @@ const indicatorsReducer = (state = {}, action) => {
 	}
 }
 
-const subordinatesReducer = (state = {}, action) => {
-	switch(action.type) {
-		case constants.PROFILE_TOGGLE_CHECK_SUBORDINATE: {
-			return {
-				...state,
-				[action.payload.subordinateId]: {
-					...state[action.payload.subordinateId],
-					checked: action.payload.checked
-				}
-			}
-		}
-
-		default: return state;
-	}
-}
-
 const profileReducer = (state = {
 	commonIndicators: {},
 	commonCompetences: {},
 	rules: {},
 	indicators: {},
 	competences: {},
-	subordinates: {},
 	pas: {},
 	instruction: '',
 	result: {
 		user: {},
-		subordinates: [],
+		managers: [],
 		assessment: {
 			pas: []
 		},
-		manager: {},
 		rules: [],
 		commonCompetences: [],
 		meta: {}
@@ -158,7 +141,6 @@ const profileReducer = (state = {
 	ui: {
 		isLoading: true,
 		activeTab: 'profile',
-		searchSubodinatesValue: '',
 		isShowBossButton: true,
 		pas: {}
 	}

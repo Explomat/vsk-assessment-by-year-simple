@@ -187,33 +187,41 @@ function getPas(userId, status, assessmentAppraiseId) {
 	return result;
 }
 
-function getManager(userId, assessmentAppraiseId){
-	var q = XQuery("sql: \n\
+function getManagers(userId, assessmentAppraiseId){
+	return XQuery("sql: \n\
 		select \n\
-			c.id, \n\
-			c.fullname, \n\
-			c.position_name as position, \n\
-			c.position_parent_name as department \n\
-		from \n\
-			collaborators c, \n\
-			( \n\
-				select ap.boss_id \n\
-				from pas p \n\
-				join assessment_plans ap on ap.id = p.assessment_plan_id \n\
-				where  \n\
-					p.person_id = " + userId + " \n\
-					and p.assessment_appraise_id = " + assessmentAppraiseId + " \n\
-			) p \n\
+			cs.id, \n\
+			cs.fullname, \n\
+			cs.email, \n\
+			cs.position_name position, \n\
+			cs.position_parent_name department, \n\
+			'Непосредственный руководитель' boss_type_name \n\
+		from collaborators cs \n\
+		inner join assessment_plans aps on aps.boss_id = cs.id \n\
 		where \n\
-			c.id = p.boss_id \n\
+			aps.person_id = " + userId + " \n\
+			and aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+		union \n\
+		select \n\
+			cs.id, \n\
+			cs.fullname, \n\
+			cs.email, \n\
+			cs.position_name position, \n\
+			cs.position_parent_name department, \n\
+			bts.name boss_type_name \n\
+		from collaborators cs \n\
+		left join func_managers fm on fm.person_id = cs.id \n\
+		left join boss_types bts on bts.id = fm.boss_type_id \n\
+		where \n\
+			fm.[object_id] = " + userId + " \n\
+			and ( \n\
+				bts.code = 'main' \n\
+				or bts.id in (select boss_type_id from cc_assessment_managers) \n\
+			) \n\
 	");
-
-	var m = ArrayOptFirstElem(q);
-
-	return m != undefined ? m : {};
 }
 
-function getUser(userId, assessmentAppraiseId) {
+function getUser(userId, assessmentAppraiseId, stopHireDate) {
 	var q = XQuery("sql: \n\
 		select \n\
 			cs.id, \n\
@@ -226,15 +234,30 @@ function getUser(userId, assessmentAppraiseId) {
 			( \n\
 				select count(*) as [count] \n\
 				from func_managers fms \n\
-				inner join collaborators c on c.id = fms.[object_id] \n\
-				left join assessment_plans p on (p.boss_id = c.id and p.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+				left join collaborators c on c.id = fms.[object_id] \n\
+				left join assessment_plans aps on aps.person_id = c.id \n\
+				left join pas ps on (ps.person_id = aps.person_id and ps.expert_person_id = aps.boss_id and ps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+				left join pa p on p.id = ps.id \n\
 				left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
 				left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
 				where \n\
-					fms.person_id = " + userId + " \n\
-					or ( \n\
-						ccaa.[action] in ('view') \n\
-						and ccaa.object_type = 'pa' \n\
+					convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
+					and ( \n\
+						( \n\
+							fms.person_id = " + userId + " \n\
+							and ( \n\
+								p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') <> fms.person_id \n\
+								or p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') is null \n\
+							) \n\
+						) \n\
+						or ( \n\
+							ccaa.[action] in ('view') \n\
+							and ccaa.object_type = 'pa' \n\
+						) \n\
+						or ( \n\
+							aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+							and aps.boss_id = " + userId + " \n\
+						) \n\
 					) \n\
 			) m \n\
 		where cs.id = " + userId
@@ -265,32 +288,46 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 			from ( \n\
 				select \n\
 					c.*, \n\
+					count(c.id) over() total, \n\
 					row_number() over (order by c.fullname asc) as [row_number] \n\
 				from ( \n\
 					select \n\
-						count(c.id) over() total, \n\
-						p.id pa_id, \n\
+						aps.id assessment_plan_id, \n\
 						c.id, \n\
 						c.fullname, \n\
 						c.is_dismiss, \n\
 						c.position_name as position, \n\
 						c.position_parent_name as department, \n\
-						p.overall \n\
+						ps.id pa_id \n\
+						----ps.overall \n\
 					from func_managers fms \n\
-					inner join collaborators c on c.id = fms.[object_id] \n\
-					left join pas p on (p.person_id = c.id and p.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+					left join collaborators c on c.id = fms.[object_id] \n\
+					left join assessment_plans aps on aps.person_id = c.id \n\
+					left join pas ps on (ps.person_id = aps.person_id and ps.expert_person_id = aps.boss_id and ps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+					left join pa p on p.id = ps.id \n\
 					left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
 					left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
 					where \n\
 						c.fullname like '%'+@s+'%' \n\
 						and convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
 						and ( \n\
-							fms.person_id = " + userId + " \n\
+							( \n\
+								fms.person_id = " + userId + " \n\
+								and ( \n\
+									p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') <> fms.person_id \n\
+									or p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') is null \n\
+								) \n\
+							) \n\
 							or ( \n\
 								ccaa.[action] in ('view') \n\
 								and ccaa.object_type = 'pa' \n\
 							) \n\
+							or ( \n\
+								aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+								and aps.boss_id = " + userId + " \n\
+							) \n\
 						) \n\
+					group by aps.id, c.id, c.fullname, c.is_dismiss, c.position_name, c.position_parent_name, ps.id \n\
 				) c \n\
 			) d \n\
 			where \n\
@@ -314,6 +351,15 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 		blockSub = searchBlockSub(userId);
 		//isCont = (i % 2) == 0;
 		if (blockSub != undefined/* && isCont*/) {
+			o = ArrayOptFirstElem(XQuery("sql: \n\
+				select ps.overall \n\
+				from pas ps \n\
+				where \n\
+					ps.assessment_plan_id = " + s.assessment_plan_id + " \n\
+					and ps.person_id = " + s.id + " \n\
+					and ps.expert_person_id = " + s.id + " \n\
+			"));
+
 			data = {
 				id: String(s.id),
 				fullname: String(s.fullname),
@@ -329,7 +375,7 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 				data.assessment = {
 					step: String(plan.step),
 					stepName: String(plan.stepName),
-					overall: String(s.overall)
+					overall: String(o.overall)
 				}
 			}
 			result.push(data);

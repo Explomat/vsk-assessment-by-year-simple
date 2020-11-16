@@ -64,7 +64,7 @@ class Profile extends Component {
 			meta,
 			user,
 			assessment,
-			manager,
+			managers,
 			match,
 			ui
 		} = this.props;
@@ -96,20 +96,27 @@ class Profile extends Component {
 						{user.shouldHasPa && <Card.Description>
 							<span className='assessment-profile__description'>Этап : </span><strong>{assessment.stepName}</strong>
 						</Card.Description>}
-						{user.shouldHasPa && <Card.Description>
-							<span className='assessment-profile__description'>Руководитель {' : '}</span>
-							<Dropdown inline text={manager.fullname}>
+						{user.shouldHasPa && managers.map(m => <Card.Description key={m.id}>
+							<span className='assessment-profile__description'>{m.boss_type_name} {' : '}</span>
+							<Dropdown inline text={m.fullname}>
 								<Dropdown.Menu>
 									<Dropdown.Item
 										icon='address card'
 										text='Посмотреть профиль'
 										onClick={() => {
-											window.open(`/view_doc.html?mode=collaborator&object_id=${manager.id}`, '_blank');
+											window.open(`/view_doc.html?mode=collaborator&object_id=${m.id}`, '_blank');
+										}}
+									/>
+									<Dropdown.Item
+										icon='mail outline'
+										text='Написать письмо'
+										onClick={() => {
+											window.open(`mailto:${m.email}?subject=Оценка`);
 										}}
 									/>
 								</Dropdown.Menu>
 							</Dropdown>
-						</Card.Description>}
+						</Card.Description>)}
 					</Card.Content>
 					<Card.Content className='assessment-profile__card-actions' extra>
 						<a className='assessment-profile__card-actions_action-a' onClick={this.handleToggleInstruction}>

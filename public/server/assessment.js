@@ -13,6 +13,70 @@ function setComputedFields(curUserID, userId, bossId, step) {
 	}
 }
 
+function createBoss(paId, assessmentAppraiseId) {
+	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+	var bsettings = Settings.baseSettings(assessmentAppraiseId);
+
+	/*var docPaUser = OpenDoc(UrlFromDocID(Int(paId)));
+	var profileId = docPaUser.TopElem.competence_profile_id;
+	var profileCompetences = OpenDoc(UrlFromDocID(profileId)).TopElem.competences;*/
+	
+	var docPaUser = OpenDoc(UrlFromDocID(Int(paId)));
+	var docPlan = OpenDoc(UrlFromDocID(docPaUser.TopElem.assessment_plan_id));
+	docPlan.TopElem.workflow_state = 2;
+	docPlan.Save();
+
+	var docManager = tools.new_doc_by_name('pa');
+	docManager.TopElem.assessment_appraise_type = 'competence_appraisal';
+	//docManager.TopElem.competence_profile_id = profileId;
+	docManager.TopElem.status = 'manager';
+	docManager.TopElem.assessment_appraise_id = bsettings.assessment_appraise_id;
+	docManager.TopElem.workflow_id = bsettings.workflow_id;
+	docManager.TopElem.workflow_state = 2;
+	docManager.TopElem.person_id = docPaUser.TopElem.person_id;
+	docManager.TopElem.expert_person_id = docPlan.TopElem.boss_id;
+
+	var cbq = ArrayOptFirstElem(XQuery("sql \n\
+		select ccam.competence_block_id \n\
+		from cc_assessment_mains ccams ccam \n\
+		where ccam.user_id = " + Int(docPaUser.TopElem.person_id) + " \n\
+	"));
+
+	if (cbq != undefined) {
+		var comps = XQuery("sql: \n\
+			select c.id \n\
+			from competences c \n\
+			where c.competence_block_id = " + Int(cbq.competence_block_id) + " \n\
+		");
+
+		for (el in comps) {
+			compChild = docManager.TopElem.competences.AddChild();
+			compChild.competence_id = el.id;
+			compChild.weight = 0;
+
+			inds = XQuery("sql: \n\
+				select ids.id \n\
+				from indicators ids \n\
+				where ids.competence_id = " + el.id + " \n\
+			");
+
+			for (ind in inds) {
+				indChild = compChild.indicators.AddChild();
+				compChild.indicator_id = ind.id;
+				compChild.weight = 0;
+			}
+		}
+	}
+
+	//docManager.TopElem.competences.AssignElem(profileCompetences);
+	docManager.TopElem.assessment_plan_id = docPlan.DocID;
+	docManager.BindToDb(DefaultDb);
+	docManager.Save();
+
+	return docManager;
+}
+
 function create (userId, assessmentAppraiseId, blockSubId, blockId) {
 	var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
@@ -127,12 +191,14 @@ function update(paId, _competences, overall, wstate) {
 	for (elem in _competences) {
 		comp = ArrayOptFind(curPaCard.TopElem.competences, 'This.competence_id == ' + elem.competence_id);
 		if (comp != undefined) {
+			comp.mark = elem.mark;
 			comp.mark_value = elem.mark_value;
 			comp.mark_text = elem.mark_text;
 			comp.comment = elem.comment;
 			for (indicator in elem.indicators) {
 				ind = ArrayOptFind(comp.indicators, 'This.indicator_id == ' + indicator.indicator_id);
 				if (ind != undefined) {
+					ind.mark = indicator.mark;
 					ind.mark_value = indicator.mark_value;
 					ind.mark_text = indicator.mark_text;
 					ind.comment = indicator.comment;
@@ -165,6 +231,8 @@ function getAssessmentPlan(userId, assessmentAppraiseId){
 
 	var q = XQuery("sql: \n\
 		select \n\
+			ap.person_id, \n\
+			ap.boss_id, \n\
 			ap.workflow_state as step, \n\
 			ap.integral_mark as overall, \n\
 			w.name as stepName \n\
@@ -282,6 +350,7 @@ function getPa(paId){
 			pa_id: String(paId),
 			competence_id: String(c.competence_id),
 			weight: String(c.weight),
+			mark: String(c.mark),
 			mark_text: String(c.mark_text),
 			mark_value: String(c.mark_value),
 			comment: String(c.comment),

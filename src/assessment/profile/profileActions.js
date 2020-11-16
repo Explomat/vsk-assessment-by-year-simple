@@ -29,7 +29,8 @@ const competence = new schema.Entity('competences', {
 const pa = new schema.Entity('pas', {
 	competences: [ competence ]
 });
-const subordinate = new schema.Entity('subordinates');
+
+//const manager = new schema.Entity('managers');
 
 const app = new schema.Object({
 	commonCompetences: [ commonCompetence ],
@@ -37,8 +38,8 @@ const app = new schema.Object({
 	user: new schema.Object({}),
 	assessment: new schema.Object({
 		pas: [ pa ]
-	}),
-	manager: new schema.Object({})
+	})
+	//managers: [ manager ]
 });
 
 export const constants = {
@@ -156,20 +157,19 @@ export function getInstruction(id){
 	}
 }
 
-function setMark(competenceId, markText, markValue){
+function setMark(competenceId, scale){
 	return {
 		type: constants.PROFILE_SET_MARK,
 		payload: {
 			competenceId,
-			markText,
-			markValue
+			...scale
 		}
 	}
 }
 
-export function updatePa(paId, competenceId, markText, markValue) {
+export function updatePa(paId, competenceId, scale) {
 	return (dispatch, getState) => {
-		dispatch(setMark(competenceId, markText, markValue));
+		dispatch(setMark(competenceId, scale));
 
 		const { app } = getState();
 		const competencePercent = computeCompetencePercent(competenceId, app.profile);
@@ -234,10 +234,8 @@ export function secondStep(assessmentId){
 			}
 
 			dispatch(setLoading(true));
-			request('SecondStep')
-				.post(data, {
-					assessment_appraise_id: assessmentId
-				})
+			request('SecondStep', { assessment_appraise_id: assessmentId })
+				.post(data)
 				.then(d => {
 					dispatch(getInitialData(assessmentId));
 					dispatch(setLoading(false));
@@ -249,26 +247,14 @@ export function secondStep(assessmentId){
 				});
 
 		}
-
-		/*setTimeout(()=> {
-			dispatch(setLoading(false));
-			dispatch({
-				type: constants.PROFILE_SECOND_STEP,
-				payload: data.step
-			});
-		}, 500);*/
 	}
 }
 
 export function fourthStep(isAgree, assessmentId){
 	return dispatch => {
 		dispatch(setLoading(true));
-		request('FourthStep')
-			.post({
-				answer: isAgree
-			}, {
-				assessment_appraise_id: assessmentId
-			})
+		request('FourthStep', { assessment_appraise_id: assessmentId })
+			.post({ answer: isAgree })
 			.then(d => {
 				dispatch(getInitialData(assessmentId));
 				dispatch(setLoading(false));

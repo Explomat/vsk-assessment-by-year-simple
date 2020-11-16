@@ -15,8 +15,8 @@ function mapStateToProps(state, ownProps){
 
 function mapDispatchProps(dispatch) {
 	return {
-		onUpdatePa: (paId, competenceId, markText, markValue) => {
-			dispatch(updatePa(paId, competenceId, markText, markValue));
+		onUpdatePa: (paId, competenceId, scale) => {
+			dispatch(updatePa(paId, competenceId, scale));
 		},
 		changeComment: (compId, value) => dispatch(setComment(compId, value))
 	}

@@ -43,10 +43,10 @@ class Competence extends PureComponent {
 		}
 	}
 
-	handleChangeMark(scaleName, scalePercent){
+	handleChangeMark(scale){
 		const { paId, id, onUpdatePa } = this.props;
-		onUpdatePa(paId, id, scaleName, scalePercent);
-		this.handleFocus(id, scaleName);
+		onUpdatePa(paId, id, scale);
+		this.handleFocus(id, scale.name);
 	}
 
 	render(){
@@ -119,7 +119,7 @@ class Competence extends PureComponent {
 															borderColor: scale.color
 														}}
 														as='a'
-														onClick={() => this.handleChangeMark(s.name, s.percent)}
+														onClick={() => this.handleChangeMark(s)}
 													>
 														{userComp.mark_text === s.name && <Icon name='check' />}
 														{s.name}
