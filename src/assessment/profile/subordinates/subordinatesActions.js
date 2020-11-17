@@ -79,14 +79,16 @@ export function setUser(result){
 };
 
 export function searchUsers(value){
-	return dispatch => {
+	return (dispatch, getState) => {
+		const { app } = getState();		
 
-		request('Collaborators')
+		request('Collaborators', {
+			subordinates: app.subordinates.checkedSubordinates.join(',')
+		})
 			.get({ search: value })
 			.then(r => r.json())
 			.then(d => {
 				if (d.type === 'error') {
-					dispatch(loading(false));
 					throw d.message;
 				}
 

@@ -171,7 +171,7 @@ class Competence extends PureComponent {
 				<div className='assessment-profile__competence-description-container'>
 					<a className='assessment-profile__competence-description-a' onClick={this.handleToggDescription}>
 						<Icon name='file alternate outline' />
-						Описание
+						Описание компетенций
 					</a>
 				</div>
 				{isShowDescription &&

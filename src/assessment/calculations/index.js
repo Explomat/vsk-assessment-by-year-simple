@@ -36,10 +36,10 @@ const isCompetencesCompleted = (props) => {
 
 	const len = ids.filter(c => {
 		const l = isCompetenceCompleted(c, props);
-		console.log('isCompetenceCompleted:' + l);
+		//console.log('isCompetenceCompleted:' + l);
 		return l;
 	}).length;
-	console.log(len);
+	//console.log(len);
 	return len === ids.length;
 }
 

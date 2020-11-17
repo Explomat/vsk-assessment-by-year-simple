@@ -1,4 +1,4 @@
-function getCollaborators(userId, search) {
+function getCollaborators(userId, search, excudeSubordinates) {
 	var colls = XQuery("sql: \n\
 		select \n\
 			TOP 5 \n\
@@ -13,6 +13,7 @@ function getCollaborators(userId, search) {
 			col.is_dismiss = 0 \n\
 			and col.id <> " + userId + " \n\
 			and col.fullname like ('%" + search + "%') \n\
+			" + (excudeSubordinates.length > 0 ? "and col.id not in (" + excudeSubordinates + ")" : "") + " \n\
 	");
 
 	return colls;

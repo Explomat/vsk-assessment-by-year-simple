@@ -35,17 +35,17 @@ const Subordinate = ({ subordinate, rules, meta, onShow, onSelect }) => {
 				/>
 			</List.Content>)}
 
-			{subordinate.hasPa && <Checkbox checked={subordinate.checked} onClick={handleClick} className='assessment-profile-subordinate__check'/>}
+			{subordinate.hasPa && (subordinate.assessment.step != assessmentSteps.fourth) && <Checkbox checked={subordinate.checked} onClick={handleClick} className='assessment-profile-subordinate__check'/>}
 			{subordinate.avatarUrl ? <Image className='assessment-profile-subordinate__avatar-icon' avatar src={subordinate.avatarUrl} /> : <Icon className='assessment-profile-subordinate__avatar-icon' size='big' color='blue' name='user' />}
 			<List.Content>
 				<List.Header>{subordinate.fullname}</List.Header>
 				<List.Description>{subordinate.department} -> {subordinate.position}</List.Description>
 				<List.Description>
-					<p className='assessment-profile-subordinate__decription'>
+					<p className={`assessment-profile-subordinate__decription assessment-profile-subordinate__decription-${subordinate.assessment.step}`}>
 						{subordinate.assessment.stepName}
 					</p>
 				</List.Description>
-				{!subordinate.hasPa && <List.Description className='assessment-profile-subordinate__decription-last'>Самооценка не завершена</List.Description>}
+				{!subordinate.hasPa && <List.Description className='assessment-profile-subordinate__decription assessment-profile-subordinate__decription-0'>Самооценка не завершена</List.Description>}
 			</List.Content>
 			
 		</List.Item>

@@ -10,13 +10,25 @@ import { omit } from 'lodash';
 
 class Main extends Component {
 
+	constructor(props) {
+		super(props);
+
+		this.handleSave = this.handleSave.bind(this);
+	}
+
 	componentDidMount(){
 		const { match, loadData } = this.props;
 		loadData(this.props.subordinateId, match.params.id);
 	}
 
+	handleSave() {
+		const { onThirdStep, onClose, match } = this.props;
+		onThirdStep(match.params.id);
+		onClose();
+	}
+
 	render(){
-		const { ui, user, assessment, onClose, onThirdStep } = this.props;
+		const { ui, user, assessment, onClose } = this.props;
 		if (ui.isLoading) {
 			return (
 				<Dimmer active inverted>
@@ -37,7 +49,7 @@ class Main extends Component {
 				{assessment.step == assessmentSteps.second ?
 					(
 						isCompetencesCompleted(this.props) && (<Modal.Actions>
-							<Button primary onClick={() => onThirdStep(this.props.match.params.id)}>
+							<Button primary onClick={this.handleSave}>
 								Сохранить <Icon name='chevron right' />
 							</Button>
 						</Modal.Actions>)

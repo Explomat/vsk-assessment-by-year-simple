@@ -230,7 +230,7 @@ class Profile extends Component {
 						user.shouldHasPa && meta.isAssessmentCompleted &&
 						<Message info>
 							<Message.Content>
-								Ваша оценка завершена
+								Оценка завершена
 							</Message.Content>
 						</Message>
 					}

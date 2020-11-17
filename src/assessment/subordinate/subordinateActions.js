@@ -1,5 +1,6 @@
 import createRemoteActions from '../../utils/createRemoteActions';
 import { error } from '../appActions';
+import { loadData as loadSubordinates } from '../profile/subordinates/subordinatesActions';
 import request from '../../utils/request';
 import { normalize, schema } from 'normalizr';
 import { find } from 'lodash';
@@ -126,7 +127,8 @@ export function thirdStep(assessmentId){
 			request('ThirdStep', { assessment_appraise_id: assessmentId })
 				.post(data)
 				.then(d => {
-					dispatch(getInitialData(user.id, assessmentId));
+					dispatch(loadSubordinates(assessmentId));
+					//dispatch(getInitialData(user.id, assessmentId));
 					dispatch(setLoading(false));
 					//window.location.reload(true);
 				})
@@ -134,14 +136,6 @@ export function thirdStep(assessmentId){
 					console.error(e);
 					dispatch(error(e.message));
 				});
-
-			/*setTimeout(()=> {
-				dispatch(setLoading(false));
-				dispatch({
-					type: constants.PROFILE_SECOND_STEP,
-					payload: data.step
-				});
-			}, 500);*/
 		}
 	}
 }

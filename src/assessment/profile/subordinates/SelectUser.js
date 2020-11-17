@@ -11,9 +11,12 @@ class SelectUser extends Component {
 
 		this.setValue = this.setValue.bind(this);
 		this.handleSearchChange = this.handleSearchChange.bind(this);
+		this.handleSearch = this.handleSearch.bind(this);
 		this.state = {
 			val: props.value ? props.value.title : ''
 		}
+
+		this.onSearch = debounce(props.searchUsers, 500);
 	}
 
 	setValue(e, { result }) {
@@ -31,7 +34,8 @@ class SelectUser extends Component {
 		this.setState({
 			val: value
 		});
-		this.props.searchUsers(value);
+
+		this.onSearch(value);
 	}
 
 	render() {
@@ -43,7 +47,7 @@ class SelectUser extends Component {
 					className='assessment-delegate__search'
 					noResultsMessage='Нет данных'
 					onResultSelect={this.setValue}
-					onSearchChange={debounce(this.handleSearchChange, 500, { leading: true })}
+					onSearchChange={this.handleSearchChange}
 					results={results}
 					value={val}
 				/>

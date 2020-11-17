@@ -17,9 +17,13 @@
 	var Lists = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 
+
+	var st = Utils.getSystemSettings();
+	var curUserID = OptInt(st.TopElem.cur_user_id);
+
 	//var curUserID = 6711785032659205612; // me test
 	//var curUserID = 6719948502038810952; // volkov test
-	var curUserID = 6719947231785930663; // boss test
+	//var curUserID = 6719947231785930663; // boss test
 	//var curUserID = 6719948119925684121; //baturin test
 	//var curUserID = 6719948507670014353; // hrbp test
 	//var curUserID = 6770996101418848653; // user test
@@ -39,7 +43,9 @@
 			channelSelection,
 			positionSelection,
 			channelId,
-			positionLevelId
+			positionLevelId,
+			isNeedTrain,
+			isTrain
 		) {
 			/*alert('competenceBlockId: ' + competenceBlockId);
 			alert('assignImmediately: ' + assignImmediately);
@@ -47,6 +53,16 @@
 			alert('positionSelection: ' + positionSelection);
 			alert('channelId: ' + channelId);
 			alert('positionLevelId: ' + positionLevelId);*/
+
+			/*if (isNeedTrain && isTrain == false) {
+				return {
+					hasPa: false,
+					isNeedTrain: true,
+					isTrain: false
+				}
+			} else if (isNeedTrain && isTrain) {
+
+			}*/
 
 			if (assignImmediately) {
 				//alert('1111111111111111');
@@ -152,21 +168,24 @@
 			var blocks = bsettings.blocks;
 
 			var gkBs = User.getBlockSub(curUserID, blocks.gk);
-			//alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
+			alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
 
 			var topBg = User.getBlockGroup(curUserID, blocks.top);
-			//alert('topBg: ' + tools.object_to_text(topBg, 'json'));
+			alert('topBg: ' + tools.object_to_text(topBg, 'json'));
 
 			var dmBs = User.getBlockSub(curUserID, blocks.division_moscow);
-			//alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
+			alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
 
-			var aBs = User.getBlockSub(curUserID, blocks.affilate);
-			//alert('aBs: ' + tools.object_to_text(aBs, 'json'));
+			alert('curUserID_1: ' + curUserID);
+			var aBs = User.getBlockSub(curUserID, blocks.affiliate);
+			alert('curUserID: ' + curUserID);
+			alert('aBs: ' + tools.object_to_text(aBs, 'json'));
 
 			var amBs = User.getBlockSub(curUserID, blocks.affiliate_manager);
-			//alert('amBs: ' + tools.object_to_text(amBs, 'json'));
+			alert('amBs: ' + tools.object_to_text(amBs, 'json'));
 
 			var cblock = null;
+			var isNeedTrain = false;
 
 			if (gkBs != undefined) {
 				if (isTrain) {
@@ -180,6 +199,7 @@
 						return Utils.setError('Не указана группа, обратитесь в поддержку портала');
 					}
 
+					isNeedTrain = true;
 					cblock = tBg;
 				} else {
 					if (topBg != undefined) {
@@ -211,7 +231,9 @@
 					cblock.TopElem.channel_selection,
 					cblock.TopElem.position_selection,
 					channelId,
-					positionLevelId
+					positionLevelId,
+					isNeedTrain,
+					isTrain
 				);
 
 				return Utils.setSuccess(conds);
@@ -225,7 +247,8 @@
 
 	function get_Collaborators(queryObjects) {
 		var search = queryObjects.HasProperty('search') ? Trim(queryObjects.search) : '';
-		return Utils.setSuccess(Lists.getCollaborators(curUserID, search));
+		var excudeSubordinates = queryObjects.HasProperty('subordinates') ? Trim(queryObjects.subordinates) : '';
+		return Utils.setSuccess(Lists.getCollaborators(curUserID, search, excudeSubordinates));
 	}
 
 	function get_Subordinates(queryObjects) {
@@ -284,7 +307,9 @@
 			var managers = User.getManagers(userID, assessmentAppraiseId);
 			var _rules = Utils.docWvars(queryObjects.DocID);
 
-			if (curUser.hire_date > systemSettings.TopElem.stop_hire_date) {
+			var userDoc = OpenDoc(UrlFromDocID(Int(userID)));
+
+			if (userDoc.TopElem.hire_date > systemSettings.TopElem.stop_hire_date) {
 				user.shouldHasPa = false;
 
 				return Utils.setSuccess({
@@ -358,12 +383,12 @@
 		var _competences = data.HasProperty('competences') ? data.competences : null;
 
 		try {
-			var curPaCard = Assessment.update(Int(paId), _competences, overall, 3);
+			var curPaCard = Assessment.update(Int(paId), _competences, overall, 4);
 
-			Assessment.complete(curUserID, assessmentAppraiseId);
+			Assessment.complete(paId, assessmentAppraiseId);
 			var bossId = User.getAssessmentBossId(curUserID, assessmentAppraiseId);
 
-			if (bossId != undefined){
+			if (bossId != undefined) {
 				var objToSend = tools.object_to_text({
 					assessmentAppraiseId: assessmentAppraiseId
 				}, 'json');

@@ -57,8 +57,9 @@ const competencesReducer = (state = {}, action) => {
 				...state,
 				[action.payload.competenceId]: {
 					...state[action.payload.competenceId],
-					mark_text: action.payload.markText,
-					mark_value: action.payload.markValue
+					mark: action.payload.id,
+					mark_text: action.payload.name,
+					mark_value: action.payload.percent
 				}
 			}
 		}
@@ -88,7 +89,7 @@ const indicatorsReducer = (state = {}, action) => {
 					...state[action.payload.indicatorId],
 					mark: action.payload.id,
 					mark_text: action.payload.name,
-					mark_value: action.payload.percent,
+					mark_value: action.payload.percent
 				}
 			}
 		}

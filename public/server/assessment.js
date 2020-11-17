@@ -156,33 +156,44 @@ function create (userId, assessmentAppraiseId, blockSubId, blockId) {
 	return docSelf;
 }
 
-function complete(userId, assessmentAppraiseId) {
+function complete(paId, assessmentAppraiseId) {
+
+	var paCard = OpenDoc(UrlFromDocID(Int(paId)));
+	paCard.TopElem.is_done = true;
+
+	var wDoc = OpenDoc(UrlFromDocID(Int(paCard.TopElem.workflow_id)));
+	var wstateElem = ArrayOptFind(wDoc.TopElem.states, 'This.code == ' + 4);
+
+	//paCard.TopElem.comment = comment;
+	paCard.TopElem.workflow_state = 4;
+	paCard.TopElem.workflow_state_name = (wstateElem != undefined ? wstateElem.name : '');
+	paCard.Save();
+
+	var docPlan = OpenDoc(UrlFromDocID(paCard.TopElem.assessment_plan_id));
+	docPlan.TopElem.workflow_state = 4;
+	docPlan.TopElem.is_done = true;
+	docPlan.Save();
+
 	var q = ArrayOptFirstElem(XQuery("sql: \n\
-		select pas.id \n\
+		select ps.id \n\
 		from \n\
-			pas \n\
+			pas ps \n\
+		inner join assessment_plans aps on aps.id = ps.assessment_plan_id \n\
 		where \n\
-			pas.assessment_appraise_id = " + assessmentAppraiseId + " \n\
-			and pas.person_id = " + userId + " \n\
-			and pas.expert_person_id = " + userId
+			ps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+			and ps.person_id = " + paCard.TopElem.person_id + " \n\
+			and ps.expert_person_id = " + paCard.TopElem.person_id + " \n\
+			and aps.id = " + paCard.TopElem.assessment_plan_id
 	));
 
-	if (q != undefined){
-		var paCard = OpenDoc(UrlFromDocID(Int(q.id)));
-		paCard.TopElem.is_done = true;
-
-		var wDoc = OpenDoc(UrlFromDocID(Int(paCard.TopElem.workflow_id)));
-		var wstateElem = ArrayOptFind(wDoc.TopElem.states, 'This.code == ' + 4);
+	if (q != undefined) {
+		var paBossCard = OpenDoc(UrlFromDocID(Int(q.id)));
+		paBossCard.TopElem.is_done = true;
 
 		//paCard.TopElem.comment = comment;
-		paCard.TopElem.workflow_state = 4;
-		paCard.TopElem.workflow_state_name = (wstateElem != undefined ? wstateElem.name : '');
-		paCard.Save();
-
-		var docPlan = OpenDoc(UrlFromDocID(paCard.TopElem.assessment_plan_id));
-		docPlan.TopElem.workflow_state = 4;
-		docPlan.TopElem.is_done = true;
-		docPlan.Save();
+		paBossCard.TopElem.workflow_state = 4;
+		paBossCard.TopElem.workflow_state_name = (wstateElem != undefined ? wstateElem.name : '');
+		paBossCard.Save();
 	}
 }
 

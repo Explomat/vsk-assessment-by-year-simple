@@ -1,10 +1,31 @@
 function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excludeCollaborators) {
-	var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', '),(');
+	var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', ',');
 	var joinPositions = StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', '');
 	var joinExcludePositions = StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', '');
-	var joinCollaborators = ArrayMerge(excludeCollaborators, 'This', '),(');
+	var joinCollaborators = ArrayMerge(excludeCollaborators, 'This', ',');
 
 	var q = XQuery("sql: \n\
+		select c.* \n\
+		from ( \n\
+			select \n\
+				cs.id, \n\
+				cs.position_name, \n\
+				c.p.query('id[text()[1]]').value('.', 'bigint') parent_sub_id \n\
+			from collaborators cs \n\
+			inner join collaborator cr on cr.id = cs.id \n\
+			cross apply cr.data.nodes('/collaborator/path_subs/path_sub') as c(p) \n\
+			where \n\
+				cs.id = " + OptInt(userId) + " \n\
+		) c \n\
+		where \n\
+			1=1 \n\
+			" + (joinSubs.length > 0 ? "and c.parent_sub_id in (" + joinSubs + ")" : "") + " \n\
+			" + (joinPositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') in ('" + joinPositions + "')" : "") + " \n\
+			" + (joinExcludePositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') not in ('" + joinExcludePositions + "')" : "") + " \n\
+			" + (joinCollaborators.length > 0 ? "and cs.id in (" + joinCollaborators + ")" : "") + " \n\
+	");
+
+	alert("sql: \n\
 		select c.* \n\
 		from ( \n\
 			select \n\
@@ -63,6 +84,7 @@ function getBlockSub(userId, blockCode) {
 	//alert('sq: ' + tools.object_to_text(sq, 'json'));
 
 	for (el in sq) {
+		alert(blockCode);
 		doc = OpenDoc(UrlFromDocID(el.id));
 		_excSubs = ArrayExtractKeys(doc.TopElem.exclude_subdivisions, 'exclude_subdivision_id');
 		//alert('_excSubs: ' + tools.object_to_text(_excSubs, 'json'));
@@ -292,6 +314,13 @@ function getUser(userId, assessmentAppraiseId, stopHireDate) {
 								p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') <> fms.person_id \n\
 								or p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') is null \n\
 							) \n\
+							and ( \n\
+								fms.boss_type_id in ( \n\
+									select id from boss_types where code = 'main' \n\
+								) \n\
+								or \n\
+								fms.boss_type_id in (select boss_type_id from cc_assessment_managers) \n\
+							) \n\
 						) \n\
 						or ( \n\
 							ccaa.[action] in ('view') \n\
@@ -359,6 +388,13 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 								and ( \n\
 									p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') <> fms.person_id \n\
 									or p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') is null \n\
+								) \n\
+								and ( \n\
+									fms.boss_type_id in ( \n\
+										select id from boss_types where code = 'main' \n\
+									) \n\
+									or \n\
+									fms.boss_type_id in (select boss_type_id from cc_assessment_managers) \n\
 								) \n\
 							) \n\
 							or ( \n\

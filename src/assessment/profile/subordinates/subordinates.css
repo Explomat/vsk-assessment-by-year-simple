@@ -6,10 +6,19 @@
 	pointer-events: initial;
 }
 
-.assessment-profile-subordinate__decription-last {
+.assessment-profile-subordinate__decription {
+	font-size: 12px;
+}
+
+.assessment-profile-subordinate__decription-0 {
 	font-size: 12px;
 	color: #ff00009e !important;	
 }
+
+.assessment-profile-subordinate__decription-4 {
+	color: #02a602db !important;	
+}
+
 
 .assessment-profile-subordinate__decription {
 	font-size: 12px;

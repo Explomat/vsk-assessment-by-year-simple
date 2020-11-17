@@ -9,7 +9,7 @@ function baseSettings(assessmentAppraiseId) {
 			'top': 'top',
 			'gk': 'gk',
 			'division_moscow': 'division_moscow',
-			'affilate': 'affilate',
+			'affiliate': 'affiliate',
 			'affiliate_manager': 'affiliate_manager'
 		}
 	}
