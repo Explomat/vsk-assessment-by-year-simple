@@ -42,28 +42,13 @@ class Meta extends Component {
 	renderChannels(channels) {
 		const { onChecked } = this.props;
 
-		const queue = [];
-
-		for (var i = 0; i < channels.length; i++) {
-			queue.push(channels[i]);
-		}
-
-		const result = [];
-		while(queue.length > 0) {
-			var node = queue.shift();
-
-			var children = [];
-			for (var j = 0; j < node.children.length; j++) {
-				queue.push(node.children[j]);
-				children.push(<Item onChange={onChecked} key={node.children[j].id} {...node.children[j]} />);
-			}
-
-			if (node.children.length > 0) {
-				result.push(<Item onChange={onChecked} key={node.id} {...node}>{children}</Item>);
-			}
-		}
-
-		return <ul className='assessment-meta__root-ul'>{result}</ul>;
+		return channels.map(c => {
+			return (
+				<Item onChange={onChecked} key={c.id} {...c}>
+					{c.children.length > 0 ? this.renderChannels(c.children) : null}
+				</Item>
+			);
+		});
 	}
 
 	render() {
@@ -80,7 +65,9 @@ class Meta extends Component {
 					<Card fluid className='assessment-meta'>
 						<Card.Content header='Выберите критерии для набора компетенций' />
 						<Card.Content>
-							{this.renderChannels(meta.channels)}
+							<ul className='assessment-meta__root-ul'>
+								{this.renderChannels(meta.channels)}
+							</ul>
 						</Card.Content>
 						<Card.Content extra>
 							 <Button style={{float: 'right'}} onClick={this.handleShowConfirm} primary disabled={!meta.hasChecked}>Далее</Button>

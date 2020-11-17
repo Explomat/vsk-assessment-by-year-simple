@@ -22,7 +22,7 @@ class Item extends Component {
 	render() {
 		const { isOpen } = this.state;
 		const { id, name, checked, children, onChange } = this.props;
-		const hasChildren = children.length > 0;
+		const hasChildren = !!children;
 
 		return (
 			<li className={`assessment-meta__li ${!hasChildren ? 'assessment-meta__li--has-not-children': ''}`}>

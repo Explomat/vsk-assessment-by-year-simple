@@ -84,7 +84,7 @@ function getBlockSub(userId, blockCode) {
 	//alert('sq: ' + tools.object_to_text(sq, 'json'));
 
 	for (el in sq) {
-		alert(blockCode);
+		//alert(blockCode);
 		doc = OpenDoc(UrlFromDocID(el.id));
 		_excSubs = ArrayExtractKeys(doc.TopElem.exclude_subdivisions, 'exclude_subdivision_id');
 		//alert('_excSubs: ' + tools.object_to_text(_excSubs, 'json'));

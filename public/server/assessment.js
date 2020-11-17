@@ -408,9 +408,12 @@ function getBlocksTree(rootBlockId, isChilds) {
 
 	var children = getChildren(rootBlockId);
 	var queue = [];
+	var result = []
 
 	for (el in children) {
-		queue.push(newBlock(el));
+		block = newBlock(el);
+		queue.push(block);
+		result.push(block);
 	}
 
 	var _isChilds = isChilds != undefined ? isChilds : true;
@@ -418,7 +421,6 @@ function getBlocksTree(rootBlockId, isChilds) {
 		return queue;
 	}
 
-	var result = [];
 	while(queue.length > 0) {
 		node = ArrayOptFirstElem(queue);
 		node.children = [];
@@ -429,10 +431,6 @@ function getBlocksTree(rootBlockId, isChilds) {
 			ch = newBlock(el);
 			queue.push(ch);
 			node.children.push(ch);
-		}
-
-		if (ArrayCount(children) > 0) {
-			result.push(node);
 		}
 	}
 
