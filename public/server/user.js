@@ -174,6 +174,8 @@ function getPas(userId, status, assessmentAppraiseId) {
 		qs = qs + " and pas.status = '" + status + "'";
 	}
 
+
+	//alert(qs);
 	var q = XQuery("sql:" + qs);
 	var result = [];
 
@@ -184,12 +186,14 @@ function getPas(userId, status, assessmentAppraiseId) {
 		} catch(e) { alert(e); }
 	}
 
+	//alert(tools.object_to_text(result, 'json'));
 	return result;
 }
 
 function getManagers(userId, assessmentAppraiseId){
-	return XQuery("sql: \n\
+	var mq = XQuery("sql: \n\
 		select \n\
+			aps.id assessment_plan_id, \n\
 			cs.id, \n\
 			cs.fullname, \n\
 			cs.email, \n\
@@ -203,6 +207,7 @@ function getManagers(userId, assessmentAppraiseId){
 			and aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 		union \n\
 		select \n\
+			null assessment_plan_id, \n\
 			cs.id, \n\
 			cs.fullname, \n\
 			cs.email, \n\
@@ -219,6 +224,44 @@ function getManagers(userId, assessmentAppraiseId){
 				or bts.id in (select boss_type_id from cc_assessment_managers) \n\
 			) \n\
 	");
+
+
+	// т.к. в выборку попадают и непосредственные рук-ли и те, на которых делегировали,
+	// приходится делать этот маразм
+	var dm = ArraySelectDistinct(mq, 'This.id');
+	var result = [];
+
+	for (el in dm) {
+		obj = {
+			id: OptInt(el.id),
+			fullname: String(el.fullname),
+			email: String(el.email),
+			position: String(el.position),
+			department: String(el.department),
+			boss_type_name: String(el.boss_type_name)
+		}
+
+		if (el.assessment_plan_id != null) {
+			fel = ArrayOptFirstElem(XQuery("sql: \n\
+				select \n\
+					p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') manager_delegating_duties \n\
+				from pas ps \n\
+				inner join pa p on p.id = ps.id \n\
+				where \n\
+					ps.assessment_plan_id = " + el.assessment_plan_id + " \n\
+					and ps.person_id = " + userId + " \n\
+					and ps.expert_person_id = " + el.id + " \n\
+			"));
+
+			if (fel != undefined && (fel.manager_delegating_duties != null && fel.manager_delegating_duties != '')) {
+				obj.boss_type_name = 'Делегирование оценки';
+			}
+		}
+
+		result.push(obj);
+	}
+
+	return result;
 }
 
 function getUser(userId, assessmentAppraiseId, stopHireDate) {
@@ -282,7 +325,7 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
 
 	function getS(minRow, maxRow) {
-		return XQuery("sql: \n\
+		var qsubs = "sql: \n\
 			declare @s varchar(300) = '" + search + "'; \n\
 			select d.* \n\
 			from ( \n\
@@ -332,8 +375,10 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 			) d \n\
 			where \n\
 				d.[row_number] > " + minRow + " and d.[row_number] <= " + maxRow + " \n\
-			order by d.fullname asc"
-		);
+			order by d.fullname asc";
+
+		//alert(qsubs);
+		return XQuery(qsubs);
 	}
 
 	var sq = ArrayDirect(getS(minRow, maxRow));

@@ -37,9 +37,9 @@ function createBoss(paId, assessmentAppraiseId) {
 	docManager.TopElem.person_id = docPaUser.TopElem.person_id;
 	docManager.TopElem.expert_person_id = docPlan.TopElem.boss_id;
 
-	var cbq = ArrayOptFirstElem(XQuery("sql \n\
+	var cbq = ArrayOptFirstElem(XQuery("sql: \n\
 		select ccam.competence_block_id \n\
-		from cc_assessment_mains ccams ccam \n\
+		from cc_assessment_mains ccam \n\
 		where ccam.user_id = " + Int(docPaUser.TopElem.person_id) + " \n\
 	"));
 

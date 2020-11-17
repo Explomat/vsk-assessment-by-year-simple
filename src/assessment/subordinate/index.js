@@ -11,12 +11,12 @@ import { omit } from 'lodash';
 class Main extends Component {
 
 	componentDidMount(){
-		const { match, onLoadData } = this.props;
-		onLoadData(this.props.subordinateId, match.params.id);
+		const { match, loadData } = this.props;
+		loadData(this.props.subordinateId, match.params.id);
 	}
 
 	render(){
-		const { ui, user, onClose, onThirdStep } = this.props;
+		const { ui, user, assessment, onClose, onThirdStep } = this.props;
 		if (ui.isLoading) {
 			return (
 				<Dimmer active inverted>
@@ -34,7 +34,7 @@ class Main extends Component {
 						<SubordinateContainer />
 					</Modal.Description>
 				</Modal.Content>
-				{user.assessment.step == assessmentSteps.second ?
+				{assessment.step == assessmentSteps.second ?
 					(
 						isCompetencesCompleted(this.props) && (<Modal.Actions>
 							<Button primary onClick={() => onThirdStep(this.props.match.params.id)}>
@@ -61,13 +61,15 @@ function mapStateToProps(state){
 	return {
 		ui: subordinate.ui,
 		user: subordinate.result.user,
+		assessment: subordinate.result.assessment,
+		meta: subordinate.result.meta,
 		...result
 	}
 }
 
 function mapDispatchProps(dispatch, ownProps) {
 	return {
-		onLoadData: (subordinateId, assessmentId) => dispatch(getInitialData(subordinateId, assessmentId)),
+		loadData: (subordinateId, assessmentId) => dispatch(getInitialData(subordinateId, assessmentId)),
 		onThirdStep: assessmentId => dispatch(thirdStep(assessmentId))
 	}
 }

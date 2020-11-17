@@ -86,8 +86,9 @@ const indicatorsReducer = (state = {}, action) => {
 				...state,
 				[action.payload.indicatorId]: {
 					...state[action.payload.indicatorId],
-					mark_text: action.payload.markText,
-					mark_value: action.payload.markValue
+					mark: action.payload.id,
+					mark_text: action.payload.name,
+					mark_value: action.payload.percent,
 				}
 			}
 		}
@@ -114,14 +115,22 @@ const subordinateReducer = (state = {
 	competences: {},
 	pas: {},
 	result: {
-		user: {
+		user: {},
+		managers: [],
+		assessment: {
+			pas: []
+		},
+		
+
+		/*user: {
 			subordinates: [],
 			assessment: {
 				pas: []
 			}
-		},
+		},*/
 		rules: [],
-		commonCompetences: []
+		commonCompetences: [],
+		meta: {}
 	},
 	ui: {
 		isLoading: true,

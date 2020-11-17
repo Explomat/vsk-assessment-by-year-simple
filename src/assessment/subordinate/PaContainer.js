@@ -9,7 +9,7 @@ function mapStateToProps(state, ownProps){
 	const { subordinate } = state.app;
 	const result = omit(subordinate, 'result');
 	const pa = result.pas[ownProps.id];
-	const isDisabled = pa.status === 'self' ? true : subordinate.result.user.assessment.step != assessmentSteps.second;
+	const isDisabled = pa.status === 'self' ? true : subordinate.result.assessment.step != assessmentSteps.second;
 	return {
 		isDisabled,
 		CompetenceContainer,

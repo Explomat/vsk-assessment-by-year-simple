@@ -1,8 +1,6 @@
 import createRemoteActions from '../../utils/createRemoteActions';
 import { error } from '../appActions';
 import request from '../../utils/request';
-import mock from './mockData';
-import { setStepMock } from '../mock';
 import { normalize, schema } from 'normalizr';
 import { find } from 'lodash';
 import {
@@ -28,7 +26,6 @@ const competence = new schema.Entity('competences', {
 }});
 
 
-
 const pa = new schema.Entity('pas', {
 	competences: [ competence ]
 });
@@ -36,10 +33,9 @@ const pa = new schema.Entity('pas', {
 const app = new schema.Object({
 	commonCompetences: [ commonCompetence ],
 	rules: [ rule ],
-	user: new schema.Object({
-		assessment: new schema.Object({
-			pas: [ pa ]
-		})
+	user: new schema.Object({}),
+	assessment: new schema.Object({
+		pas: [ pa ]
 	})
 });
 
@@ -73,14 +69,19 @@ export function setComment(competenceId, comment){
 
 export function getInitialData(subordinateId, assessmentId){
 	return dispatch => {
-		request('Subordinates')
+		request('Profile')
 			.get({
 				user_id: subordinateId,
 				assessment_appraise_id: assessmentId
 			})
 			.then(r => r.json())
 			.then(d => {
-				const ndata = normalize(d, app);
+				if (d.type === 'error') {
+					dispatch(setLoading(false));
+					throw d.message;
+				}
+
+				const ndata = normalize(d.data, app);
 				dispatch({
 					type: constants.SUBORDINATE_GET_INITIAL_DATA_SUCCESS,
 					payload: {
@@ -94,17 +95,6 @@ export function getInitialData(subordinateId, assessmentId){
 				console.error(e);
 				dispatch(error(e.message));
 			});
-		/*setTimeout(() => {
-			const ndata = normalize(mock, app);
-			dispatch({
-				type: constants.SUBORDINATE_GET_INITIAL_DATA_SUCCESS,
-				payload: {
-					...ndata.entities,
-					result: ndata.result
-				}
-			});
-			dispatch(setLoading(false));
-		}, 500);*/
 	}
 }
 
@@ -114,9 +104,9 @@ export function thirdStep(assessmentId){
 
 		const { app } = getState();
 		const { competences, indicators, pas } = app.subordinate;
-		const { user } = app.subordinate.result;
+		const { user, assessment } = app.subordinate.result;
 
-		const pa = find(user.assessment.pas.map(p => pas[p]), { status: 'manager' });
+		const pa = find(assessment.pas.map(p => pas[p]), { status: 'manager' });
 		if (pa !== undefined){
 			const comps = pa.competences.map(c => {
 				const comp = competences[c];
@@ -133,10 +123,8 @@ export function thirdStep(assessmentId){
 			}
 
 			dispatch(setLoading(true));
-			request('ThirdStep')
-				.post(data, {
-					assessment_appraise_id: assessmentId
-				})
+			request('ThirdStep', { assessment_appraise_id: assessmentId })
+				.post(data)
 				.then(d => {
 					dispatch(getInitialData(user.id, assessmentId));
 					dispatch(setLoading(false));
@@ -158,20 +146,19 @@ export function thirdStep(assessmentId){
 	}
 }
 
-function setMark(competenceId, markText, markValue){
+function setMark(competenceId, scale){
 	return {
 		type: constants.SUBORDINATE_SET_MARK,
 		payload: {
 			competenceId,
-			markText,
-			markValue
+			...scale
 		}
 	}
 }
 
-export function updatePa(paId, competenceId, markText, markValue) {
+export function updatePa(paId, competenceId, scale) {
 	return (dispatch, getState) => {
-		dispatch(setMark(competenceId, markText, markValue));
+		dispatch(setMark(competenceId, scale));
 
 		const { app } = getState();
 		const competencePercent = computeCompetencePercent(competenceId, app.subordinate);

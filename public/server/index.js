@@ -18,8 +18,8 @@
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 
 	//var curUserID = 6711785032659205612; // me test
-	var curUserID = 6719948502038810952; // volkov test
-	//var curUserID = 6719947231785930663; // boss test
+	//var curUserID = 6719948502038810952; // volkov test
+	var curUserID = 6719947231785930663; // boss test
 	//var curUserID = 6719948119925684121; //baturin test
 	//var curUserID = 6719948507670014353; // hrbp test
 	//var curUserID = 6770996101418848653; // user test
@@ -401,7 +401,7 @@
 		try {
 			var curPaCard = Assessment.update(Int(paId), _competences, overall, 2);
 			//оценка руководителя
-			var docManager = Assessment.createBoss(paId, assessmentAppraiseId);
+			var docManager = Assessment.createBoss(Int(paId), assessmentAppraiseId);
 
 			var objToSend = tools.object_to_text({
 				assessmentAppraiseId: assessmentAppraiseId

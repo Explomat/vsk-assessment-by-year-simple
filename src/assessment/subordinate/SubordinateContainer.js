@@ -11,7 +11,8 @@ function mapStateToProps(state){
 		PaContainer,
 		meta: subordinate.result.meta,
 		user: subordinate.result.user,
-		instruction: subordinate.result.instruction,
+		assessment: subordinate.result.assessment,
+		managers: subordinate.result.managers,
 		legends: subordinate.result.rules.map(r => subordinate.rules[r]),
 		...result
 	}

@@ -205,7 +205,7 @@ class Profile extends Component {
 						)
 					}
 					{
-						(user.shouldHasPa && !meta.canEditSelf && meta.canEditBoss) &&
+						(user.shouldHasPa && !meta.canEditSelf && meta.canEditBoss && meta.curUserID === user.id) &&
 						<Message info>
 							<Message.Content>
 								Вы не можете больше редактировать анкету, т.к. она находится на этапе "{assessment.stepName}"
