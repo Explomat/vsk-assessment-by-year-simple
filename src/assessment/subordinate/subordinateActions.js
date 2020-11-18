@@ -1,5 +1,5 @@
 import createRemoteActions from '../../utils/createRemoteActions';
-import { error } from '../appActions';
+import { error, loading } from '../appActions';
 import { loadData as loadSubordinates } from '../profile/subordinates/subordinatesActions';
 import request from '../../utils/request';
 import { normalize, schema } from 'normalizr';
@@ -78,8 +78,8 @@ export function getInitialData(subordinateId, assessmentId){
 			.then(r => r.json())
 			.then(d => {
 				if (d.type === 'error') {
-					dispatch(setLoading(false));
-					throw d.message;
+					dispatch(loading(false));
+					throw d;
 				}
 
 				const ndata = normalize(d.data, app);
@@ -90,7 +90,7 @@ export function getInitialData(subordinateId, assessmentId){
 						result: ndata.result
 					}
 				});
-				dispatch(setLoading(false));
+				dispatch(loading(false));
 			})
 			.catch(e => {
 				console.error(e);
@@ -101,7 +101,7 @@ export function getInitialData(subordinateId, assessmentId){
 
 export function thirdStep(assessmentId){
 	return (dispatch, getState) => {
-		dispatch(setLoading(true));
+		dispatch(loading(true));
 
 		const { app } = getState();
 		const { competences, indicators, pas } = app.subordinate;
@@ -123,13 +123,19 @@ export function thirdStep(assessmentId){
 				competences: comps
 			}
 
-			dispatch(setLoading(true));
+			dispatch(loading(true));
 			request('ThirdStep', { assessment_appraise_id: assessmentId })
 				.post(data)
+				.then(r => r.json())
 				.then(d => {
+					if (d.type === 'error') {
+						dispatch(loading(false));
+						throw d;
+					}
+
 					dispatch(loadSubordinates(assessmentId));
 					//dispatch(getInitialData(user.id, assessmentId));
-					dispatch(setLoading(false));
+					dispatch(loading(false));
 					//window.location.reload(true);
 				})
 				.catch(e => {
@@ -169,12 +175,5 @@ export function updatePa(paId, competenceId, scale) {
 				paOverall
 			}
 		});
-	}
-}
-
-function setLoading(isLoading){
-	return {
-		type: constants.SUBORDINATE_SET_LOADING,
-		payload: isLoading
 	}
 }

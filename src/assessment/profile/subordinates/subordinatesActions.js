@@ -44,7 +44,7 @@ export function loadData(assessmentId, search = '', isPrev = false, isNext = fal
 		.then(d => {
 			if (d.type === 'error') {
 				dispatch(loading(false));
-				throw d.message;
+				throw d;
 			}
 
 			dispatch({
@@ -89,7 +89,7 @@ export function searchUsers(value){
 			.then(r => r.json())
 			.then(d => {
 				if (d.type === 'error') {
-					throw d.message;
+					throw d;
 				}
 
 				dispatch({
@@ -121,7 +121,7 @@ export function delegateUser(assessmentId) {
 			.then(d => {
 				if (d.type === 'error') {
 					dispatch(loading(false));
-					throw d.message;
+					throw d;
 				}
 
 				//window.location.href = window.location.pathname + window.location.search + window.location.hash;

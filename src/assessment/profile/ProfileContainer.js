@@ -1,6 +1,6 @@
 import Profile from './Profile';
 import PaContainer from './PaContainer';
-import { setNewManager, secondStep, fourthStep} from './profileActions';
+import { /*setNewManager,*/ secondStep, fourthStep} from './profileActions';
 import { omit } from 'lodash';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
@@ -21,7 +21,7 @@ function mapStateToProps(state){
 
 function mapDispatchProps(dispatch, ownProps) {
 	return {
-		onChangeManager: id => dispatch(setNewManager(id)),
+		//onChangeManager: id => dispatch(setNewManager(id)),
 		onSecondStep: id => dispatch(secondStep(id)),
 		onFourthStep: (id, isAgree) => dispatch(fourthStep(id, isAgree))
 	}

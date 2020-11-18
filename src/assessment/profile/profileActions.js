@@ -1,5 +1,5 @@
 import createRemoteActions from '../../utils/createRemoteActions';
-import { constants as appConstants, error } from '../appActions';
+import { constants as appConstants, error, loading } from '../appActions';
 import request from '../../utils/request';
 import mock from './mockData';
 import { setStepMock } from '../mock';
@@ -68,28 +68,28 @@ export function togglePa(paId){
 	}
 }
 
-export function setNewManager(id){
+/*export function setNewManager(id){
 	return dispatch => {
-		dispatch(setLoading(true));
+		dispatch(loading(true));
 
 		request('ResetManager')
 		.post({}, {
 			assessment_appraise_id: id
 		})
 		.then(data => {
-			dispatch(setLoading(false));
+			dispatch(loading(false));
 			dispatch({
 				type: appConstants.GET_STEP_SUCCESS,
 				step: 'first'
 			});
 		})
 		.catch(e => {
-			dispatch(setLoading(false));
+			dispatch(loading(false));
 			console.error(e);
 			dispatch(error(e.message));
 		});
 	}
-}
+}*/
 
 export function setComment(competenceId, comment){
 	return {
@@ -115,8 +115,8 @@ export function getInitialData(id){
 		.then(r => r.json())
 		.then(d => {
 			if (d.type === 'error') {
-				dispatch(setLoading(false));
-				throw d.message;
+				dispatch(loading(false));
+				throw d;
 			}
 
 			const ndata = normalize(d.data, app);
@@ -127,10 +127,10 @@ export function getInitialData(id){
 					result: ndata.result
 				}
 			});
-			dispatch(setLoading(false));
+			dispatch(loading(false));
 		})
 		.catch(e => {
-			dispatch(setLoading(false));
+			dispatch(loading(false));
 			console.error(e);
 			dispatch(error(e.message));
 		});
@@ -143,14 +143,19 @@ export function getInstruction(id){
 		.get({ assessment_appraise_id: id })
 		.then(r => r.json())
 		.then(d => {
+			if (d.type === 'error') {
+				dispatch(loading(false));
+				throw d;
+			}
+
 			dispatch({
 				type: constants.PROFILE_GET_INSTRUCTION_SUCCESS,
 				payload: d.data
 			});
-			dispatch(setLoading(false));
+			dispatch(loading(false));
 		})
 		.catch(e => {
-			dispatch(setLoading(false));
+			dispatch(loading(false));
 			console.error(e);
 			dispatch(error(e.message));
 		});
@@ -199,7 +204,7 @@ function setBossButton(isShow){
 export function secondStep(assessmentId){
 	return (dispatch, getState) => {
 		dispatch(setBossButton(false));
-		dispatch(setLoading(true));
+		dispatch(loading(true));
 
 		const { app } = getState();
 		const { competences, indicators, pas, result } = app.profile;
@@ -233,15 +238,21 @@ export function secondStep(assessmentId){
 				competences: comps
 			}
 
-			dispatch(setLoading(true));
+			dispatch(loading(true));
 			request('SecondStep', { assessment_appraise_id: assessmentId })
 				.post(data)
+				.then(r => r.json())
 				.then(d => {
+					if (d.type === 'error') {
+						dispatch(loading(false));
+						throw d;
+					}
+
 					dispatch(getInitialData(assessmentId));
-					dispatch(setLoading(false));
+					dispatch(loading(false));
 				})
 				.catch(e => {
-					dispatch(setLoading(false));
+					dispatch(loading(false));
 					console.error(e);
 					dispatch(error(e.message));
 				});
@@ -252,24 +263,23 @@ export function secondStep(assessmentId){
 
 export function fourthStep(isAgree, assessmentId){
 	return dispatch => {
-		dispatch(setLoading(true));
+		dispatch(loading(true));
 		request('FourthStep', { assessment_appraise_id: assessmentId })
 			.post({ answer: isAgree })
+			.then(r => r.json())
 			.then(d => {
+				if (d.type === 'error') {
+					dispatch(loading(false));
+					throw d;
+				}
+				
 				dispatch(getInitialData(assessmentId));
-				dispatch(setLoading(false));
+				dispatch(loading(false));
 			})
 			.catch(e => {
-				dispatch(setLoading(false));
+				dispatch(loading(false));
 				console.error(e);
 				dispatch(error(e.message));
 			});
-	}
-}
-
-function setLoading(isLoading){
-	return {
-		type: constants.PROFILE_SET_LOADING,
-		payload: isLoading
 	}
 }

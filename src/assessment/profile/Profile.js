@@ -57,7 +57,6 @@ class Profile extends Component {
 	render(){
 		const {
 			PaContainer,
-			onChangeManager,
 			onSecondStep,
 			onFourthStep,
 			legends,

@@ -2,7 +2,7 @@ function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excl
 	var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', ',');
 	var joinPositions = StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', '');
 	var joinExcludePositions = StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', '');
-	var joinCollaborators = ArrayMerge(excludeCollaborators, 'This', ',');
+	var joinExcludeCollaborators = ArrayMerge(excludeCollaborators, 'This', ',');
 
 	var q = XQuery("sql: \n\
 		select c.* \n\
@@ -22,7 +22,7 @@ function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excl
 			" + (joinSubs.length > 0 ? "and c.parent_sub_id in (" + joinSubs + ")" : "") + " \n\
 			" + (joinPositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') in ('" + joinPositions + "')" : "") + " \n\
 			" + (joinExcludePositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') not in ('" + joinExcludePositions + "')" : "") + " \n\
-			" + (joinCollaborators.length > 0 ? "and cs.id in (" + joinCollaborators + ")" : "") + " \n\
+			" + (joinExcludeCollaborators.length > 0 ? "and c.id not in (" + joinExcludeCollaborators + ")" : "") + " \n\
 	");
 
 	return ArrayCount(q) == 1;
