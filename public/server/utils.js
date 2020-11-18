@@ -58,10 +58,19 @@ function _isContains(_ids, _id) {
 }
 
 function notificate(templateCode, primaryId, secondaryId, text) {
-	var ids = [6605156524408652638];
-	if (!_isContains(ids, primaryId)) {
-		tools.create_notification(templateCode, primaryId, text, secondaryId);
-		log('Отправка уведомления "' + templateCode + '", сотруднику "' + primaryId + '"');
+	var settingsDoc = getSystemSettings();
+
+	var excCols = ArrayExtractKeys(settingsDoc.TopElem.exclude_collaborators, 'exclude_collaborator_id');
+	var excNots = ArrayExtractKeys(settingsDoc.TopElem.exclude_notificationss, 'exclude_notifications_id');
+	var mergeArr = ArrayUnion(excCols, excNots);
+
+	if (!_isContains(mergeArr, primaryId)) {
+		var isNotificated = tools.create_notification(templateCode, primaryId, text, secondaryId);
+		if (isNotificated) {
+			log('ERROR: Отправка уведомления "' + templateCode + '", сотруднику "' + primaryId + '"');
+		} else {
+			log('Отправка уведомления "' + templateCode + '", сотруднику "' + primaryId + '"');
+		}
 	}
 }
 
