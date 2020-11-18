@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Icon, Checkbox } from 'semantic-ui-react';
+import { Icon, Radio } from 'semantic-ui-react';
 
 class Item extends Component {
 
@@ -29,7 +29,13 @@ class Item extends Component {
 				<div className='assessment-meta__li-container'>
 					{hasChildren && <span className='assessment-meta__li-icon' onClick={this.handleChangeOpen}>{isOpen ? <Icon name='minus' /> : <Icon name='plus' />}</span>}
 					<span className='assessment-meta__li-container-name'>{name}</span>
-					{!hasChildren && <Checkbox checked={checked} onChange={() => onChange(id, !checked)} style={{ float: 'right' }}/>}
+					{!hasChildren &&
+						<Radio
+							checked={checked}
+							onChange={() => onChange(id, !checked)}
+							style={{ float: 'right' }}
+						/>
+					}
 				</div>
 				{hasChildren && isOpen && <ul className='assessment-meta__ul'>{children}</ul>}
 			</li>

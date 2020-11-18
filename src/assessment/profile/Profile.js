@@ -117,6 +117,12 @@ class Profile extends Component {
 								</Dropdown.Menu>
 							</Dropdown>
 						</Card.Description>)}
+						{user.shouldHasPa && <Card.Description>
+							<span className='assessment-profile__description'>Вертикаль : </span><strong>{user.channel_level}</strong>
+						</Card.Description>}
+						{user.shouldHasPa && <Card.Description>
+							<span className='assessment-profile__description'>Уровень должности : </span><strong>{user.position_level}</strong>
+						</Card.Description>}
 					</Card.Content>
 					<Card.Content className='assessment-profile__card-actions' extra>
 						<a className='assessment-profile__card-actions_action-a' onClick={this.handleToggleInstruction}>

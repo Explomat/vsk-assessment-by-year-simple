@@ -168,21 +168,21 @@
 			var blocks = bsettings.blocks;
 
 			var gkBs = User.getBlockSub(curUserID, blocks.gk);
-			alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
+			//alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
 
 			var topBg = User.getBlockGroup(curUserID, blocks.top);
-			alert('topBg: ' + tools.object_to_text(topBg, 'json'));
+			//alert('topBg: ' + tools.object_to_text(topBg, 'json'));
 
 			var dmBs = User.getBlockSub(curUserID, blocks.division_moscow);
-			alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
+			//alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
 
-			alert('curUserID_1: ' + curUserID);
+			//alert('curUserID_1: ' + curUserID);
 			var aBs = User.getBlockSub(curUserID, blocks.affiliate);
-			alert('curUserID: ' + curUserID);
-			alert('aBs: ' + tools.object_to_text(aBs, 'json'));
+			//alert('curUserID: ' + curUserID);
+			//alert('aBs: ' + tools.object_to_text(aBs, 'json'));
 
 			var amBs = User.getBlockSub(curUserID, blocks.affiliate_manager);
-			alert('amBs: ' + tools.object_to_text(amBs, 'json'));
+			//alert('amBs: ' + tools.object_to_text(amBs, 'json'));
 
 			var cblock = null;
 			var isNeedTrain = false;

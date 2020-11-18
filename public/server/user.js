@@ -25,27 +25,6 @@ function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excl
 			" + (joinCollaborators.length > 0 ? "and cs.id in (" + joinCollaborators + ")" : "") + " \n\
 	");
 
-	alert("sql: \n\
-		select c.* \n\
-		from ( \n\
-			select \n\
-				cs.id, \n\
-				cs.position_name, \n\
-				c.p.query('id[text()[1]]').value('.', 'bigint') parent_sub_id \n\
-			from collaborators cs \n\
-			inner join collaborator cr on cr.id = cs.id \n\
-			cross apply cr.data.nodes('/collaborator/path_subs/path_sub') as c(p) \n\
-			where \n\
-				cs.id = " + OptInt(userId) + " \n\
-		) c \n\
-		where \n\
-			1=1 \n\
-			" + (joinSubs.length > 0 ? "and c.parent_sub_id in (" + joinSubs + ")" : "") + " \n\
-			" + (joinPositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') in ('" + joinPositions + "')" : "") + " \n\
-			" + (joinExcludePositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') not in ('" + joinExcludePositions + "')" : "") + " \n\
-			" + (joinCollaborators.length > 0 ? "and cs.id in (" + joinCollaborators + ")" : "") + " \n\
-	");
-
 	return ArrayCount(q) == 1;
 }
 
@@ -289,50 +268,59 @@ function getManagers(userId, assessmentAppraiseId){
 function getUser(userId, assessmentAppraiseId, stopHireDate) {
 	var q = XQuery("sql: \n\
 		select \n\
-			cs.id, \n\
-			cs.fullname, \n\
-			cs.position_name as position, \n\
-			cs.position_parent_name as department, \n\
-			m.[count] \n\
-		from \n\
-			collaborators cs, \n\
-			( \n\
-				select count(*) as [count] \n\
-				from func_managers fms \n\
-				left join collaborators c on c.id = fms.[object_id] \n\
-				left join assessment_plans aps on aps.person_id = c.id \n\
-				left join pas ps on (ps.person_id = aps.person_id and ps.expert_person_id = aps.boss_id and ps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
-				left join pa p on p.id = ps.id \n\
-				left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
-				left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
-				where \n\
-					convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
-					and ( \n\
-						( \n\
-							fms.person_id = " + userId + " \n\
-							and ( \n\
-								p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') <> fms.person_id \n\
-								or p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') is null \n\
-							) \n\
-							and ( \n\
-								fms.boss_type_id in ( \n\
-									select id from boss_types where code = 'main' \n\
+			d.*, \n\
+			cbs.name position_level, \n\
+			cbs_parent.name channel_level \n\
+		from ( \n\
+			select \n\
+					cs.id, \n\
+					cs.fullname, \n\
+					cs.position_name as position, \n\
+					cs.position_parent_name as department, \n\
+					m.[count] \n\
+			from \n\
+				collaborators cs, \n\
+				( \n\
+					select count(*) as [count] \n\
+					from func_managers fms \n\
+					left join collaborators c on c.id = fms.[object_id] \n\
+					left join assessment_plans aps on aps.person_id = c.id \n\
+					left join pas ps on (ps.person_id = aps.person_id and ps.expert_person_id = aps.boss_id and ps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+					left join pa p on p.id = ps.id \n\
+					left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
+					left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
+					where \n\
+						convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
+						and ( \n\
+							( \n\
+								fms.person_id = " + userId + " \n\
+								and ( \n\
+									p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') <> fms.person_id \n\
+									or p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') is null \n\
 								) \n\
-								or \n\
-								fms.boss_type_id in (select boss_type_id from cc_assessment_managers) \n\
+								and ( \n\
+									fms.boss_type_id in ( \n\
+										select id from boss_types where code = 'main' \n\
+									) \n\
+									or \n\
+									fms.boss_type_id in (select boss_type_id from cc_assessment_managers) \n\
+								) \n\
+							) \n\
+							or ( \n\
+								ccaa.[action] in ('view') \n\
+								and ccaa.object_type = 'pa' \n\
+							) \n\
+							or ( \n\
+								aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+								and aps.boss_id = " + userId + " \n\
 							) \n\
 						) \n\
-						or ( \n\
-							ccaa.[action] in ('view') \n\
-							and ccaa.object_type = 'pa' \n\
-						) \n\
-						or ( \n\
-							aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
-							and aps.boss_id = " + userId + " \n\
-						) \n\
-					) \n\
-			) m \n\
-		where cs.id = " + userId
+				) m \n\
+			where cs.id = " + userId + " \n\
+		) d \n\
+		left join cc_assessment_mains ccams on ccams.[user_id] = d.id \n\
+		left join competence_blocks cbs on cbs.id = ccams.competence_block_id \n\
+		left join competence_blocks cbs_parent on cbs_parent.id = cbs.parent_object_id"
 	);
 
 	var col = ArrayOptFirstElem(q);
@@ -342,7 +330,9 @@ function getUser(userId, assessmentAppraiseId, stopHireDate) {
 			fullname: String(col.fullname),
 			position: String(col.position),
 			department: String(col.department),
-			isManager: OptInt(col.count) > 1
+			isManager: OptInt(col.count) > 1,
+			position_level: String(col.position_level),
+			channel_level: String(col.channel_level)
 		}
 	}
 

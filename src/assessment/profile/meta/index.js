@@ -42,13 +42,11 @@ class Meta extends Component {
 	renderChannels(channels) {
 		const { onChecked } = this.props;
 
-		return channels.map(c => {
-			return (
-				<Item onChange={onChecked} key={c.id} {...c}>
-					{c.children.length > 0 ? this.renderChannels(c.children) : null}
-				</Item>
-			);
-		});
+		return channels.map(c =>
+			<Item onChange={onChecked} key={c.id} {...c}>
+				{c.children.length > 0 ? this.renderChannels(c.children) : null}
+			</Item>
+		);
 	}
 
 	render() {
@@ -80,7 +78,10 @@ class Meta extends Component {
 								<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}"`}</p>
 							</Modal.Content>
 							<Modal.Actions>
-								<Button onClick={this.handleCreateAssessment} primary inverted>
+								<Button onClick={this.handleShowConfirm} primary inverted>
+									<Icon name='checkmark' /> Отмена
+								</Button>
+								<Button onClick={this.handleCreateAssessment} primary>
 									<Icon name='checkmark' /> Ok
 								</Button>
 							</Modal.Actions>

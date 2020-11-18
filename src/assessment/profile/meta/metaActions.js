@@ -37,6 +37,10 @@ export function getMeta(id){
 		.post(reqObj)
 		.then(r => r.json())
 		.then(d => {
+			if (d.type === 'error') {
+				throw d;
+			}
+
 			dispatch({
 				type: constants.META_GET_SUCCESS,
 				payload: d.data
