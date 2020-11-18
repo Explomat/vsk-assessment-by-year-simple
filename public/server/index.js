@@ -169,7 +169,7 @@
 
 			var gkBs = User.getBlockSub(curUserID, blocks.gk);
 			//alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
-
+			
 			var topBg = User.getBlockGroup(curUserID, blocks.top);
 			//alert('topBg: ' + tools.object_to_text(topBg, 'json'));
 

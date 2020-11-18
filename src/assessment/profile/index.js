@@ -65,7 +65,10 @@ function mapStateToProps(state){
 
 	return {
 		user: profile.result.user,
-		ui: profile.ui
+		ui: {
+			...state.app.ui,
+			...profile.ui
+		}
 		/*subordinates: subordinates,
 		checkedSubordinates*/
 	}

@@ -1,6 +1,11 @@
 import { constants } from './profileActions';
 
-const uiReducer = (state = {}, action) => {
+const uiReducer = (state = {
+	isLoading: true,
+	activeTab: 'profile',
+	isShowBossButton: true,
+	pas: {}
+}, action) => {
 	switch(action.type){
 		case constants.PROFILE_SET_TAB: {
 			return {
@@ -139,7 +144,6 @@ const profileReducer = (state = {
 		meta: {}
 	},
 	ui: {
-		isLoading: true,
 		activeTab: 'profile',
 		isShowBossButton: true,
 		pas: {}

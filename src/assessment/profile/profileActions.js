@@ -1,5 +1,5 @@
 import createRemoteActions from '../../utils/createRemoteActions';
-import { constants as appConstants, error, loading } from '../appActions';
+import { constants as appConstants, error } from '../appActions';
 import request from '../../utils/request';
 import mock from './mockData';
 import { setStepMock } from '../mock';
@@ -68,6 +68,13 @@ export function togglePa(paId){
 	}
 }
 
+export function loading(isLoading) {
+	return {
+		type: constants.PROFILE_SET_LOADING,
+		payload: isLoading
+	}
+}
+
 /*export function setNewManager(id){
 	return dispatch => {
 		dispatch(loading(true));
@@ -110,6 +117,8 @@ export function setTab(tabName){
 
 export function getInitialData(id){
 	return dispatch => {
+		dispatch(loading(true));
+
 		request('Profile')
 		.get({ assessment_appraise_id: id })
 		.then(r => r.json())
@@ -272,7 +281,7 @@ export function fourthStep(isAgree, assessmentId){
 					dispatch(loading(false));
 					throw d;
 				}
-				
+
 				dispatch(getInitialData(assessmentId));
 				dispatch(loading(false));
 			})
