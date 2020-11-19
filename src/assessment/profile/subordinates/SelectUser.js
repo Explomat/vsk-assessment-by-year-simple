@@ -11,7 +11,6 @@ class SelectUser extends Component {
 
 		this.setValue = this.setValue.bind(this);
 		this.handleSearchChange = this.handleSearchChange.bind(this);
-		this.handleSearch = this.handleSearch.bind(this);
 		this.state = {
 			val: props.value ? props.value.title : ''
 		}
