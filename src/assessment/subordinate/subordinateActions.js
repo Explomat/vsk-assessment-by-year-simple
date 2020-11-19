@@ -1,5 +1,6 @@
 import createRemoteActions from '../../utils/createRemoteActions';
-import { error, loading } from '../appActions';
+import { error } from '../appActions';
+import { loading } from '../profile/profileActions';
 import { loadData as loadSubordinates } from '../profile/subordinates/subordinatesActions';
 import request from '../../utils/request';
 import { normalize, schema } from 'normalizr';

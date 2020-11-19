@@ -47,12 +47,12 @@
 			isNeedTrain,
 			isTrain
 		) {
-			/*alert('competenceBlockId: ' + competenceBlockId);
+			alert('competenceBlockId: ' + competenceBlockId);
 			alert('assignImmediately: ' + assignImmediately);
 			alert('channelSelection: ' + channelSelection);
 			alert('positionSelection: ' + positionSelection);
 			alert('channelId: ' + channelId);
-			alert('positionLevelId: ' + positionLevelId);*/
+			alert('positionLevelId: ' + positionLevelId);
 
 			/*if (isNeedTrain && isTrain == false) {
 				return {
@@ -66,7 +66,7 @@
 
 			if (assignImmediately) {
 				//alert('1111111111111111');
-				Assessment.create(userId, assessmentAppraiseId, blockSubId, channelId, positionLevelId);
+				Assessment.create(userId, assessmentAppraiseId, blockSubId, competenceBlockId, positionLevelId);
 				return {
 					hasPa: true,
 					shouldHasPa: true
@@ -204,6 +204,7 @@
 				} else {
 					if (topBg != undefined) {
 						cblock = topBg;
+						alert('cblock: ' + tools.object_to_text(cblock, 'json'));
 					} else if (dmBs != undefined) {
 						// выбрать вертикаль, уровень должности
 						cblock = dmBs;

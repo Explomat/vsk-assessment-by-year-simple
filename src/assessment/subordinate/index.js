@@ -71,7 +71,7 @@ function mapStateToProps(state){
 	const { subordinate, profile } = state.app;
 	const result = omit(subordinate, 'result');
 	return {
-		ui: subordinate.ui,
+		ui: profile.ui,
 		user: subordinate.result.user,
 		assessment: subordinate.result.assessment,
 		meta: subordinate.result.meta,

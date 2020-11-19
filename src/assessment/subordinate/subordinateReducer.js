@@ -2,12 +2,12 @@ import { constants } from './subordinateActions';
 
 const uiReducer = (state = {}, action) => {
 	switch(action.type){
-		case constants.SUBORDINATE_SET_LOADING: {
+		/*case constants.SUBORDINATE_SET_LOADING: {
 			return {
 				...state,
 				isLoading: action.payload
 			}
-		}
+		}*/
 
 		case constants.SUBORDINATE_TOGGLE_PA: {
 			const newState = {
@@ -134,7 +134,7 @@ const subordinateReducer = (state = {
 		meta: {}
 	},
 	ui: {
-		isLoading: true,
+		//isLoading: true,
 		pas: {}
 	}
 }, action) => {
