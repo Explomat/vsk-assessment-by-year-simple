@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import Item from './Item';
 import { withRouter, Redirect } from 'react-router';
-import { List, Card, Button, Modal, Header, Icon } from 'semantic-ui-react';
-import { getMeta, onChecked } from './metaActions';
+import { List, Card, Button, Header, Icon, Confirm } from 'semantic-ui-react';
+import { getMeta, onChecked, changeTrain } from './metaActions';
 import { connect } from 'react-redux';
 
 import './metaStyle.css';
@@ -12,6 +12,8 @@ class Meta extends Component {
 	constructor(props) {
 		super(props);
 
+		this.handleCancelTrain = this.handleCancelTrain.bind(this);
+		this.handleConfirmTrain = this.handleConfirmTrain.bind(this);
 		this.renderChannels = this.renderChannels.bind(this);
 		this.handleShowConfirm = this.handleShowConfirm.bind(this);
 		this.handleCreateAssessment = this.handleCreateAssessment.bind(this);
@@ -23,6 +25,18 @@ class Meta extends Component {
 
 	componentDidMount() {
 		const { match, loadData } = this.props;
+		loadData(match.params.id);
+	}
+
+	handleCancelTrain() {
+		const { match, changeTrain, loadData } = this.props;
+		changeTrain(false);
+		loadData(match.params.id);
+	}
+
+	handleConfirmTrain() {
+		const { match, changeTrain, loadData } = this.props;
+		changeTrain(true);
 		loadData(match.params.id);
 	}
 
@@ -57,11 +71,24 @@ class Meta extends Component {
 			return null;
 		}
 
+		if (meta.isNeedAskTrain && !meta.isTrain) {
+			return (
+				 <Confirm
+					open
+					content='Относитесь ли вы к стратегическому поезду?'
+					cancelButton='Нет'
+					confirmButton='Да'
+					onCancel={this.handleCancelTrain}
+					onConfirm={this.handleConfirmTrain}
+				/>
+			);
+		}
+
 		if (!meta.hasPa && meta.shouldHasPa) {
 			return (
 				<div>
 					<Card fluid className='assessment-meta'>
-						<Card.Content header='Выберите критерии для набора компетенций' />
+						<Card.Content header='Выберите, к какому каналу продаж относится ваша дирекция' />
 						<Card.Content>
 							<ul className='assessment-meta__root-ul'>
 								{this.renderChannels(meta.channels)}
@@ -71,22 +98,20 @@ class Meta extends Component {
 							 <Button style={{float: 'right'}} onClick={this.handleShowConfirm} primary disabled={!meta.hasChecked}>Далее</Button>
 						</Card.Content>
 					</Card>
-					{isShowConfirm &&
-						<Modal open basic size='small'>
-							<Header content='Подтвердите действие' />
-							<Modal.Content>
-								<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}"`}</p>
-							</Modal.Content>
-							<Modal.Actions>
-								<Button onClick={this.handleShowConfirm} primary inverted>
-									<Icon name='checkmark' /> Отмена
-								</Button>
-								<Button onClick={this.handleCreateAssessment} primary>
-									<Icon name='checkmark' /> Ok
-								</Button>
-							</Modal.Actions>
-						</Modal>
-					}
+					<Confirm
+						open={isShowConfirm}
+						header='Подтвердите действие'
+						content={
+							<span className='content'>
+								<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}" ?`}</p>
+								<p>Будьте внимательны, эти данные нельзя будет изменить.</p>
+							</span>
+						}
+						cancelButton='Отмена'
+						confirmButton='Ok'
+						onCancel={this.handleShowConfirm}
+						onConfirm={this.handleCreateAssessment}
+					/>
 				</div>
 			);
 		} else {
@@ -105,8 +130,9 @@ function mapStateToProps(state) {
 
 function mapDispatchProps(dispatch, ownProps) {
 	return {
-		loadData: id => dispatch(getMeta(id)),
-		onChecked: (id, isChecked) => dispatch(onChecked(id, isChecked))
+		loadData: (id) => dispatch(getMeta(id)),
+		onChecked: (id, isChecked) => dispatch(onChecked(id, isChecked)),
+		changeTrain: isTrain => dispatch(changeTrain(isTrain))
 	}
 }
 

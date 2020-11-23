@@ -90,7 +90,10 @@ class Competence extends PureComponent {
 				>
 					<Table.Header>
 						<Table.Row>
-							<Table.HeaderCell>Шкала оценки</Table.HeaderCell>
+							<Table.HeaderCell>
+								Шкала оценки
+								<Icon onClick={this.handleToggDescription} name='info' className='assessment-info-icon'/>
+							</Table.HeaderCell>
 							<Table.HeaderCell>Подтверждающий пример</Table.HeaderCell>
 						</Table.Row>
 					</Table.Header>
@@ -168,12 +171,12 @@ class Competence extends PureComponent {
 						}
 					</List>
 				</div>*/}
-				<div className='assessment-profile__competence-description-container'>
+				{/*<div className='assessment-profile__competence-description-container'>
 					<a className='assessment-profile__competence-description-a' onClick={this.handleToggDescription}>
 						<Icon name='file alternate outline' />
-						Описание компетенций
+						Описание компетенции
 					</a>
-				</div>
+				</div>*/}
 				{isShowDescription &&
 					<Modal size='large' open closeIcon onClose={this.handleToggDescription}>
 						<Modal.Header>{commonComp.name}</Modal.Header>
@@ -187,10 +190,10 @@ class Competence extends PureComponent {
 									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--positive'>Развита</Header>
 									{userComp.common_positive_comment}
 								</Segment>
-								<Segment basic>
+								{/*<Segment basic>
 									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--overdeveloped'>Чрезмерно развита</Header>
 									{userComp.common_overdeveloped_comment}
-								</Segment>
+								</Segment>*/}
 								<Segment basic>
 									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--negative'>Не развита</Header>
 									{userComp.common_negative_comment}

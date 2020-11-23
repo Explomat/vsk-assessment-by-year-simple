@@ -34,10 +34,9 @@ function getBlockGroup(userId, blockCode) {
 			ccabs.id, \n\
 			gcs.collaborator_id \n\
 		from cc_assessment_block_subs ccabs \n\
-		inner join group_collaborators gcs on gcs.group_id = ccabs.[group] \n\
+		left join group_collaborators gcs on (gcs.group_id = ccabs.[group] and gcs.collaborator_id = " + userId + ") \n\
 		where \n\
 			ccabs.code = '" + blockCode + "' \n\
-			and gcs.collaborator_id = " + userId + " \n\
 	");
 
 	var belem = ArrayOptFirstElem(q);

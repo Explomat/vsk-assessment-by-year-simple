@@ -7,15 +7,24 @@ const metaReducer = (state = {
 	hasPa: false,
 	shouldHasPa: true,
 	channels: [],
-	is_train: false,
+	isTrain: null,
 	channel_id: null,
-	position_level_id: null
+	position_level_id: null,
+	isNeedAskTrain: false
 }, action) => {
 	switch(action.type){
 		case constants.META_GET_SUCCESS: {
 			return {
 				...state,
 				...action.payload
+			}
+		}
+
+		case constants.META_TRAIN: {
+			return {
+				...state,
+				isTrain: action.payload,
+				isNeedAskTrain: false
 			}
 		}
 

@@ -44,7 +44,7 @@
 			positionSelection,
 			channelId,
 			positionLevelId,
-			isNeedTrain,
+			isNeedAskTrain,
 			isTrain
 		) {
 			/*alert('competenceBlockId: ' + competenceBlockId);
@@ -60,12 +60,23 @@
 					isNeedTrain: true,
 					isTrain: false
 				}
-			} else if (isNeedTrain && isTrain) {
+			} else if (isNeedTrain && isTrain) {}*/
 
-			}*/
+
+			/// isTrain - 3 значения. true / false / null
+			if (isNeedAskTrain && isTrain == null) {
+				alert('aaaaaaaaaaaaaa');
+				return {
+					hasPa: false,
+					isNeedAskTrain: isNeedAskTrain,
+					isTrain: isTrain
+				}
+			}
+
+			alert('bbbbbbbbbbbbb');
 
 			if (assignImmediately) {
-				//alert('1111111111111111');
+				alert('ccccccccccccc');
 				Assessment.create(userId, assessmentAppraiseId, blockSubId, competenceBlockId, positionLevelId);
 				return {
 					hasPa: true,
@@ -76,6 +87,7 @@
 					channelSelection && positionSelection
 					&& channelId == null && positionLevelId == null
 				) {
+					alert('dddddddddddddddd');
 					// return channels and positions
 					var channels = Assessment.getBlocksTree(competenceBlockId);
 					return {
@@ -86,7 +98,7 @@
 				} else if (channelSelection && positionSelection
 					&& channelId != null && positionLevelId != null) {
 					// create assessment
-					//alert('22222222222');
+					alert('eeeeeeeeeeeeeeee');
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
 						hasPa: true,
@@ -94,6 +106,7 @@
 					};
 				} else if (channelSelection && channelId == null) {
 					// return channels
+					alert('ffffffffffffff');
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
@@ -101,13 +114,14 @@
 						channels: channels
 					};
 				} else if (channelSelection && channelId != null) {
-					//alert('33333333333');
+					alert('ggggggggggggg');
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, channelId);
 					return {
 						hasPa: true,
 						shouldHasPa: true
 					};
 				} else if (positionSelection && positionLevelId == null) {
+					alert('hhhhhhhhhhhhhhhhh');
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
@@ -122,7 +136,7 @@
 						positions: positions
 					};*/
 				} else if (positionSelection && positionLevelId != null) {
-					//alert('444444444');
+					alert('iiiiiiiiiiiiiiii');
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
 						hasPa: true,
@@ -130,6 +144,8 @@
 					};
 				}
 			}
+
+			alert('jjjjjjjjjjjjjjjjj');
 
 			return {
 				hasPa: false,
@@ -185,7 +201,7 @@
 			//alert('amBs: ' + tools.object_to_text(amBs, 'json'));
 
 			var cblock = null;
-			var isNeedTrain = false;
+			var isNeedAskTrain = false;
 
 			if (gkBs != undefined) {
 				if (isTrain) {
@@ -196,12 +212,18 @@
 						grDoc.TopElem.collaborators.ObtainChildByKey(curUserID);
 						grDoc.Save();
 					} else {
-						return Utils.setError('Не указана группа, обратитесь в поддержку портала');
+						return Utils.setError('Не указана группа для вашей должности.');
 					}
 
-					isNeedTrain = true;
 					cblock = tBg;
 				} else {
+					// isTrain 3 значения true / false / null
+					alert('1111111111111111111');
+					if (isTrain == null) {
+						alert('2222222222222222222');
+						isNeedAskTrain = true;
+					}
+
 					if (topBg != undefined) {
 						cblock = topBg;
 						//alert('cblock: ' + tools.object_to_text(cblock, 'json'));
@@ -233,7 +255,7 @@
 					cblock.TopElem.position_selection,
 					channelId,
 					positionLevelId,
-					isNeedTrain,
+					isNeedAskTrain,
 					isTrain
 				);
 

@@ -71,6 +71,8 @@ export function setComment(competenceId, comment){
 
 export function getInitialData(subordinateId, assessmentId){
 	return dispatch => {
+		//dispatch(loading(true));
+
 		request('Profile')
 			.get({
 				user_id: subordinateId,

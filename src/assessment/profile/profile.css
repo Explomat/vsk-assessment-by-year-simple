@@ -137,6 +137,10 @@
     top: -22px;
 }
 
-.assessment-profile__card-actions_action-a:last-child{
+.assessment-profile__card-actions_action-a:last-child {
 	margin-left: 24px;
+}
+
+.assessment-profile__card-actions_action-a {
+	color: #4183c4 !important;
 }

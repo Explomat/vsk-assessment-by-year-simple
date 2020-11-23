@@ -135,48 +135,45 @@ class Profile extends Component {
 					</Card.Content>
 				</Card>
 				{isShowInstruction && <Instruction onClose={this.handleToggleInstruction} />}
-				<Message warning>
-					<Message.Header>Внимательно прочитайте инструкцию перед заполнением!</Message.Header>
-					<Table celled size='small'>
-						<Table.Header>
-							<Table.Row>
-								<Table.HeaderCell>Оценка</Table.HeaderCell>
-								<Table.HeaderCell>Описание</Table.HeaderCell>
-							</Table.Row>
-						</Table.Header>
-						<Table.Body>
-							{legends.map((l, index) => {
-								return (
-									<Table.Row key={index}>
-										<Table.Cell
-											textAlign='center'
-											style={{ position: 'relative', height: '60px' }}
-										>
-											<span style={{
-												backgroundColor: l.color,
+				<Table celled size='small'>
+					<Table.Header>
+						<Table.Row>
+							<Table.HeaderCell>Оценка</Table.HeaderCell>
+							<Table.HeaderCell>Описание</Table.HeaderCell>
+						</Table.Row>
+					</Table.Header>
+					<Table.Body>
+						{legends.map((l, index) => {
+							return (
+								<Table.Row key={index}>
+									<Table.Cell
+										textAlign='center'
+										style={{ position: 'relative', height: '20px' }}
+									>
+										<span style={{
+											backgroundColor: l.color,
+											position: 'absolute',
+											top: '0',
+											left: '0',
+											width: '100%',
+											height: '100%'
+										}}>
+											<strong style={{
 												position: 'absolute',
-												top: '0',
-												left: '0',
-												width: '100%',
-												height: '100%'
-											}}>
-												<strong style={{
-													position: 'absolute',
-													top: '50%',
-													transform: 'translate(-50%,-50%)',
-													left: '50%'
-												}}>{l.scale}</strong>
-											</span>
-										</Table.Cell>
-										<Table.Cell style={{ position: 'relative', height: '60px' }}>
-											<span>{l.description}</span>
-										</Table.Cell>
-									</Table.Row>
-								)
-							})}
-						</Table.Body>
-					</Table>
-				</Message>
+												top: '50%',
+												transform: 'translate(-50%,-50%)',
+												left: '50%'
+											}}>{l.scale}</strong>
+										</span>
+									</Table.Cell>
+									<Table.Cell style={{ position: 'relative', height: '20px' }}>
+										<span>{l.description}</span>
+									</Table.Cell>
+								</Table.Row>
+							)
+						})}
+					</Table.Body>
+				</Table>
 				<Divider />
 				<div className='assessment-profile__pas'>
 					{
@@ -197,7 +194,7 @@ class Profile extends Component {
 									color='blue' 
 									onClick={this.handleSecondStep}
 								>
-									Перевести на оценку руководителя
+									Перевести на оценку руководителю
 								</Button>}
 								{!isCompleted &&
 									<Message negative>
