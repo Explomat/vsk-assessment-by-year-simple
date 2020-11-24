@@ -28,13 +28,11 @@ function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excl
 	return ArrayCount(q) == 1;
 }
 
-function getBlockGroup(userId, blockCode) {
+function getBlockGroup(blockCode) {
 	var q = XQuery("sql: \n\
 		select \n\
-			ccabs.id, \n\
-			gcs.collaborator_id \n\
+			ccabs.id \n\
 		from cc_assessment_block_subs ccabs \n\
-		left join group_collaborators gcs on (gcs.group_id = ccabs.[group] and gcs.collaborator_id = " + userId + ") \n\
 		where \n\
 			ccabs.code = '" + blockCode + "' \n\
 	");
@@ -45,7 +43,25 @@ function getBlockGroup(userId, blockCode) {
 	}
 }
 
-function getBlockSub(userId, blockCode) {
+function getBlockGroupByUserId(userId, blockCode) {
+	var q = XQuery("sql: \n\
+		select \n\
+			ccabs.id, \n\
+			gcs.collaborator_id \n\
+		from cc_assessment_block_subs ccabs \n\
+		inner join group_collaborators gcs on gcs.group_id = ccabs.[group] \n\
+		where \n\
+			ccabs.code = '" + blockCode + "' \n\
+			and gcs.collaborator_id = " + userId + " \n\
+	");
+
+	var belem = ArrayOptFirstElem(q);
+	if (belem != undefined) {
+		return OpenDoc(UrlFromDocID(Int(belem.id)));
+	}
+}
+
+function getBlockSubByUserId(userId, blockCode) {
 	var sq = XQuery("sql: \n\
 		select \n\
 			ccabs.* \n\
@@ -89,7 +105,7 @@ function searchBlockSub(userId) {
 	");
 
 	for (el in sq) {
-		s1 = getBlockSub(userId, String(el.code));
+		s1 = getBlockSubByUserId(userId, String(el.code));
 		if (s1 != undefined) {
 			return s1;
 		}

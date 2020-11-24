@@ -137,6 +137,10 @@
 					};*/
 				} else if (positionSelection && positionLevelId != null) {
 					alert('iiiiiiiiiiiiiiii');
+					alert('competenceBlockId: ' + competenceBlockId);
+					alert('channelId: ' + channelId);
+					alert('positionLevelId: ' + positionLevelId);
+					alert('blockSubId: ' + blockSubId);
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
 						hasPa: true,
@@ -183,21 +187,21 @@
 			var bsettings = Settings.baseSettings(assessmentAppraiseId);
 			var blocks = bsettings.blocks;
 
-			var gkBs = User.getBlockSub(curUserID, blocks.gk);
+			var gkBs = User.getBlockSubByUserId(curUserID, blocks.gk);
 			//alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
 			
-			var topBg = User.getBlockGroup(curUserID, blocks.top);
+			var topBg = User.getBlockGroupByUserId(curUserID, blocks.top);
 			//alert('topBg: ' + tools.object_to_text(topBg, 'json'));
 
-			var dmBs = User.getBlockSub(curUserID, blocks.division_moscow);
+			var dmBs = User.getBlockSubByUserId(curUserID, blocks.division_moscow);
 			//alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
 
 			//alert('curUserID_1: ' + curUserID);
-			var aBs = User.getBlockSub(curUserID, blocks.affiliate);
+			var aBs = User.getBlockSubByUserId(curUserID, blocks.affiliate);
 			//alert('curUserID: ' + curUserID);
 			//alert('aBs: ' + tools.object_to_text(aBs, 'json'));
 
-			var amBs = User.getBlockSub(curUserID, blocks.affiliate_manager);
+			var amBs = User.getBlockSubByUserId(curUserID, blocks.affiliate_manager);
 			//alert('amBs: ' + tools.object_to_text(amBs, 'json'));
 
 			var cblock = null;
@@ -205,14 +209,18 @@
 
 			if (gkBs != undefined) {
 				if (isTrain) {
-					var tBg = User.getBlockGroup(curUserID, blocks.trains);
+					var tBg = User.getBlockGroupByUserId(curUserID, blocks.trains);
 
-					if (tBg != undefined) {
-						var grDoc = OpenDoc(UrlFromDocID(Int(tBg.TopElem.group)));
-						grDoc.TopElem.collaborators.ObtainChildByKey(curUserID);
-						grDoc.Save();
-					} else {
-						return Utils.setError('Не указана группа для вашей должности.');
+					if (tBg == undefined) {
+						tBg = User.getBlockGroup(blocks.trains);
+
+						if (tBg != undefined) {
+							var grDoc = OpenDoc(UrlFromDocID(Int(tBg.TopElem.group)));
+							grDoc.TopElem.collaborators.ObtainChildByKey(curUserID);
+							grDoc.Save();
+						} else {
+							return Utils.setError('Не указана группа для вашей должности.');
+						}
 					}
 
 					cblock = tBg;
@@ -225,12 +233,15 @@
 					}
 
 					if (topBg != undefined) {
+						alert('33333333333333');
 						cblock = topBg;
 						//alert('cblock: ' + tools.object_to_text(cblock, 'json'));
 					} else if (dmBs != undefined) {
+						alert('4444444444444444444');
 						// выбрать вертикаль, уровень должности
 						cblock = dmBs;
 					} else {
+						alert('55555555555555555');
 						// выбрать уровень должности
 						cblock = gkBs;
 					}
@@ -244,7 +255,7 @@
 				}
 			}
 
-			if (cblock != null) {
+			if (cblock != null && cblock != undefined) {
 				var conds = getConditions(
 					cblock.DocID,
 					curUserID,
