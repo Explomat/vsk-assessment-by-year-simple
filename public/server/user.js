@@ -28,13 +28,14 @@ function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excl
 	return ArrayCount(q) == 1;
 }
 
-function getBlockGroup(blockCode) {
+function getBlockGroup(blockCode, assessmentAppraiseId) {
 	var q = XQuery("sql: \n\
 		select \n\
 			ccabs.id \n\
 		from cc_assessment_block_subs ccabs \n\
 		where \n\
 			ccabs.code = '" + blockCode + "' \n\
+			and ccabs.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 	");
 
 	var belem = ArrayOptFirstElem(q);
@@ -43,7 +44,7 @@ function getBlockGroup(blockCode) {
 	}
 }
 
-function getBlockGroupByUserId(userId, blockCode) {
+function getBlockGroupByUserId(userId, blockCode, assessmentAppraiseId) {
 	var q = XQuery("sql: \n\
 		select \n\
 			ccabs.id, \n\
@@ -53,6 +54,7 @@ function getBlockGroupByUserId(userId, blockCode) {
 		where \n\
 			ccabs.code = '" + blockCode + "' \n\
 			and gcs.collaborator_id = " + userId + " \n\
+			and ccabs.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 	");
 
 	var belem = ArrayOptFirstElem(q);
@@ -61,19 +63,20 @@ function getBlockGroupByUserId(userId, blockCode) {
 	}
 }
 
-function getBlockSubByUserId(userId, blockCode) {
+function getBlockSubByUserId(userId, blockCode, assessmentAppraiseId) {
 	var sq = XQuery("sql: \n\
 		select \n\
 			ccabs.* \n\
 		from cc_assessment_block_subs ccabs \n\
 		where \n\
 			ccabs.code = '" + blockCode + "' \n\
+			and ccabs.assessment_appraise_id = " + assessmentAppraiseId +" \n\
 	");
 
 	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
 
-	var settingsDoc = Utils.getSystemSettings();
+	var settingsDoc = Utils.getSystemSettings(assessmentAppraiseId);
 	var _excCollaborators = ArrayExtractKeys(settingsDoc.TopElem.exclude_collaborators, 'exclude_collaborator_id');
 	//alert('sq: ' + tools.object_to_text(sq, 'json'));
 
@@ -97,15 +100,17 @@ function getBlockSubByUserId(userId, blockCode) {
 	}
 }
 
-function searchBlockSub(userId) {
+function searchBlockSub(userId, assessmentAppraiseId) {
 	var sq = XQuery("sql: \n\
 		select code \n\
 		from cc_assessment_block_subs \n\
-		where subdivision is not null \n\
+		where \n\
+			subdivision is not null \n\
+			and assessment_appraise_id = " + assessmentAppraiseId + " \n\
 	");
 
 	for (el in sq) {
-		s1 = getBlockSubByUserId(userId, String(el.code));
+		s1 = getBlockSubByUserId(userId, String(el.code), assessmentAppraiseId);
 		if (s1 != undefined) {
 			return s1;
 		}
@@ -242,11 +247,11 @@ function getManagers(userId, assessmentAppraiseId){
 	");
 
 
+	var dm = ArraySelectDistinct(mq, 'This.id');
+
 	// т.к. в выборку попадают и непосредственные рук-ли и те, на которых делегировали,
 	// приходится делать этот маразм
-	var dm = ArraySelectDistinct(mq, 'This.id');
 	var result = [];
-
 	for (el in dm) {
 		obj = {
 			id: OptInt(el.id),
@@ -259,17 +264,14 @@ function getManagers(userId, assessmentAppraiseId){
 
 		if (el.assessment_plan_id != null) {
 			fel = ArrayOptFirstElem(XQuery("sql: \n\
-				select \n\
-					p.data.query('/pa/custom_elems/custom_elem[name=''manager_delegating_duties'']/value').value('.', 'varchar(20)') manager_delegating_duties \n\
-				from pas ps \n\
-				inner join pa p on p.id = ps.id \n\
+				select ccads.id \n\
+				from cc_assessment_delegates ccads \n\
 				where \n\
-					ps.assessment_plan_id = " + el.assessment_plan_id + " \n\
-					and ps.person_id = " + userId + " \n\
-					and ps.expert_person_id = " + el.id + " \n\
+					ccads.[user_id] = " + OptInt(el.id) + " \n\
+					and ccads.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 			"));
 
-			if (fel != undefined && (fel.manager_delegating_duties != null && fel.manager_delegating_duties != '')) {
+			if (fel != undefined) {
 				obj.boss_type_name = 'Делегирование оценки';
 			}
 		}
@@ -434,7 +436,7 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 			s = sq[i];
 		} catch(e) { break; }
 
-		blockSub = searchBlockSub(userId);
+		blockSub = searchBlockSub(userId, assessmentAppraiseId);
 		//isCont = (i % 2) == 0;
 		if (blockSub != undefined/* && isCont*/) {
 			o = ArrayOptFirstElem(XQuery("sql: \n\

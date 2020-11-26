@@ -18,7 +18,7 @@
 	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
 
 
-	var st = Utils.getSystemSettings();
+	var st = Utils.getSystemSettings(6790263731625424310);
 	var curUserID = OptInt(st.TopElem.cur_user_id);
 
 	//var curUserID = 6711785032659205612; // me test
@@ -65,7 +65,7 @@
 
 			/// isTrain - 3 значения. true / false / null
 			if (isNeedAskTrain && isTrain == null) {
-				alert('aaaaaaaaaaaaaa');
+				//alert('aaaaaaaaaaaaaa');
 				return {
 					hasPa: false,
 					isNeedAskTrain: isNeedAskTrain,
@@ -73,10 +73,10 @@
 				}
 			}
 
-			alert('bbbbbbbbbbbbb');
+			//alert('bbbbbbbbbbbbb');
 
 			if (assignImmediately) {
-				alert('ccccccccccccc');
+				//alert('ccccccccccccc');
 				Assessment.create(userId, assessmentAppraiseId, blockSubId, competenceBlockId, positionLevelId);
 				return {
 					hasPa: true,
@@ -87,7 +87,7 @@
 					channelSelection && positionSelection
 					&& channelId == null && positionLevelId == null
 				) {
-					alert('dddddddddddddddd');
+					//alert('dddddddddddddddd');
 					// return channels and positions
 					var channels = Assessment.getBlocksTree(competenceBlockId);
 					return {
@@ -98,7 +98,7 @@
 				} else if (channelSelection && positionSelection
 					&& channelId != null && positionLevelId != null) {
 					// create assessment
-					alert('eeeeeeeeeeeeeeee');
+					//alert('eeeeeeeeeeeeeeee');
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
 						hasPa: true,
@@ -106,7 +106,7 @@
 					};
 				} else if (channelSelection && channelId == null) {
 					// return channels
-					alert('ffffffffffffff');
+					//alert('ffffffffffffff');
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
@@ -114,14 +114,14 @@
 						channels: channels
 					};
 				} else if (channelSelection && channelId != null) {
-					alert('ggggggggggggg');
+					//alert('ggggggggggggg');
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, channelId);
 					return {
 						hasPa: true,
 						shouldHasPa: true
 					};
 				} else if (positionSelection && positionLevelId == null) {
-					alert('hhhhhhhhhhhhhhhhh');
+					//alert('hhhhhhhhhhhhhhhhh');
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
@@ -136,11 +136,11 @@
 						positions: positions
 					};*/
 				} else if (positionSelection && positionLevelId != null) {
-					alert('iiiiiiiiiiiiiiii');
+					/*alert('iiiiiiiiiiiiiiii');
 					alert('competenceBlockId: ' + competenceBlockId);
 					alert('channelId: ' + channelId);
 					alert('positionLevelId: ' + positionLevelId);
-					alert('blockSubId: ' + blockSubId);
+					alert('blockSubId: ' + blockSubId);*/
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
 						hasPa: true,
@@ -148,8 +148,6 @@
 					};
 				}
 			}
-
-			alert('jjjjjjjjjjjjjjjjj');
 
 			return {
 				hasPa: false,
@@ -175,7 +173,7 @@
 			});
 		}
 
-		var systemSettings = Utils.getSystemSettings();
+		var systemSettings = Utils.getSystemSettings(assessmentAppraiseId);
 		if (curUser.hire_date > systemSettings.TopElem.stop_hire_date) {
 			return Utils.setSuccess({
 				hasPa: false,
@@ -187,21 +185,21 @@
 			var bsettings = Settings.baseSettings(assessmentAppraiseId);
 			var blocks = bsettings.blocks;
 
-			var gkBs = User.getBlockSubByUserId(curUserID, blocks.gk);
+			var gkBs = User.getBlockSubByUserId(curUserID, blocks.gk, assessmentAppraiseId);
 			//alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
 			
-			var topBg = User.getBlockGroupByUserId(curUserID, blocks.top);
+			var topBg = User.getBlockGroupByUserId(curUserID, blocks.top, assessmentAppraiseId);
 			//alert('topBg: ' + tools.object_to_text(topBg, 'json'));
 
-			var dmBs = User.getBlockSubByUserId(curUserID, blocks.division_moscow);
+			var dmBs = User.getBlockSubByUserId(curUserID, blocks.division_moscow, assessmentAppraiseId);
 			//alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
 
 			//alert('curUserID_1: ' + curUserID);
-			var aBs = User.getBlockSubByUserId(curUserID, blocks.affiliate);
+			var aBs = User.getBlockSubByUserId(curUserID, blocks.affiliate, assessmentAppraiseId);
 			//alert('curUserID: ' + curUserID);
 			//alert('aBs: ' + tools.object_to_text(aBs, 'json'));
 
-			var amBs = User.getBlockSubByUserId(curUserID, blocks.affiliate_manager);
+			var amBs = User.getBlockSubByUserId(curUserID, blocks.affiliate_manager, assessmentAppraiseId);
 			//alert('amBs: ' + tools.object_to_text(amBs, 'json'));
 
 			var cblock = null;
@@ -209,10 +207,10 @@
 
 			if (gkBs != undefined) {
 				if (isTrain) {
-					var tBg = User.getBlockGroupByUserId(curUserID, blocks.trains);
+					var tBg = User.getBlockGroupByUserId(curUserID, blocks.trains, assessmentAppraiseId);
 
 					if (tBg == undefined) {
-						tBg = User.getBlockGroup(blocks.trains);
+						tBg = User.getBlockGroup(blocks.trains, assessmentAppraiseId);
 
 						if (tBg != undefined) {
 							var grDoc = OpenDoc(UrlFromDocID(Int(tBg.TopElem.group)));
@@ -226,22 +224,22 @@
 					cblock = tBg;
 				} else {
 					// isTrain 3 значения true / false / null
-					alert('1111111111111111111');
+					//alert('1111111111111111111');
 					if (isTrain == null) {
-						alert('2222222222222222222');
+						//alert('2222222222222222222');
 						isNeedAskTrain = true;
 					}
 
 					if (topBg != undefined) {
-						alert('33333333333333');
+						//alert('33333333333333');
 						cblock = topBg;
 						//alert('cblock: ' + tools.object_to_text(cblock, 'json'));
 					} else if (dmBs != undefined) {
-						alert('4444444444444444444');
+						//alert('4444444444444444444');
 						// выбрать вертикаль, уровень должности
 						cblock = dmBs;
 					} else {
-						alert('55555555555555555');
+						//alert('55555555555555555');
 						// выбрать уровень должности
 						cblock = gkBs;
 					}
@@ -319,7 +317,7 @@
 			/*var min = (page - 1) * pageSize;
 			var max = min + pageSize;*/
 
-			var systemSettings = Utils.getSystemSettings();
+			var systemSettings = Utils.getSystemSettings(assessmentAppraiseId);
 			var subList = User.getSubordinates(curUserID, assessmentAppraiseId, systemSettings.TopElem.stop_hire_date, search, minRow, maxRow, pageSize);		
 			return Utils.setSuccess(subList);
 		} catch(e) {
@@ -336,7 +334,7 @@
 		}
 
 		try {
-			var systemSettings = Utils.getSystemSettings();
+			var systemSettings = Utils.getSystemSettings(assessmentAppraiseId);
 			var user = User.getUser(userID, assessmentAppraiseId, systemSettings.TopElem.stop_hire_date);
 			var managers = User.getManagers(userID, assessmentAppraiseId);
 			var _rules = Utils.docWvars(queryObjects.DocID);
@@ -517,17 +515,23 @@
 		var userId = data.HasProperty('user_id') ? data.user_id : null;
 		var subordinates = data.HasProperty('subordinates') ? data.subordinates : null;
 
-		var q = XQuery("sql: \n\
+		if (OptInt(userId) == undefined || subordinates == null) {
+			return Utils.setError('Не указаны руководитель или делегирующие');
+		}
+
+		var qcs = XQuery("sql: \n\
 			select \n\
-				ps.id pa_id, \n\
-				aps.id assessment_plan_id \n\
-			from pas ps \n\
-			inner join assessment_plans aps on aps.id = ps.assessment_plan_id \n\
+				cs.id collaborator_id,  \n\
+				aps.id assessment_plan_id, \n\
+				cs.fullname collaborator_fullname, \n\
+				ps.id boss_pa_id, \n\
+				ccads.id delegate_id \n\
+			from collaborators cs \n\
+			left join assessment_plans aps on (aps.person_id = cs.id and aps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+			left join pas ps on (ps.assessment_plan_id = aps.id and ps.expert_person_id = " + curUserID + ") \n\
+			left join cc_assessment_delegates ccads on (ccads.[user_id] = cs.id and ccads.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 			where \n\
-				ps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
-				and ps.person_id in (" + subordinates.join(',') + ") \n\
-				and ps.expert_person_id = " + curUserID + " \n\
-				and ps.[status] = 'manager' \n\
+				cs.id in (" + subordinates.join(',') + ") \n\
 		");
 
 		var err = '';
@@ -535,20 +539,34 @@
 			assessmentAppraiseId: assessmentAppraiseId
 		}, 'json');
 
-		for (el in q) {
+		for (el in qcs) {
 			try {
-				paDoc = OpenDoc(UrlFromDocID(Int(el.pa_id)));
-				paDoc.TopElem.custom_elems.ObtainChildByKey('manager_delegating_duties').value = paDoc.TopElem.expert_person_id;
-				paDoc.TopElem.expert_person_id = userId;
-				paDoc.Save();
+				if (el.delegate_id == null) {
+					delegateDoc = tools.new_doc_by_name('cc_assessment_delegate');
+					delegateDoc.BindToDb(DefaultDb);
+				} else {
+					delegateDoc = OpenDoc(UrlFromDocID(Int(el.delegate_id)));
+				}
 
-				apDoc = OpenDoc(UrlFromDocID(Int(el.assessment_plan_id)));
-				apDoc.TopElem.boss_id = userId;
-				apDoc.Save();
+				delegateDoc.TopElem.fullname = String(el.collaborator_fullname);
+				delegateDoc.TopElem.user_id = OptInt(el.collaborator_id);
+				delegateDoc.TopElem.boss_delegate_id = userId;
+				delegateDoc.TopElem.assessment_appraise_id = assessmentAppraiseId;
+				delegateDoc.Save();
 
-				Utils.notificate('oc_1', Int(userId), paDoc.TopElem.person_id, objToSend);
+				if (el.boss_pa_id != null) {
+					paDoc = OpenDoc(UrlFromDocID(Int(el.boss_pa_id)));
+					paDoc.TopElem.expert_person_id = userId;
+					paDoc.Save();
+				}
+
+				if (el.assessment_plan_id != null) {
+					apDoc = OpenDoc(UrlFromDocID(Int(el.assessment_plan_id)));
+					apDoc.TopElem.boss_id = userId;
+					apDoc.Save();
+				}
 			} catch(e) {
-				err = err + e + '\r\n';
+				err = err + e;
 			}
 		}
 

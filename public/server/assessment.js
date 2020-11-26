@@ -131,12 +131,6 @@ function create (userId, assessmentAppraiseId, blockSubId, blockId) {
 		where c.competence_block_id = " + blockId + " \n\
 	");
 
-	alert("sql: \n\
-		select c.id \n\
-		from competences c \n\
-		where c.competence_block_id = " + blockId + " \n\
-	");
-
 	for (el in comps) {
 		compChild = docSelf.TopElem.competences.AddChild();
 		compChild.competence_id = el.id;

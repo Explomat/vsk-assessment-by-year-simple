@@ -1,8 +1,9 @@
-function getSystemSettings() {
+function getSystemSettings(assessmentAppraiseId) {
 	var el = ArrayOptFirstElem(
 		XQuery("sql: \n\
 			select s.id \n\
 			from cc_assessment_settings s \n\
+			where s.assessment_appraise_id = " + assessmentAppraiseId + "\n\
 		")
 	);
 
@@ -48,29 +49,14 @@ function toBoolean(val) {
 	return false;
 }
 
-function _isContains(_ids, _id) {
-	for (i = _ids.length - 1; i >= 0; i--) {
-		if (_ids[i] == _id) {
-			return true;
-		}
-	}
-	return false;
-}
-
-function notificate(templateCode, primaryId, secondaryId, text) {
-	var settingsDoc = getSystemSettings();
-
-	var excCols = ArrayExtractKeys(settingsDoc.TopElem.exclude_collaborators, 'exclude_collaborator_id');
-	var excNots = ArrayExtractKeys(settingsDoc.TopElem.exclude_notificationss, 'exclude_notifications_id');
-	var mergeArr = ArrayUnion(excCols, excNots);
-
-	if (!_isContains(mergeArr, primaryId)) {
-		var isNotificated = tools.create_notification(templateCode, primaryId, text, secondaryId);
-		if (isNotificated) {
-			log('ERROR: Отправка уведомления "' + templateCode + '", сотруднику "' + primaryId + '"');
-		} else {
-			log('Отправка уведомления "' + templateCode + '", сотруднику "' + primaryId + '"');
-		}
+function notificate(templateCode, primaryId, secondaryId, text){
+	var Notifications = OpenCodeLib('x-local://wt/web/vsk/portal/common/aggregateNotifications.js');
+	
+	var isNotificate = Notifications.notificate('assessment', templateCode, primaryId, text, secondaryId);
+	if (isNotificate) {
+		log('Отправка уведомления "' + templateCode + '", сотруднику "' + primaryId + '"');
+	} else {
+		log('Ошибка отправки уведомления "' + templateCode + '", сотруднику "' + primaryId + '"');
 	}
 }
 
