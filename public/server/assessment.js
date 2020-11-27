@@ -92,7 +92,7 @@ function create (userId, assessmentAppraiseId, blockSubId, blockId) {
 	}
 
 	var profileCompetences = OpenDoc(UrlFromDocID(profileId)).TopElem.competences;*/
-	var userBoss = User.getBoss(userId);
+	var userBoss = User.getBoss(userId, assessmentAppraiseId);
 	var userBossId = userBoss != undefined ? userBoss.person_id : null;
 
 	//план оценки

@@ -523,6 +523,7 @@
 			select \n\
 				cs.id collaborator_id,  \n\
 				aps.id assessment_plan_id, \n\
+				aps.boss_id, \n\
 				cs.fullname collaborator_fullname, \n\
 				ps.id boss_pa_id, \n\
 				ccads.id delegate_id \n\
@@ -548,12 +549,6 @@
 					delegateDoc = OpenDoc(UrlFromDocID(Int(el.delegate_id)));
 				}
 
-				delegateDoc.TopElem.fullname = String(el.collaborator_fullname);
-				delegateDoc.TopElem.user_id = OptInt(el.collaborator_id);
-				delegateDoc.TopElem.boss_delegate_id = userId;
-				delegateDoc.TopElem.assessment_appraise_id = assessmentAppraiseId;
-				delegateDoc.Save();
-
 				if (el.boss_pa_id != null) {
 					paDoc = OpenDoc(UrlFromDocID(Int(el.boss_pa_id)));
 					paDoc.TopElem.expert_person_id = userId;
@@ -561,10 +556,23 @@
 				}
 
 				if (el.assessment_plan_id != null) {
+					delegateDoc.TopElem.prev_boss_id = el.boss_id;
+
 					apDoc = OpenDoc(UrlFromDocID(Int(el.assessment_plan_id)));
 					apDoc.TopElem.boss_id = userId;
 					apDoc.Save();
+				} else {
+					userBoss = User.getBoss(el.collaborator_id, assessmentAppraiseId);
+					if (userBoss != undefined) {
+						delegateDoc.TopElem.prev_boss_id = userBoss.person_id;
+					}
 				}
+
+				delegateDoc.TopElem.fullname = String(el.collaborator_fullname);
+				delegateDoc.TopElem.user_id = OptInt(el.collaborator_id);
+				delegateDoc.TopElem.boss_delegate_id = userId;
+				delegateDoc.TopElem.assessment_appraise_id = assessmentAppraiseId;
+				delegateDoc.Save();
 			} catch(e) {
 				err = err + e;
 			}

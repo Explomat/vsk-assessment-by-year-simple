@@ -184,11 +184,11 @@ class Competence extends PureComponent {
 							<Modal.Description>
 								<Segment basic>
 									<Header as='h4' className='assessment-profile__competence-description-header'>Описание</Header>
-									{userComp.common_comment}
+									<div dangerouslySetInnerHTML={{ __html: userComp.common_comment}} />
 								</Segment>
 								<Segment basic>
 									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--positive'>Развита</Header>
-									{userComp.common_positive_comment}
+									<div dangerouslySetInnerHTML={{ __html: userComp.common_positive_comment}} />
 								</Segment>
 								{/*<Segment basic>
 									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--overdeveloped'>Чрезмерно развита</Header>
@@ -196,7 +196,7 @@ class Competence extends PureComponent {
 								</Segment>*/}
 								<Segment basic>
 									<Header as='h4' className='assessment-profile__competence-description-header assessment-profile__competence-description-header--negative'>Не развита</Header>
-									{userComp.common_negative_comment}
+									<div dangerouslySetInnerHTML={{ __html: userComp.common_negative_comment}} />
 								</Segment>
 							</Modal.Description>
 						</Modal.Content>
