@@ -10,7 +10,8 @@ function baseSettings(assessmentAppraiseId) {
 			'gk': 'gk',
 			'division_moscow': 'division_moscow',
 			'affiliate': 'affiliate',
-			'affiliate_manager': 'affiliate_manager'
+			'affiliate_manager': 'affiliate_manager',
+			'federal_service_center': 'federal_service_center'
 		}
 	}
 	

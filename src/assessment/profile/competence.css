@@ -31,7 +31,7 @@
 }
 
 .assessment-profile__competence-description-header--positive {
-	background-color: #02b402b3;
+	background-color: #E4fdd6;
 	color: #fff !important;
 }
 
@@ -41,7 +41,7 @@
 }
 
 .assessment-profile__competence-description-header--negative {
-	background-color: #f2711cb8;
+	background-color: #Ee786c;
     color: #fff !important;;
 }
 

@@ -88,7 +88,7 @@
 					&& channelId == null && positionLevelId == null
 				) {
 					//alert('dddddddddddddddd');
-					// return channels and positions
+					return channels and positions
 					var channels = Assessment.getBlocksTree(competenceBlockId);
 					return {
 						hasPa: false,
@@ -121,7 +121,11 @@
 						shouldHasPa: true
 					};
 				} else if (positionSelection && positionLevelId == null) {
-					//alert('hhhhhhhhhhhhhhhhh');
+					/*alert('hhhhhhhhhhhhhhhhh');
+					alert('competenceBlockId: ' + competenceBlockId);
+					alert('channelId: ' + channelId);
+					alert('positionLevelId: ' + positionLevelId);
+					alert('blockSubId: ' + blockSubId);*/
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
@@ -148,6 +152,8 @@
 					};
 				}
 			}
+
+			//alert('jjjjjjjjjj');
 
 			return {
 				hasPa: false,
@@ -190,6 +196,9 @@
 			
 			var topBg = User.getBlockGroupByUserId(curUserID, blocks.top, assessmentAppraiseId);
 			//alert('topBg: ' + tools.object_to_text(topBg, 'json'));
+
+			var fscBs = User.getBlockSubByUserId(curUserID, blocks.federal_service_center, assessmentAppraiseId);
+			//alert('fscBs: ' + tools.object_to_text(fscBs, 'json'));
 
 			var dmBs = User.getBlockSubByUserId(curUserID, blocks.division_moscow, assessmentAppraiseId);
 			//alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
@@ -234,6 +243,8 @@
 						//alert('33333333333333');
 						cblock = topBg;
 						//alert('cblock: ' + tools.object_to_text(cblock, 'json'));
+					} else if (fscBs != undefined) {
+						cblock = fscBs;
 					} else if (dmBs != undefined) {
 						//alert('4444444444444444444');
 						// выбрать вертикаль, уровень должности
