@@ -1,0 +1,69 @@
+.dot {
+	content: '';
+	height: 6px;
+	width: 6px;
+	background-color: #bbb;
+	border-radius: 50%;
+	display: inline-block;
+	margin: 0 4px;
+}
+
+.dp__date {
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	color: rgba(0, 0, 0, 0.65);
+	font-size: 14px;
+	font-variant: tabular-nums;
+	line-height: 1.5;
+	list-style: none;
+	-webkit-font-feature-settings: 'tnum';
+	font-feature-settings: 'tnum', "tnum";
+	display: inline-block;
+	height: auto;
+	margin-right: 8px;
+	padding: 0 7px;
+	font-size: 12px;
+	line-height: 20px;
+	white-space: nowrap;
+	border: 1px solid #d9d9d9;
+	border-radius: 4px;
+	cursor: default;
+	opacity: 1;
+	-webkit-transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+	transition: all 0.3s cubic-bezier(0.78, 0.14, 0.15, 0.86);
+}
+
+.ant-card-head-title {
+	display: inline-block;
+	padding-right: 12px;
+	color: rgba(0, 0, 0, 0.85);
+	font-weight: bold;
+	font-size: 15px;
+	line-height: 1.4;
+}
+
+.ant-card-head{
+  background-color: #f9fafb;
+}
+
+.dp_user-icon {
+	font-size: 20px;
+	margin-right: 16px;
+	vertical-align: middle;
+	color: rgba(0, 0, 0, 0.65);
+}
+
+.dp_user-icon-no-margin{
+	margin-right: 0;
+}
+
+.dp a {
+	text-decoration: underline;
+}
+
+
+.ant-table-tbody {
+	word-break: break-word;
+}

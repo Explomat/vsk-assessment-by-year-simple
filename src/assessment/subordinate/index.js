@@ -68,7 +68,7 @@ class Main extends Component {
 }
 
 function mapStateToProps(state){
-	const { subordinate, profile } = state.app;
+	const { subordinate, profile } = state.assessment;
 	const result = omit(subordinate, 'result');
 	return {
 		ui: profile.ui,

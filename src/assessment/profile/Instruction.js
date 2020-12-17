@@ -30,7 +30,7 @@ class Instruction extends Component {
 }
 
 function mapStateToProps(state){
-	const { profile } = state.app;
+	const { profile } = state.assessment;
 
 	return {
 		instruction: profile.instruction

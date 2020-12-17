@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { Route } from 'react-router-dom';
+import IdpApp from '../../idp/App';
 import { assessmentSteps } from '../config/steps';
 import ProfileContainer from './ProfileContainer';
 import Subordinates from './subordinates';
@@ -20,7 +22,7 @@ class Main extends Component {
 	}
 
 	render(){
-		const { ui, user, onChangeTab } = this.props;
+		const { ui, idpUi, user, onChangeTab, match } = this.props;
 
 		if (ui.isLoading) {
 			return (
@@ -48,11 +50,19 @@ class Main extends Component {
 					>
 						Мои сотрудники
 					</Menu.Item>}
+					{idpUi.isIdp && <Menu.Item
+						name='idp'
+						active={ui.activeTab === 'idp'}
+						onClick={onChangeTab}
+					>
+						ИПР
+					</Menu.Item>}
 				</Menu>
 
 				<Segment attached='bottom'>
 					{ui.activeTab === 'profile' && <ProfileContainer />}
 					{ui.activeTab === 'subordinates' && <Subordinates />}
+					{ui.activeTab === 'idp' && <IdpApp />}
 				</Segment>
 			</div>
 		);
@@ -61,14 +71,15 @@ class Main extends Component {
 
 
 function mapStateToProps(state){
-	const { profile } = state.app;
+	const { profile } = state.assessment;
 
 	return {
 		user: profile.result.user,
 		ui: {
-			...state.app.ui,
+			...state.assessment.ui,
 			...profile.ui
-		}
+		},
+		idpUi: state.idp.ui
 		/*subordinates: subordinates,
 		checkedSubordinates*/
 	}

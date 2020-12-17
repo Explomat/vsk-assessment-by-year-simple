@@ -63,7 +63,7 @@ class SelectUser extends Component {
 }
 
 function mapStateToProps(state){
-    return state.app.subordinates.delegate;
+    return state.assessment.subordinates.delegate;
 }
 
 export default connect(mapStateToProps, { searchUsers, setUser })(SelectUser);

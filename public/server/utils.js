@@ -84,8 +84,16 @@ function instruction(assessmentAppraiseId) {
 	return q == undefined ? '' : q.instruction;
 }
 
-function docWvars(id) {
-	var doc = OpenDoc(UrlFromDocID(Int(id)));
+function getCommonAssessments(assessmentAppraiseId) {
+
+	return XQuery("sql: \n\
+		select ccac.scale, ccac.[description], ccac.color, ccac.[percent] \n\
+		from cc_assessment_commons ccac \n\
+		where \n\
+			ccac.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+	");
+
+	/*var doc = OpenDoc(UrlFromDocID(Int(id)));
 
 	var legends = ArrayOptFind(doc.TopElem.wvars, "This.name == 'assessment_by_year.legends'");
 	var colors = ArrayOptFind(doc.TopElem.wvars, "This.name == 'assessment_by_year.colors'");
@@ -107,5 +115,5 @@ function docWvars(id) {
 		result.push(obj);
 	}
 
-	return result;
+	return result;*/
 }

@@ -1,8 +1,10 @@
 import { combineReducers } from 'redux';
-import appReducer from './assessment/reducer';
+import assessmentReducer from './assessment/reducer';
+import idpReducer from './idp/reducer';
 
 const reducer = combineReducers({
-	app: appReducer,
+	assessment: assessmentReducer,
+	idp: idpReducer,
 	wt: (state = {}) => state
 });
 

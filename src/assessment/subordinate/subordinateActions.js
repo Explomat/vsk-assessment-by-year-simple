@@ -73,7 +73,7 @@ export function getInitialData(subordinateId, assessmentId){
 	return dispatch => {
 		//dispatch(loading(true));
 
-		request('Profile')
+		request('assessment', 'Profile')
 			.get({
 				user_id: subordinateId,
 				assessment_appraise_id: assessmentId
@@ -106,7 +106,7 @@ export function thirdStep(assessmentId){
 	return (dispatch, getState) => {
 		dispatch(loading(true));
 
-		const { app } = getState();
+		const app = getState().assessment;
 		const { competences, indicators, pas } = app.subordinate;
 		const { user, assessment } = app.subordinate.result;
 
@@ -127,7 +127,7 @@ export function thirdStep(assessmentId){
 			}
 
 			dispatch(loading(true));
-			request('ThirdStep', { assessment_appraise_id: assessmentId })
+			request('assessment', 'ThirdStep', { assessment_appraise_id: assessmentId })
 				.post(data)
 				.then(r => r.json())
 				.then(d => {
@@ -163,10 +163,10 @@ export function updatePa(paId, competenceId, scale) {
 	return (dispatch, getState) => {
 		dispatch(setMark(competenceId, scale));
 
-		const { app } = getState();
-		const competencePercent = computeCompetencePercent(competenceId, app.subordinate);
-		const competenceScale = computeScaleByPercent(competencePercent, app.subordinate);
-		const paOverall = computeResultPercents(paId, app.subordinate);
+		const { assessment } = getState();
+		const competencePercent = computeCompetencePercent(competenceId, assessment.subordinate);
+		const competenceScale = computeScaleByPercent(competencePercent, assessment.subordinate);
+		const paOverall = computeResultPercents(paId, assessment.subordinate);
 
 		dispatch({
 			type: constants.SUBORDINATE_UPDATE_PA,

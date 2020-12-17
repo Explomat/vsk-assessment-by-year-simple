@@ -4,7 +4,7 @@ import { omit } from 'lodash';
 import { connect } from 'react-redux';
 
 function mapStateToProps(state, ownProps){
-	const { profile } = state.app;
+	const { profile } = state.assessment;
 	const result = omit(profile, 'result');
 	return {
 		legends: profile.result.rules.map(r => profile.rules[r]),

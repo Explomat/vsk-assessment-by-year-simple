@@ -4,7 +4,7 @@ import { omit } from 'lodash';
 import { connect } from 'react-redux';
 
 function mapStateToProps(state, ownProps){
-	const { subordinate } = state.app;
+	const { subordinate } = state.assessment;
 	const result = omit(subordinate, 'result');
 	return {
 		legends: subordinate.result.rules.map(r => subordinate.rules[r]),

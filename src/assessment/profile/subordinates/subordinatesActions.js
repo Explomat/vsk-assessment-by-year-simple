@@ -22,7 +22,7 @@ export function changeSearch(val){
 
 export function searchSubordinates(assessmentId) {
 	return (dispatch, getState) => {
-		const { subordinates } = getState().app;
+		const { subordinates } = getState().assessment;
 		dispatch(loadData(assessmentId, subordinates.meta.search));
 	}
 }
@@ -31,14 +31,14 @@ export function loadData(assessmentId, search = '', isPrev = false, isNext = fal
 	return (dispatch, getState) => {
 		dispatch(loading(true));
 
-		const { app } = getState();
+		const { assessment } = getState();
 
-		request('Subordinates')
+		request('assessment', 'Subordinates')
 		.get({
 			assessment_appraise_id: assessmentId,
 			is_prev: isPrev,
 			is_next: isNext,
-			...app.subordinates.meta
+			...assessment.subordinates.meta
 		})
 		.then(r => r.json())
 		.then(d => {
@@ -80,10 +80,10 @@ export function setUser(result){
 
 export function searchUsers(value){
 	return (dispatch, getState) => {
-		const { app } = getState();		
+		const { assessment } = getState();		
 
-		request('Collaborators', {
-			subordinates: app.subordinates.checkedSubordinates.join(',')
+		request('assessment', 'Collaborators', {
+			subordinates: assessment.subordinates.checkedSubordinates.join(',')
 		})
 			.get({ search: value })
 			.then(r => r.json())
@@ -107,15 +107,15 @@ export function searchUsers(value){
 
 export function delegateUser(assessmentId) {
 	return (dispatch, getState) => {
-		const { app } = getState();
-		const user = app.subordinates.delegate.value;
+		const { assessment } = getState();
+		const user = assessment.subordinates.delegate.value;
 
 		//dispatch(setLoading(true));
 
-		request('DelegateUser', { assessment_appraise_id: assessmentId })
+		request('assessment', 'DelegateUser', { assessment_appraise_id: assessmentId })
 			.post({
 				user_id: user.id,
-				subordinates: app.subordinates.checkedSubordinates
+				subordinates: assessment.subordinates.checkedSubordinates
 			})
 			.then(r => r.json())
 			.then(d => {
@@ -129,7 +129,7 @@ export function delegateUser(assessmentId) {
 				//window.location.reload(true);
 				//dispatch(setLoading(false));
 
-				dispatch(loadData(assessmentId, app.subordinates.meta.search));
+				dispatch(loadData(assessmentId, assessment.subordinates.meta.search));
 			})
 			.catch(e => {
 				//dispatch(setLoading(false));

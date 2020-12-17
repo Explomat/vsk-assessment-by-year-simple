@@ -1,0 +1,148 @@
+.dps{
+	margin-bottom: 30px;
+}
+
+.dp__history-competence-container {
+	margin-bottom: 30px;
+}
+
+.dp__history-competence {
+	color: #2185d0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.dp_list-item{
+	color: rgba(0, 0, 0, 0.45);
+    font-size: 14px;
+    line-height: 22px;
+}
+
+.dp__legend-title{
+	margin-bottom: 8px;
+}
+
+.dp__legend_table {
+	background-color: #fff;
+}
+
+.dp__legend_table tbody {
+	font-size: 11px;
+}
+
+.dp__legend_table td {
+	padding: 0px 0px !important;
+}
+
+.dp__form-label{
+	color: rgba(0, 0, 0, 0.36);
+    font-size: 12px;
+}
+
+.dp__date-check{
+	color: #52c41a;
+	font-size: 18px;
+	position: absolute;
+}
+
+.dp__history-step{
+	font-weight: bold;
+}
+
+.dp__status{
+	font-weight: bold;
+}
+
+.dp__task-date{
+	margin-right: 8px;
+	font-size: 11px !important;
+	line-height: initial !important;
+}
+
+.dp__history-data{
+	margin-top: 8px;
+	font-size: 12px;
+	color: rgba(0,0,0,.45);
+}
+
+.dp__history-comment{
+	padding: 6px;
+	border: 2px solid #aac7d6;
+	border-radius: 4px;
+	font-size: 13px;
+	background-color: aliceblue;
+	color: rgba(0,0,0,.65);
+	word-break: break-word;
+}
+
+.dp__tasks-actions{
+	margin-right: 16px;
+}
+
+.dp__steps{
+	margin-top: 20px;
+	margin-bottom: 50px;
+}
+
+
+.task__icon{
+	font-size: 18px;
+}
+
+.dp__header {
+	padding: 16px 24px;
+}
+
+.dp__body{
+	padding: 16px 24px;
+}
+
+.dp__footer{
+	padding: 16px 24px;
+}
+
+.content .description {
+	display: table;
+}
+
+.description .term {
+	display: table-cell;
+	margin-right: 8px;
+	padding-bottom: 8px;
+	white-space: nowrap;
+	line-height: 20px;
+}
+
+.ant-page-header-heading-extra .detail {
+	padding-top: 12px;
+}
+
+.description .detail {
+	display: table-cell;
+	padding-bottom: 8px;
+	width: 100%;
+	line-height: 20px;
+}
+
+.description .term:after {
+	position: relative;
+	top: -0.5px;
+	margin: 0 8px 0 2px;
+	content: ":";
+}
+
+.ant-steps-item-title {
+	font-size: 14px;   
+}
+
+.ant-tag{
+	margin-right: 0px;
+}
+
+.adaptation__current-step{
+	font-weight: bold;
+}
+
+.ant-page-header-heading-extra{
+	text-align: right;
+}

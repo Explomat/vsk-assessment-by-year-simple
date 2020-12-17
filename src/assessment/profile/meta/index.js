@@ -123,8 +123,8 @@ class Meta extends Component {
 
 function mapStateToProps(state) {
 	return {
-		meta: state.app.meta,
-		ui: state.app.ui
+		meta: state.assessment.meta,
+		ui: state.assessment.ui
 	}
 }
 

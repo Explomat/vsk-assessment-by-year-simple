@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { HashRouter as Router, Route, Redirect } from 'react-router-dom';
+import { HashRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
 import Profile from './profile';
 import Meta from './profile/meta';
+import IdpApp from '../idp/App';
 import { Dimmer, Loader, Message, Modal } from 'semantic-ui-react';
 
 class App extends Component {
@@ -31,8 +32,10 @@ class App extends Component {
 				{ui.isLoading && <Dimmer active inverted>
 					<Loader inverted>Loading</Loader>
 				</Dimmer>}
-				<Route exact path='/meta/:id' render={() => <Meta />} />
-				<Route exact path='/profile/:id' render={() => <Profile />} />
+				<Switch>
+					<Route exact path='/meta/:id' component={Meta} />
+					<Route path='/profile/:id' component={Profile} />
+				</Switch>
 			</div>
 		);
 	}
@@ -40,7 +43,7 @@ class App extends Component {
 
 function mapStateToProps(state){
 	return {
-		ui: state.app.ui
+		ui: state.assessment.ui
 	}
 }
 

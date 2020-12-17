@@ -32,22 +32,22 @@ export function getMeta(id){
 		dispatch(loading(true));
 		
 
-		const { app } = getState();
+		const { assessment } = getState();
 		const reqObj = {};
-		if (app.meta.parentNode) {
-			reqObj.channel_id = app.meta.parentNode.id;
+		if (assessment.meta.parentNode) {
+			reqObj.channel_id = assessment.meta.parentNode.id;
 		}
 
-		if (app.meta.selectedNode) {
-			reqObj.position_level_id = app.meta.selectedNode.id;
+		if (assessment.meta.selectedNode) {
+			reqObj.position_level_id = assessment.meta.selectedNode.id;
 		}
 
-		const isTrain = app.meta.isTrain;
+		const isTrain = assessment.meta.isTrain;
 		if (isTrain !== undefined && isTrain !== null) {
 			reqObj.is_train = isTrain;
 		}
 
-		request('Meta', { assessment_appraise_id: id })
+		request('assessment', 'Meta', { assessment_appraise_id: id })
 		.post(reqObj)
 		.then(r => r.json())
 		.then(d => {

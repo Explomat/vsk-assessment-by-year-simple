@@ -53,7 +53,7 @@ const Subordinate = ({ subordinate, rules, meta, onShow, onSelect }) => {
 }
 
 function mapStateToProps(state){
-	const { profile } = state.app;
+	const { profile } = state.assessment;
 	return {
 		rules: profile.rules,
 		meta: profile.result.meta

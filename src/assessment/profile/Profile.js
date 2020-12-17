@@ -128,7 +128,7 @@ class Profile extends Component {
 							<Icon name='file alternate outline' />
 							Инструкция
 						</a>
-						<a href={`${createBaseUrl('Report')}&user_id=${user.id}&assessment_appraise_id=${match.params.id}`} className='assessment-profile__card-actions_action-a'>
+						<a href={`${createBaseUrl('assessment', 'Report')}&user_id=${user.id}&assessment_appraise_id=${match.params.id}`} className='assessment-profile__card-actions_action-a'>
 							<Icon name='list alternate outline' />
 							Отчет
 						</a>

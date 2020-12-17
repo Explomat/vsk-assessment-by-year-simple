@@ -1,8 +1,6 @@
 import createRemoteActions from '../../utils/createRemoteActions';
 import { constants as appConstants, error } from '../appActions';
-import request from '../../utils/request';
-import mock from './mockData';
-import { setStepMock } from '../mock';
+import { constants as idpConstants } from '../../idp/appActions';
 import { normalize, denormalize, schema } from 'normalizr';
 import { find } from 'lodash';
 import {
@@ -10,6 +8,7 @@ import {
 	computeResultPercents,
 	computeScaleByPercent
 } from '../calculations';
+import request from '../../utils/request';
 
 
 const rule = new schema.Entity('rules', {}, { idAttribute: 'scale' });
@@ -111,7 +110,14 @@ export function setComment(competenceId, comment){
 export function setTab(tabName){
 	return {
 		type: constants.PROFILE_SET_TAB,
-		payload:tabName
+		payload: tabName
+	}
+}
+
+export function setIdp(isIdp) {
+	return {
+		type: idpConstants.IDP_SET_IDP,
+		payload: isIdp
 	}
 }
 
@@ -119,7 +125,7 @@ export function getInitialData(id){
 	return dispatch => {
 		dispatch(loading(true));
 
-		request('Profile')
+		request('assessment', 'Profile')
 		.get({ assessment_appraise_id: id })
 		.then(r => r.json())
 		.then(d => {
@@ -137,6 +143,10 @@ export function getInitialData(id){
 				}
 			});
 			dispatch(loading(false));
+
+			if (d.data.meta.isAssessmentCompleted) {
+				dispatch(setIdp(true));
+			}
 		})
 		.catch(e => {
 			dispatch(loading(false));
@@ -148,7 +158,7 @@ export function getInitialData(id){
 
 export function getInstruction(id){
 	return dispatch => {
-		request('Instruction')
+		request('assessment', 'Instruction')
 		.get({ assessment_appraise_id: id })
 		.then(r => r.json())
 		.then(d => {
@@ -185,10 +195,10 @@ export function updatePa(paId, competenceId, scale) {
 	return (dispatch, getState) => {
 		dispatch(setMark(competenceId, scale));
 
-		const { app } = getState();
-		const competencePercent = computeCompetencePercent(competenceId, app.profile);
-		const competenceScale = computeScaleByPercent(competencePercent, app.profile);
-		const paOverall = computeResultPercents(paId, app.profile);
+		const { assessment } = getState();
+		const competencePercent = computeCompetencePercent(competenceId, assessment.profile);
+		const competenceScale = computeScaleByPercent(competencePercent, assessment.profile);
+		const paOverall = computeResultPercents(paId, assessment.profile);
 
 		dispatch({
 			type: constants.PROFILE_UPDATE_PA,
@@ -215,8 +225,8 @@ export function secondStep(assessmentId){
 		dispatch(setBossButton(false));
 		dispatch(loading(true));
 
-		const { app } = getState();
-		const { competences, indicators, pas, result } = app.profile;
+		const { assessment } = getState();
+		const { competences, indicators, pas, result } = assessment.profile;
 
 		/*const indicator = new schema.Entity('indicators', {}, { idAttribute: 'indicator_id'});
 		const competence = new schema.Entity('competences', {
@@ -248,7 +258,7 @@ export function secondStep(assessmentId){
 			}
 
 			dispatch(loading(true));
-			request('SecondStep', { assessment_appraise_id: assessmentId })
+			request('assessment', 'SecondStep', { assessment_appraise_id: assessmentId })
 				.post(data)
 				.then(r => r.json())
 				.then(d => {
@@ -273,7 +283,7 @@ export function secondStep(assessmentId){
 export function fourthStep(isAgree, assessmentId){
 	return dispatch => {
 		dispatch(loading(true));
-		request('FourthStep', { assessment_appraise_id: assessmentId })
+		request('assessment', 'FourthStep', { assessment_appraise_id: assessmentId })
 			.post({ answer: isAgree })
 			.then(r => r.json())
 			.then(d => {

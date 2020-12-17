@@ -47,25 +47,8 @@
 			isNeedAskTrain,
 			isTrain
 		) {
-			/*alert('competenceBlockId: ' + competenceBlockId);
-			alert('assignImmediately: ' + assignImmediately);
-			alert('channelSelection: ' + channelSelection);
-			alert('positionSelection: ' + positionSelection);
-			alert('channelId: ' + channelId);
-			alert('positionLevelId: ' + positionLevelId);*/
-
-			/*if (isNeedTrain && isTrain == false) {
-				return {
-					hasPa: false,
-					isNeedTrain: true,
-					isTrain: false
-				}
-			} else if (isNeedTrain && isTrain) {}*/
-
-
-			/// isTrain - 3 значения. true / false / null
+			// isTrain - 3 значения. true / false / null
 			if (isNeedAskTrain && isTrain == null) {
-				//alert('aaaaaaaaaaaaaa');
 				return {
 					hasPa: false,
 					isNeedAskTrain: isNeedAskTrain,
@@ -73,10 +56,7 @@
 				}
 			}
 
-			//alert('bbbbbbbbbbbbb');
-
 			if (assignImmediately) {
-				//alert('ccccccccccccc');
 				Assessment.create(userId, assessmentAppraiseId, blockSubId, competenceBlockId, positionLevelId);
 				return {
 					hasPa: true,
@@ -87,7 +67,6 @@
 					channelSelection && positionSelection
 					&& channelId == null && positionLevelId == null
 				) {
-					//alert('dddddddddddddddd');
 					return channels and positions
 					var channels = Assessment.getBlocksTree(competenceBlockId);
 					return {
@@ -97,16 +76,12 @@
 					};
 				} else if (channelSelection && positionSelection
 					&& channelId != null && positionLevelId != null) {
-					// create assessment
-					//alert('eeeeeeeeeeeeeeee');
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
 						hasPa: true,
 						shouldHasPa: true
 					};
 				} else if (channelSelection && channelId == null) {
-					// return channels
-					//alert('ffffffffffffff');
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
@@ -114,37 +89,19 @@
 						channels: channels
 					};
 				} else if (channelSelection && channelId != null) {
-					//alert('ggggggggggggg');
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, channelId);
 					return {
 						hasPa: true,
 						shouldHasPa: true
 					};
 				} else if (positionSelection && positionLevelId == null) {
-					/*alert('hhhhhhhhhhhhhhhhh');
-					alert('competenceBlockId: ' + competenceBlockId);
-					alert('channelId: ' + channelId);
-					alert('positionLevelId: ' + positionLevelId);
-					alert('blockSubId: ' + blockSubId);*/
 					var channels = Assessment.getBlocksTree(competenceBlockId, false);
 					return {
 						hasPa: false,
 						shouldHasPa: true,
 						channels: channels
 					};
-					//alert(1);
-					// return positions
-					// Автоматически определить вертикаль
-					/*return {
-						hasPa: false,
-						positions: positions
-					};*/
 				} else if (positionSelection && positionLevelId != null) {
-					/*alert('iiiiiiiiiiiiiiii');
-					alert('competenceBlockId: ' + competenceBlockId);
-					alert('channelId: ' + channelId);
-					alert('positionLevelId: ' + positionLevelId);
-					alert('blockSubId: ' + blockSubId);*/
 					Assessment.create(userId, assessmentAppraiseId, blockSubId, positionLevelId);
 					return {
 						hasPa: true,
@@ -152,8 +109,6 @@
 					};
 				}
 			}
-
-			//alert('jjjjjjjjjj');
 
 			return {
 				hasPa: false,
@@ -192,24 +147,11 @@
 			var blocks = bsettings.blocks;
 
 			var gkBs = User.getBlockSubByUserId(curUserID, blocks.gk, assessmentAppraiseId);
-			//alert('gkBs: ' + tools.object_to_text(gkBs, 'json'));
-			
 			var topBg = User.getBlockGroupByUserId(curUserID, blocks.top, assessmentAppraiseId);
-			//alert('topBg: ' + tools.object_to_text(topBg, 'json'));
-
 			var fscBs = User.getBlockSubByUserId(curUserID, blocks.federal_service_center, assessmentAppraiseId);
-			//alert('fscBs: ' + tools.object_to_text(fscBs, 'json'));
-
 			var dmBs = User.getBlockSubByUserId(curUserID, blocks.division_moscow, assessmentAppraiseId);
-			//alert('dmBs: ' + tools.object_to_text(dmBs, 'json'));
-
-			//alert('curUserID_1: ' + curUserID);
 			var aBs = User.getBlockSubByUserId(curUserID, blocks.affiliate, assessmentAppraiseId);
-			//alert('curUserID: ' + curUserID);
-			//alert('aBs: ' + tools.object_to_text(aBs, 'json'));
-
 			var amBs = User.getBlockSubByUserId(curUserID, blocks.affiliate_manager, assessmentAppraiseId);
-			//alert('amBs: ' + tools.object_to_text(amBs, 'json'));
 
 			var cblock = null;
 			var isNeedAskTrain = false;
@@ -232,26 +174,17 @@
 
 					cblock = tBg;
 				} else {
-					// isTrain 3 значения true / false / null
-					//alert('1111111111111111111');
 					if (isTrain == null) {
-						//alert('2222222222222222222');
 						isNeedAskTrain = true;
 					}
 
 					if (topBg != undefined) {
-						//alert('33333333333333');
 						cblock = topBg;
-						//alert('cblock: ' + tools.object_to_text(cblock, 'json'));
 					} else if (fscBs != undefined) {
 						cblock = fscBs;
 					} else if (dmBs != undefined) {
-						//alert('4444444444444444444');
-						// выбрать вертикаль, уровень должности
 						cblock = dmBs;
 					} else {
-						//alert('55555555555555555');
-						// выбрать уровень должности
 						cblock = gkBs;
 					}
 				}
@@ -259,7 +192,6 @@
 				if (amBs != undefined) {
 					cblock = amBs;
 				} else {
-					// выбрать вертикаль, уровень должности
 					cblock = aBs;
 				}
 			}
@@ -310,23 +242,14 @@
 			var isPrev = queryObjects.HasProperty('is_prev') ? Utils.toBoolean(queryObjects.is_prev) : false;
 			var isNext = queryObjects.HasProperty('is_next') ? Utils.toBoolean(queryObjects.is_next) : true;
 
-			//alert('initial_minRow: ' + minRow + ' initial_maxRow: ' + maxRow);
-
 			if (isNext) {
-				//alert('isNext');
 				minRow = maxRow;
 				maxRow = minRow + pageSize;
-				//alert('minRow: ' + minRow + ' maxRow: ' + maxRow);
 			} else if (isPrev) {
-				//alert('isPrev');
 				maxRow = minRow;
 				var temp = maxRow - pageSize;
 				minRow = temp < 0 ? 0 : temp;
-				//alert('minRow: ' + minRow + ' maxRow: ' + maxRow);
 			}
-
-			/*var min = (page - 1) * pageSize;
-			var max = min + pageSize;*/
 
 			var systemSettings = Utils.getSystemSettings(assessmentAppraiseId);
 			var subList = User.getSubordinates(curUserID, assessmentAppraiseId, systemSettings.TopElem.stop_hire_date, search, minRow, maxRow, pageSize);		
@@ -348,7 +271,8 @@
 			var systemSettings = Utils.getSystemSettings(assessmentAppraiseId);
 			var user = User.getUser(userID, assessmentAppraiseId, systemSettings.TopElem.stop_hire_date);
 			var managers = User.getManagers(userID, assessmentAppraiseId);
-			var _rules = Utils.docWvars(queryObjects.DocID);
+			var _rules = Utils.getCommonAssessments(assessmentAppraiseId);
+			//alert(tools.object_to_text(_rules, 'json'));
 
 			var userDoc = OpenDoc(UrlFromDocID(Int(userID)));
 
@@ -603,7 +527,7 @@
 		}
 
 		var userID = queryObjects.HasProperty('user_id') ? Trim(queryObjects.user_id) : curUserID;
-		var _rules = Utils.docWvars(queryObjects.DocID);
+		var _rules = Utils.getCommonAssessments(assessmentAppraiseId);
 
 		var path = Report.create(userID, _rules, assessmentAppraiseId);
 

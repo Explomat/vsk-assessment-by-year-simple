@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom';
 import { HashRouter as Router } from 'react-router-dom';
 import { Provider } from 'react-redux';
 
-import App from './assessment/App';
+import AssessmentApp from './assessment/App';
 
 // Redux Store
 import configureStore from './store';
@@ -29,7 +29,7 @@ const store = configureStore({
 const render = () => (
 	<Provider store={store}>
 		<Router>
-			<App />
+			<AssessmentApp />
 		</Router>
 	</Provider>
 );

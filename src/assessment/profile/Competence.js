@@ -91,8 +91,10 @@ class Competence extends PureComponent {
 					<Table.Header>
 						<Table.Row>
 							<Table.HeaderCell>
-								Шкала оценки
-								<Icon onClick={this.handleToggDescription} name='info' className='assessment-info-icon'/>
+								<span className='assessment-info-container' onClick={this.handleToggDescription}>
+									Посмотреть индикаторы компетенции
+									<Icon name='info' className='assessment-info-icon'/>
+								</span>
 							</Table.HeaderCell>
 							<Table.HeaderCell>Подтверждающий пример</Table.HeaderCell>
 						</Table.Row>

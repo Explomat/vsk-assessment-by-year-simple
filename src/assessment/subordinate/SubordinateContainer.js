@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 function mapStateToProps(state){
-	const { subordinate } = state.app;
+	const { subordinate } = state.assessment;
 	const result = omit(subordinate, 'result');
 	return {
 		PaContainer,

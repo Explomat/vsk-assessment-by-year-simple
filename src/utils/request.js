@@ -4,20 +4,49 @@ export function pureUrl(){
 		window.location.protocol + window.location.host : window.location.protocol + '//192.168.217.201';
 }
 
-export function createBaseUrl(action_name, params = {}){
-	action_name = action_name || '';
+const servers = {
+	assessment: {
+		router: {
+			prod: '6824411951688522201',
+			test: '6727531844004172765'
+		},
+		server: {
+			prod: '6672233575633323919',
+			test: '6672233575633323919'
+		}
+	},
+	idp: {
+		router: {
+			prod: '6824411951688522201',
+			test: '6727531844004172765'
+		},
+		server: {
+			prod: '6906058991562141523',
+			test: '6906058991562141523'
+		}
+	}
+}
 
+export function createBaseUrl(appName, actionName, params = {}){
+	const aName = actionName || '';
+	const isProd = process.env.NODE_ENV === 'production';
+
+	if (!(appName in servers)) {
+		throw 'App does not exist';
+	}
+
+	const app = servers[appName];
 	const baseUrl = pureUrl() + '/custom_web_template.html';
 
-	window.routerId = process.env.NODE_ENV === 'production' ? '6824411951688522201' : '6727531844004172765'; // test '6727531844004172765'; prod '6789943271516957593'
-	window.serverId = process.env.NODE_ENV === 'production' ? '6672233575633323919' : '6672233575633323919'; // test '6672233575633323919'; prod '6793191618705752266'
-	const url = new URL(`${baseUrl}?object_id=${window.routerId}&server_id=${window.serverId}&action_name=${action_name}&r=${(new Date()).getTime()}`);
+	window.routerId = isProd ? app.router.prod : app.router.test;
+	window.serverId = isProd ? app.server.prod : app.server.test;
+	const url = new URL(`${baseUrl}?object_id=${window.routerId}&server_id=${window.serverId}&action_name=${aName}&r=${(new Date()).getTime()}`);
 	Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 	return url.href;
 }
 
-const request = (action_name, urlParams = {}) => {
-	const _url = createBaseUrl(action_name, urlParams);
+const request = (appName, actionName, urlParams = {}) => {
+	const _url = createBaseUrl(appName, actionName, urlParams);
 
 	return {
 		get: (params = {}, config) => {
@@ -54,4 +83,5 @@ const request = (action_name, urlParams = {}) => {
 		},
 	}
 }
+
 export default request;

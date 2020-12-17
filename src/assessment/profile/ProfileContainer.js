@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 
 function mapStateToProps(state){
-	const { profile } = state.app;
+	const { profile } = state.assessment;
 	const result = omit(profile, 'result');
 	return {
 		PaContainer,

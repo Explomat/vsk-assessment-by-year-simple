@@ -1,11 +1,17 @@
 .assessment-info-icon {
 	margin-left: 8px !important;
-	border: 1px solid #2185d0;
+	border: 1px solid #4183c4;
 	height: 1.5em !important;
 	width: 1.5em !important;
 	border-radius: 50%;
-	color: #2185d0 !important;
 	cursor: pointer;
+}
+
+.assessment-info-container {
+	font-weight: initial;
+    color: #4183c4 !important;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .assessment-profile__competence-description-a {
@@ -31,7 +37,7 @@
 }
 
 .assessment-profile__competence-description-header--positive {
-	background-color: #E4fdd6;
+	background-color: #009688;
 	color: #fff !important;
 }
 
@@ -41,7 +47,7 @@
 }
 
 .assessment-profile__competence-description-header--negative {
-	background-color: #Ee786c;
+	background-color: #FF5252;
     color: #fff !important;;
 }
 

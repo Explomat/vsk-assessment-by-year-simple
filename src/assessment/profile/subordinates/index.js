@@ -191,7 +191,7 @@ class Subordinates extends Component {
 
 
 function mapStateToProps(state){
-	const { subordinates, profile } = state.app;
+	const { subordinates, profile } = state.assessment;
 
 	return {
 		ui: profile.ui,
