@@ -47,6 +47,18 @@
 			isNeedAskTrain,
 			isTrain
 		) {
+			/*alert('blockSubId: ' + blockSubId);
+			alert('userId: ' + userId);
+			alert('assessmentAppraiseId: ' + assessmentAppraiseId);
+			alert('competenceBlockId: ' + competenceBlockId);
+			alert('assignImmediately: ' + assignImmediately);
+			alert('channelSelection: ' + channelSelection);
+			alert('positionSelection: ' + positionSelection);
+			alert('channelId: ' + channelId);
+			alert('positionLevelId: ' + positionLevelId);
+			alert('isNeedAskTrain: ' + isNeedAskTrain);
+			alert('isTrain: ' + isTrain);*/
+
 			// isTrain - 3 значения. true / false / null
 			if (isNeedAskTrain && isTrain == null) {
 				return {
@@ -67,7 +79,7 @@
 					channelSelection && positionSelection
 					&& channelId == null && positionLevelId == null
 				) {
-					return channels and positions
+					//return channels and positions
 					var channels = Assessment.getBlocksTree(competenceBlockId);
 					return {
 						hasPa: false,
@@ -147,11 +159,17 @@
 			var blocks = bsettings.blocks;
 
 			var gkBs = User.getBlockSubByUserId(curUserID, blocks.gk, assessmentAppraiseId);
+			alert('gkBs:' + tools.object_to_text(gkBs, 'json'));
 			var topBg = User.getBlockGroupByUserId(curUserID, blocks.top, assessmentAppraiseId);
+			alert('topBg:' + tools.object_to_text(topBg, 'json'));
 			var fscBs = User.getBlockSubByUserId(curUserID, blocks.federal_service_center, assessmentAppraiseId);
+			alert('fscBs:' + tools.object_to_text(fscBs, 'json'));
 			var dmBs = User.getBlockSubByUserId(curUserID, blocks.division_moscow, assessmentAppraiseId);
+			alert('dmBs:' + tools.object_to_text(dmBs, 'json'));
 			var aBs = User.getBlockSubByUserId(curUserID, blocks.affiliate, assessmentAppraiseId);
+			alert('aBs:' + tools.object_to_text(aBs, 'json'));
 			var amBs = User.getBlockSubByUserId(curUserID, blocks.affiliate_manager, assessmentAppraiseId);
+			alert('amBs:' + tools.object_to_text(amBs, 'json'));
 
 			var cblock = null;
 			var isNeedAskTrain = false;
@@ -189,9 +207,12 @@
 					}
 				}
 			} else if (aBs != undefined) {
+				alert(1);
 				if (amBs != undefined) {
+					alert(2);
 					cblock = amBs;
 				} else {
+					alert(3);
 					cblock = aBs;
 				}
 			}

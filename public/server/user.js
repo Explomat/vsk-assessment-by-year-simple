@@ -95,6 +95,7 @@ function getBlockSubByUserId(userId, blockCode, assessmentAppraiseId) {
 		inSub = isInSub(userId, OptInt(el.subdivision), _excSubs, _positions, _excludePositions, _excCollaborators);
 
 		if (inSub) {
+			//alert('inSub');
 			return doc;
 		}
 	}

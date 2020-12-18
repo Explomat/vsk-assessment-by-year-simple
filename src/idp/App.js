@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router';
+import Meta from './meta';
 import Dp from './dp/dp';
 import DpList from './dp';
 import Manager from './manager';
@@ -19,6 +20,7 @@ class App extends Component {
 
 		this.onTabChange = this.onTabChange.bind(this);
 		this.routes = {
+			meta: 'idp/meta',
 			dps: 'idp/dps',
 			manager: 'idp/users_by_manager'
 		}
@@ -49,10 +51,7 @@ class App extends Component {
 					{mlen && <Tabs.TabPane tab='Мои сотрудники' key={`${match.url}/${this.routes.manager}`} /> }
 				</Tabs>
 
-				{/*<Route path='/profile/:id/idp/dps' component={DpList}/>
-				<Route path='/profile/:id/idp/users_by_manager' component={Manager}/>
-				<Route path='/profile/:id/idp/dps/:dp_id' component={Dp}/>*/}
-
+				<Route exact path={`${match.path}/${this.routes.meta}`} component={Meta}/>
 				<Route exact path={`${match.path}/${this.routes.dps}`} component={DpList}/>
 				<Route exact path={`${match.path}/${this.routes.manager}`} component={Manager}/>
 				<Route exact path={`${match.path}/${this.routes.dps}/:dp_id`} component={Dp}/>
@@ -62,6 +61,8 @@ class App extends Component {
 						return <Redirect to={`${match.url}/${this.routes.dps}`} />
 					} else if (mlen) {
 						return <Redirect to={`${match.url}/${this.routes.manager}`} />
+					} else {
+						return <Redirect to={`${match.url}/${this.routes.meta}`} />
 					}
 				}}/>
 			</div>
@@ -73,7 +74,6 @@ function mapStateToProps(state){
 	return {
 		ui: state.idp.ui,
 		dp: state.idp.dp,
-		dpList: state.idp,
 		manager: state.idp.manager
 	}
 }

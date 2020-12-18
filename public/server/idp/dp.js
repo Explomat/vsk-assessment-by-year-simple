@@ -285,6 +285,7 @@ function getCompetencesAndThemes(paId, assessmentAppraiseId) {
 
 			cc = {
 				id: String(c.competence_id),
+				name: String(c.competence_id.OptForeignElem.name),
 				weight: String(c.weight),
 				mark: String(c.mark),
 				mark_text: String(c.mark_text),
@@ -313,6 +314,22 @@ function getCompetencesAndThemes(paId, assessmentAppraiseId) {
 					and ccacs.scale = '" + String(c.mark_text) + "' \n\
 			");
 
+			alert("sql: \n\
+				select \n\
+					ccits.id theme_id, \n\
+					ccits.[name] theme_name, \n\
+					ccitls.[level] theme_level \n\
+				from cc_idp_competence_themes ccicts \n\
+				inner join cc_idp_themes ccits on ccits.id = ccicts.idp_theme_id \n\
+				inner join cc_idp_theme_levels ccitls on ccitls.id = ccits.idp_theme_level_id \n\
+				inner join cc_idp_assessment_levels ccials on ccials.idp_theme_level_id = ccitls.id \n\
+				inner join cc_assessment_commons ccacs on ccacs.id = ccials.cc_assessment_common_id \n\
+				where \n\
+					ccicts.competence_id = " + c.competence_id + " \n\
+					and ccicts.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+					and ccacs.scale = '" + String(c.mark_text) + "' \n\
+			");
+
 			for (ct in qct) {
 				cc.competence_themes.push({
 					id: String(ct.theme_id),
@@ -326,6 +343,7 @@ function getCompetencesAndThemes(paId, assessmentAppraiseId) {
 
 	return comps;
 }
+
 
 
 

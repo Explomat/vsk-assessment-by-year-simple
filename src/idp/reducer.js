@@ -2,6 +2,7 @@ import { constants } from './appActions';
 import { combineReducers } from 'redux';
 import dpReducer from './dp/dpReducer';
 import managerReducer from './manager/managerReducer';
+import metaReducer from './meta/metaReducer';
 
 const uiReducer = (state = {
 	isLoading: false,
@@ -39,6 +40,7 @@ const uiReducer = (state = {
 const reducer = combineReducers({
 	ui: uiReducer,
 	dp: dpReducer,
+	meta: metaReducer,
 	manager: managerReducer
 });
 

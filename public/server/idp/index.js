@@ -9,11 +9,14 @@ DropFormsCache('x-local://wt/web/vsk/portal/idp/server/user.js');
 var Dp = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/dp.js');
 DropFormsCache('x-local://wt/web/vsk/portal/idp/server/dp.js');
 
+var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/assessment.js');
+DropFormsCache('x-local://wt/web/vsk/portal/idp/server/assessment.js');
 
-//var st = Utils.getSystemSettings(6790263731625424310);
-//var curUserID = OptInt(st.TopElem.cur_user_id);
 
-var curUserID = 6711785032659205612; // me test
+var st = Utils.getSystemSettings(6790263731625424310);
+var curUserID = OptInt(st.TopElem.cur_user_id);
+
+//var curUserID = 6711785032659205612; // me test
 //var curUserID = 6719948502038810952; // volkov test
 //var curUserID = 6719947231785930663; // boss test
 //var curUserID = 6719948119925684121; //baturin test
@@ -105,6 +108,7 @@ function get_CompetencesAndThemes(queryObjects) {
 		where \n\
 			ps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 			and ps.person_id = " + curUserID + " \n\
+			and ps.expert_person_id <> " + curUserID + "\n\
 			and ps.is_done = 1"
 	));
 
@@ -113,7 +117,11 @@ function get_CompetencesAndThemes(queryObjects) {
 	}
 
 	var result = Dp.getCompetencesAndThemes(qs.id, assessmentAppraiseId);
-	return Utils.setSuccess(result);
+	var commonScales = Assessment.getCommonScales();
+	return Utils.setSuccess({
+		competences: result,
+		scales: commonScales
+	});
 }
 
 function post_Idps(queryObjects) {

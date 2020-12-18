@@ -22,7 +22,6 @@ const Pa = ({ pa, CompetenceContainer, ...props }) => {
 		);
 	}
 
-	console.log(pa);
 	const resultMark = computeScaleByPercent(pa.overall, props);
 	const renderedResultMark = renderResultMark(resultMark);
 	const isCompleted = isCompetencesCompleted(props);

@@ -19,7 +19,7 @@ class DpList extends Component {
 		if (list.length === 0) {
 			return <Alert message='Нет данных' type='info' />
 		}
-
+		
 		return (
 			<div className='dps'>
 				<Card>

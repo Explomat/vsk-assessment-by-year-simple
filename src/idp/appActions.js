@@ -1,5 +1,6 @@
 import { getUserDps } from './dp/dpActions';
 import { getUserDpsByManager } from './manager/managerActions';
+import { getCompetencesAndThemes } from './meta/metaActions';
 
 export const constants = {
 	'IDP_LOADING': 'IDP_LOADING',
@@ -23,9 +24,9 @@ export function error(error){
 
 
 export function getUsers(id) {
-	return dispatch => {
+	return (dispatch, getState) => {
 		Promise.all([dispatch(getUserDps(id)), dispatch(getUserDpsByManager(id))])
-		.then(responses  => {
+		.then(()  => {
 			dispatch(loading(false));
 		});
 	}
