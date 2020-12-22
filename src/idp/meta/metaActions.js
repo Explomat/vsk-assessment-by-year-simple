@@ -7,14 +7,26 @@ export const constants = {
 		'DP_META_FETCH_COMPETENCES_AND_THEMES'
 	]),
 	'DP_META_LOADING': 'DP_META_LOADING',
-	'DP_META_CHECKED': 'DP_META_CHECKED'
+	'DP_META_COMPETENCE_CHECKED': 'DP_META_COMPETENCE_CHECKED',
+	'DP_META_THEME_CHECKED': 'DP_META_THEME_CHECKED'
 };
 
-export function onChecked(id, isChecked) {
+export function onCompetenceChecked(isChecked, competence_id) {
 	return {
-		type: constants.DP_META_CHECKED,
+		type: constants.DP_META_COMPETENCE_CHECKED,
 		payload: {
-			id,
+			competence_id,
+			isChecked
+		}
+	}
+}
+
+export function onThemeChecked(isChecked, competence_id, theme_id) {
+	return {
+		type: constants.DP_META_THEME_CHECKED,
+		payload: {
+			competence_id,
+			theme_id,
 			isChecked
 		}
 	}
