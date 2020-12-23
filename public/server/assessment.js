@@ -1,6 +1,6 @@
 function setComputedFields(curUserID, userId, bossId, step) {
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
 
 	var actions = User.getActions(curUserID, 'pa');
 	var updateAction = (ArrayOptFind(actions, 'This == "update"') != undefined);
@@ -14,8 +14,8 @@ function setComputedFields(curUserID, userId, bossId, step) {
 }
 
 function createBoss(paId, assessmentAppraiseId) {
-	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+	var Settings = OpenCodeLib('./settings.js');
+	DropFormsCache('./settings.js');
 	var bsettings = Settings.baseSettings(assessmentAppraiseId);
 
 	/*var docPaUser = OpenDoc(UrlFromDocID(Int(paId)));
@@ -78,11 +78,11 @@ function createBoss(paId, assessmentAppraiseId) {
 }
 
 function create (userId, assessmentAppraiseId, blockSubId, blockId) {
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
 
-	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+	var Settings = OpenCodeLib('./settings.js');
+	DropFormsCache('./settings.js');
 	var bsettings = Settings.baseSettings(assessmentAppraiseId);
 
 	/*var isBoss = User.isBoss(userId);
@@ -236,8 +236,8 @@ function update(paId, _competences, overall, wstate) {
 }
 
 function getAssessmentPlan(userId, assessmentAppraiseId){
-	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+	var Settings = OpenCodeLib('./settings.js');
+	DropFormsCache('./settings.js');
 
 	var bsettings = Settings.baseSettings(assessmentAppraiseId);
 

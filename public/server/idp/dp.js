@@ -13,11 +13,11 @@ function getMainSteps(){
 
 
 function getObject(dpId, assessmentAppraiseId) {
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/idp/server/user.js');
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
 
-	var Task = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/task.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/idp/server/task.js');
+	var Task = OpenCodeLib('./task.js');
+	DropFormsCache('./task.js');
 
 	var obj = {
 		managers: [],
@@ -169,11 +169,11 @@ function listByManager(
 	sort,
 	sortDirection
 ) {
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/idp/server/user.js');
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
 
-	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/utils.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/idp/server/utils.js');
+	var Utils = OpenCodeLib('./utils.js');
+	DropFormsCache('./utils.js');
 
 	var rs = User.roles();
 
@@ -314,21 +314,6 @@ function getCompetencesAndThemes(paId, assessmentAppraiseId) {
 					and ccacs.scale = '" + String(c.mark_text) + "' \n\
 			");
 
-			alert("sql: \n\
-				select \n\
-					ccits.id theme_id, \n\
-					ccits.[name] theme_name, \n\
-					ccitls.[level] theme_level \n\
-				from cc_idp_competence_themes ccicts \n\
-				inner join cc_idp_themes ccits on ccits.id = ccicts.idp_theme_id \n\
-				inner join cc_idp_theme_levels ccitls on ccitls.id = ccits.idp_theme_level_id \n\
-				inner join cc_idp_assessment_levels ccials on ccials.idp_theme_level_id = ccitls.id \n\
-				inner join cc_assessment_commons ccacs on ccacs.id = ccials.cc_assessment_common_id \n\
-				where \n\
-					ccicts.competence_id = " + c.competence_id + " \n\
-					and ccicts.assessment_appraise_id = " + assessmentAppraiseId + " \n\
-					and ccacs.scale = '" + String(c.mark_text) + "' \n\
-			");
 
 			for (ct in qct) {
 				cc.competence_themes.push({
@@ -363,7 +348,7 @@ function getAssessments(){
 	");
 }
 
-function getNextUserId(crId, role){
+/*function getNextUserId(crId, role){
 	var User = OpenCodeLib('x-local://wt/web/vsk/portal/adaptation/server/user.js');
 	DropFormsCache('x-local://wt/web/vsk/portal/adaptation/server/user.js');
 
@@ -443,4 +428,4 @@ function getCurators(userId, userRole){
 			bt.code = '" + bossTypes.curator + "' \n\
 			and tutor_id <> " + userId + " \n\
 	");
-}
+}*/

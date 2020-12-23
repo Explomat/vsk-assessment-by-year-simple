@@ -73,8 +73,8 @@ function getBlockSubByUserId(userId, blockCode, assessmentAppraiseId) {
 			and ccabs.assessment_appraise_id = " + assessmentAppraiseId +" \n\
 	");
 
-	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
+	var Utils = OpenCodeLib('./utils.js');
+	DropFormsCache('./utils.js');
 
 	var settingsDoc = Utils.getSystemSettings(assessmentAppraiseId);
 	var _excCollaborators = ArrayExtractKeys(settingsDoc.TopElem.exclude_collaborators, 'exclude_collaborator_id');
@@ -194,8 +194,8 @@ function getActions(userId, objectType) {
 }
 
 function getPas(userId, status, assessmentAppraiseId) {
-	var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
+	var Assessment = OpenCodeLib('./assessment.js');
+	DropFormsCache('./assessment.js');
 
 	var qs = "select pas.id \n\
 		from \n\
@@ -373,8 +373,8 @@ function getUser(userId, assessmentAppraiseId, stopHireDate) {
 }
 
 function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, minRow, maxRow, pageSize) {
-	var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
+	var Assessment = OpenCodeLib('./assessment.js');
+	DropFormsCache('./assessment.js');
 
 	function getS(minRow, maxRow) {
 		var qsubs = "sql: \n\

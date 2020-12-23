@@ -35,7 +35,7 @@ function getByTaskId(taskId){
 }
 
 function create(description, resut_form, expert_collaborator_id, idp_task_type_id, development_plan_id, competence_id) {
-	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/utils.js');
+	var Utils = OpenCodeLib('./utils.js');
 
 	var taskDoc = tools.new_doc_by_name('cc_idp_task');
 	taskDoc.TopElem.description = description;
@@ -64,7 +64,7 @@ function create(description, resut_form, expert_collaborator_id, idp_task_type_i
 }
 
 function update(dpId, taskId, data, userId){
-	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/utils.js');
+	var Utils = OpenCodeLib('./utils.js');
 
 	var task = getByTaskId(taskId);
 	if (task == undefined){
@@ -94,7 +94,7 @@ function remove(taskId){
 }
 
 function list(dpId, competenceId, userId) {
-	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/utils.js');
+	var Utils = OpenCodeLib('./utils.js');
 
 	var qt = XQuery("sql: \n\
 		select \n\
@@ -131,9 +131,16 @@ function list(dpId, competenceId, userId) {
 	return tarr;
 }
 
+function getTaskTypes() {
+	return XQuery("sql: \n\
+		select itts.* \n\
+		from cc_idp_task_types itts \n\
+	");
+}
+
 function isAccessToUpdate(id, userId) {
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/idp/server/user.js');
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
 
 	var actions = User.getActions(userId, 'cc_idp_task');
 	var updateAction = ArrayOptFind(actions, 'This == \'update\'');
@@ -141,8 +148,8 @@ function isAccessToUpdate(id, userId) {
 }
 
 function isAccessToRemove(id, userId) {
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/idp/server/user.js');
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
 
 	var actions = User.getActions(userId, 'cc_idp_task');
 	var removeAction = ArrayOptFind(actions, 'This == \'remove\'');
@@ -150,8 +157,8 @@ function isAccessToRemove(id, userId) {
 }
 
 function isAccessToAdd(userId) {
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/idp/server/user.js');
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
 
 	var actions = User.getActions(userId, 'cc_idp_task');
 	var addAction = ArrayOptFind(actions, 'This == \'add\'');

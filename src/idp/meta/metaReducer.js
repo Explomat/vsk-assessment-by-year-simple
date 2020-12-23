@@ -1,4 +1,6 @@
 import { constants } from './metaActions';
+import collaborators from '../../components/collaborators/listReducer';
+import { combineReducers } from 'redux';
 
 const themeReducer = (state = [], action) => {
 	switch(action.type) {
@@ -31,6 +33,7 @@ const metaReducer = (state = {
 		}
 	],
 	scales: [],
+	task_types: [],
 	hasChecked: false,
 	hasThemesChecked: false,
 	maxCountCompetencesForSelected: 2,
@@ -71,8 +74,6 @@ const metaReducer = (state = {
 
 		case constants.DP_META_THEME_CHECKED: {
 			const { payload } = action;
-
-			const otherComps = state.competences.filter(c => c.id !== payload.competence_id);
 			const comp = state.competences.find(c => c.id === payload.competence_id);
 
 			if (comp) {
@@ -85,7 +86,7 @@ const metaReducer = (state = {
 				});
 				return {
 					...state,
-					competences: [...otherComps, comp],
+					competences: [...state.competences],
 					hasThemesChecked: comp.competence_themes.filter(c => c.checked).length > 0
 				}
 			}
@@ -106,4 +107,9 @@ const metaReducer = (state = {
 	}
 }
 
-export default metaReducer;
+const reducer = combineReducers({
+	main: metaReducer,
+	collaborators: collaborators
+});
+
+export default reducer;

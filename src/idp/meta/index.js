@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
-import { Card, Checkbox, Modal, Button, List, Avatar } from 'antd';
+import { Card, Checkbox, Modal, Button, List, Avatar, Table } from 'antd';
+import TaskForm from './TaskForm';
 import { ContactsOutlined, CheckOutlined } from '@ant-design/icons';
-import { getCompetencesAndThemes, onCompetenceChecked, onThemeChecked } from './metaActions';
+import { getMeta, onCompetenceChecked, onThemeChecked } from './metaActions';
 import './meta.css';
 
 class Meta extends Component {
@@ -11,26 +12,36 @@ class Meta extends Component {
 	constructor(props){
 		super(props);
 
+		this.handleToggleTaskModal = this.handleToggleTaskModal.bind(this);
 		this.handleShowConfirm = this.handleShowConfirm.bind(this);
 		this.handleCreateDp = this.handleCreateDp.bind(this);
 		this.handleChecked = this.handleChecked.bind(this);
+		this.handlePrevStep = this.handlePrevStep.bind(this);
 		this.handleNextStep = this.handleNextStep.bind(this);
 		this.handleCheckedTheme = this.handleCheckedTheme.bind(this);
+		this.renderConfirm = this.renderConfirm.bind(this);
+		this.renderTasks = this.renderTasks.bind(this);
+		this.renderButtons = this.renderButtons.bind(this);
+		this.renderTaskModal = this.renderTaskModal.bind(this);
 
 		this.state = {
 			isShowConfirm: false,
-			steps: {
-				1: 1,
-				2: 2,
-				3: 3
-			},
+			isShowTaskForm: false,
+			stepsCount: 4,
 			currentStep: 1
 		}
 	}
 
 	componentDidMount(){
-		const { match, getCompetencesAndThemes } = this.props;
-		getCompetencesAndThemes(match.params.id);
+		const { match, getMeta } = this.props;
+		getMeta(match.params.id);
+	}
+
+	handleToggleTaskModal(competenceId) {
+		this.currentCompetenceId = competenceId;
+		this.setState({
+			isShowTaskForm: !this.state.isShowTaskForm
+		});
 	}
 
 	handleChecked(e, id) {
@@ -50,9 +61,15 @@ class Meta extends Component {
 		this.handleShowConfirm();
 	}
 
+	handlePrevStep() {
+		this.setState({
+			currentStep: (this.state.currentStep - 1)
+		});
+	}
+
 	handleNextStep() {
 		this.setState({
-			currentStep: this.state.currentStep + 1
+			currentStep: (this.state.currentStep + 1)
 		});
 	}
 
@@ -60,33 +77,154 @@ class Meta extends Component {
 		this.props.onThemeChecked(e.target.checked, competenceId, themeId);
 	}
 
+	renderConfirm() {
+		const { meta } = this.props;
+
+		return (
+			<Modal
+				visible={this.state.isShowConfirm}
+				title='Подтвердите действие'
+				cancelText='Отмена'
+				okText='Ok'
+				onCancel={this.handleShowConfirm}
+				onOk={this.handleCreateDp}
+			>
+				<span className='content'>
+					<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}" ?`}</p>
+					<p>Будьте внимательны, эти данные нельзя будет изменить.</p>
+				</span>
+			</Modal>
+		);
+	}
+
+	renderTasks(tasks = []) {
+		const columns = [
+			{
+				title: 'Тип задачи',
+				dataIndex: 'idp_task_type_id',
+				key: 'idp_task_type_id'
+			},
+			{
+				title: 'Описание',
+				dataIndex: 'description',
+				key: 'description'
+			},
+			{
+				title: 'Образ результата',
+				dataIndex: 'resut_form',
+				key: 'resut_form'
+			},
+			{
+				title: 'Эксперт',
+				dataIndex: 'expert_collaborator_id',
+				key: 'expert_collaborator_id'
+			}
+		];
+
+		return <Table dataSource={tasks} columns={columns} />;
+	}
+
+	renderButtons() {
+		const { currentStep, stepsCount } = this.state;
+		const { meta } = this.props;
+		const buttons = [];
+
+		const buttonNext = <Button key='1' className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleNextStep}>Далее</Button>;
+		const buttonPrev = <Button key='2' className='clearfix' type='primary' style={{float: 'left'}} onClick={this.handlePrevStep}>Назад</Button>;
+
+		if (currentStep < stepsCount && currentStep !== 1) {
+			buttons.push(buttonPrev);
+		}
+
+		if (currentStep === 1 && meta.hasChecked) {
+			buttons.push(buttonNext);
+		} else if (currentStep === 2 && meta.hasThemesChecked) {
+			buttons.push(buttonNext);
+		}
+
+		return <div className='dp-meta__buttons clearfix'>{buttons}</div>;
+	}
+
+	renderTaskModal() {
+		const { isShowTaskForm } = this.state;
+		const { meta } = this.props;
+
+		if (isShowTaskForm) {
+			return (
+				<Modal
+					visible
+					title='Задача'
+					cancelText='Отмена'
+					okText='Ok'
+					onCancel={this.handleToggleTaskModal}
+					onOk={this.handleToggleTaskModal}
+				>
+					<TaskForm type='Collaborators' task_types={meta.task_types}/>
+				</Modal>
+			);
+		}
+	}
+
 	render() {
 		const { isShowConfirm } = this.state;
 		const { meta, match } = this.props;
-		const { currentStep } = this.state;
+		const { currentStep, stepsCount } = this.state;
 
 		if (meta.ui.isLoading) {
 			return null;
 		}
 
-		return (
-			<Card className='dp-meta' title={`${currentStep === 1 ? 'Компетенции' : 'Темы обучений для развития компетенций'}`}>
-				{currentStep === 1 && <div className='dp-meta__description'>Выберите 1 или 2 компетенции для развития. При выборе двух компетенций - вам нужно будет выбрать по одному обязательному обучению для каждой, при выборе одно - два обучения для развития этой компетенции.</div>}
-				{currentStep === 2 && <div className='dp-meta__description'>Выберите темы для развития</div>} 
-				<List
-					className='dp-list'
-					itemLayout='horizontal'
-				>
-					{meta.competences.map(item => {
-						const scale = meta.scales.find(s => s.scale === item.mark_text);
-						const className = scale ? 'dp-meta__label--active': '';
+		return (<div>
+			{currentStep === 1 &&
+				<Card className='dp-meta' title='Компетенции'>
+					<div className='dp-meta__description'>Выберите 1 или 2 компетенции для развития. При выборе двух компетенций - вам нужно будет выбрать по одному обязательному обучению для каждой, при выборе одно - два обучения для развития этой компетенции.</div>
+					<List
+						className='dp-list'
+						itemLayout='horizontal'
+					>
+						{meta.competences.map(item => {
+							const scale = meta.scales.find(s => s.scale === item.mark_text);
+							const className = scale ? 'dp-meta__label--active': '';
 
-						return (
-							<div key={item.id}>
-								{currentStep === 1 &&
-									<List.Item className={`dp-meta-competence dp-meta-competence--1-step`}>
+							return (
+								<List.Item key={item.id} className={`dp-meta-competence dp-meta-competence--1-step`}>
+									<List.Item.Meta
+										avatar={<Checkbox checked={item.checked} onChange={e => this.handleChecked(e, item.id)}/>}
+										title={
+											<div>
+									 			<span style={{
+													backgroundColor: scale && scale.color,
+													borderColor: scale && scale.color
+												}}
+												className={`dp-meta__label ${className}`}>
+													{item.mark_text}
+												</span>
+												<span style={{color: '#1890ff'}}>{item.name}</span>
+									 		</div>
+								 		}
+										description={item.common_comment}
+									/>
+								</List.Item>
+							)
+						})}
+					</List>
+				</Card>
+			}
+			{currentStep === 2 &&
+				<Card className='dp-meta' title='Темы обучений для развития компетенций'>
+					<div className='dp-meta__description'>Выберите темы для развития</div>
+					<List
+						className='dp-list'
+						itemLayout='horizontal'
+					>
+						{meta.competences.filter(c => c.checked).map(item => {
+							const scale = meta.scales.find(s => s.scale === item.mark_text);
+							const className = scale ? 'dp-meta__label--active': '';
+
+							return (
+								<div key={item.id}>
+									<List.Item className={`dp-meta-competence dp-meta-competence--2-step`}>
 										<List.Item.Meta
-											avatar={<Checkbox checked={item.checked} onChange={e => this.handleChecked(e, item.id)}/>}
 											title={
 												<div>
 										 			<span style={{
@@ -99,72 +237,83 @@ class Meta extends Component {
 													<span style={{color: '#1890ff'}}>{item.name}</span>
 										 		</div>
 									 		}
-											description={item.common_comment}
 										/>
 									</List.Item>
-								}
-
-								{currentStep === 2 &&
-									item.checked && <div>
-										<List.Item className={`dp-meta-competence dp-meta-competence--2-step`}>
-											<List.Item.Meta
-												title={
-													<div>
-											 			<span style={{
-															backgroundColor: scale && scale.color,
-															borderColor: scale && scale.color
-														}}
-														className={`dp-meta__label ${className}`}>
-															{item.mark_text}
-														</span>
-														<span style={{color: '#1890ff'}}>{item.name}</span>
-											 		</div>
-										 		}
-											/>
-										</List.Item>
-										<List className='dp-list-2-step' itemLayout='horizontal'>
-											{item.competence_themes.map(t => {
-												return (
-													<List.Item key={t.id} className='dp-list-2-meta-theme'>
-														<List.Item.Meta
-															avatar={<Checkbox checked={t.checked} onChange={e => this.handleCheckedTheme(e, item.id, t.id)}/>}
-															title={t.name}
-														/>
-													</List.Item>
-												)
-											})}
-										</List>
-									</div>
-								}
-							</div>
-						)
-					})}
-				</List>
-				<div className='clearfix' />
-				{currentStep < 4 && <Button className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleNextStep} disabled={!meta.hasChecked}>Далее</Button>}
-				{currentStep === 4 && <Button className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleShowConfirm} disabled={!meta.hasChecked}>Сохранить</Button>}
-				<Modal
-					visible={isShowConfirm}
-					title='Подтвердите действие'
-					cancelText='Отмена'
-					okText='Ok'
-					onCancel={this.handleShowConfirm}
-					onOk={this.handleCreateDp}
+									<List className='dp-list-2-step' itemLayout='horizontal'>
+										{item.competence_themes.map(t => {
+											return (
+												<List.Item key={t.id} className='dp-list-2-meta-theme'>
+													<List.Item.Meta
+														avatar={<Checkbox checked={t.checked} onChange={e => this.handleCheckedTheme(e, item.id, t.id)}/>}
+														title={t.name}
+													/>
+												</List.Item>
+											)
+										})}
+									</List>
+								</div>
+							)
+						})}
+					</List>
+				</Card>
+			}
+			{currentStep === 3 &&
+				<Card
+					className='dp-meta'
+					title='Выберите дополнительные задачи для развития компетенций'
 				>
-					<span className='content'>
-						<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}" ?`}</p>
-						<p>Будьте внимательны, эти данные нельзя будет изменить.</p>
-					</span>
-				</Modal>
-			</Card>
-		);
+					<div className='dp-meta__description'>Вы можете выбрать дополнительные задачи для развития выбранных компетенций</div>
+					<List
+						className='dp-list'
+						itemLayout='horizontal'
+					>
+						{meta.competences.filter(c => c.checked).map(item => {
+							const scale = meta.scales.find(s => s.scale === item.mark_text);
+							const className = scale ? 'dp-meta__label--active': '';
+
+							return (
+								<div key={item.id}>
+									<List.Item
+										className={`dp-meta-competence dp-meta-competence--2-step`}
+										actions={[
+											<Button className='dp-meta__add-task' type='primary' size='small' ghost onClick={() => this.handleToggleTaskModal(item.id)}>
+												Добавить задачу
+											</Button>
+										]}
+									>
+										<List.Item.Meta
+											title={
+												<div>
+										 			<span style={{
+														backgroundColor: scale && scale.color,
+														borderColor: scale && scale.color
+													}}
+													className={`dp-meta__label ${className}`}>
+														{item.mark_text}
+													</span>
+													<span style={{color: '#1890ff'}}>{item.name}</span>
+										 		</div>
+									 		}
+										/>
+									</List.Item>
+									{this.renderTasks(item.tasks)}
+								</div>
+							)
+						})}
+					</List>
+				</Card>
+			}
+			<div className='clearfix' />
+			{this.renderButtons()}
+			{this.renderTaskModal()}
+		</div>)
 	}
 }
 
 function mapStateToProps(state){
 	return {
-		meta: state.idp.meta
+		meta: state.idp.meta.main
 	}
 }
 
-export default withRouter(connect(mapStateToProps, { getCompetencesAndThemes, onCompetenceChecked, onThemeChecked })(Meta));
+export default withRouter(connect(mapStateToProps, { getMeta, onCompetenceChecked, onThemeChecked })(Meta));

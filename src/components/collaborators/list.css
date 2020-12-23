@@ -1,0 +1,14 @@
+.selected-learnings-container {
+	margin-top: 20px;
+}
+
+.selected-learnings {
+	background-color: #f4faff;
+    border: 1px solid #dadada;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.learnings__search {
+	margin-bottom: 20px !important;
+}

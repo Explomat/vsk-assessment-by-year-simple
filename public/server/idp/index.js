@@ -1,20 +1,23 @@
 <%
 
-var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/utils.js');
-DropFormsCache('x-local://wt/web/vsk/portal/idp/server/utils.js');
+var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/utils.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/utils.js');
 
-var User = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/user.js');
-DropFormsCache('x-local://wt/web/vsk/portal/idp/server/user.js');
+var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/user.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/user.js');
 
-var Dp = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/dp.js');
-DropFormsCache('x-local://wt/web/vsk/portal/idp/server/dp.js');
+var Dp = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/dp.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/dp.js');
 
-var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/idp/server/assessment.js');
-DropFormsCache('x-local://wt/web/vsk/portal/idp/server/assessment.js');
+var Task = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/task.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/task.js');
+
+var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/assessment.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/assessment.js');
 
 
 var st = Utils.getSystemSettings(6790263731625424310);
-var curUserID = OptInt(st.TopElem.cur_user_id);
+var curUserID = 6711785032659205612; //OptInt(st.TopElem.cur_user_id);
 
 //var curUserID = 6711785032659205612; // me test
 //var curUserID = 6719948502038810952; // volkov test
@@ -94,7 +97,7 @@ function get_Idps(queryObjects) {
 	}
 }
 
-function get_CompetencesAndThemes(queryObjects) {
+function get_Meta(queryObjects) {
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
 
 	if (assessmentAppraiseId == undefined) {
@@ -112,15 +115,27 @@ function get_CompetencesAndThemes(queryObjects) {
 			and ps.is_done = 1"
 	));
 
+	alert("sql: \n\
+		select ps.id \n\
+		from \n\
+			pas ps\n\
+		where \n\
+			ps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+			and ps.person_id = " + curUserID + " \n\
+			and ps.expert_person_id <> " + curUserID + "\n\
+			and ps.is_done = 1");
+
 	if (qs == undefined) {
 		return Utils.setError('Не найдена завершенная анкета оценки');
 	}
 
 	var result = Dp.getCompetencesAndThemes(qs.id, assessmentAppraiseId);
 	var commonScales = Assessment.getCommonScales();
+	var taskTypes = Task.getTaskTypes();
 	return Utils.setSuccess({
 		competences: result,
-		scales: commonScales
+		scales: commonScales,
+		task_types: taskTypes
 	});
 }
 
@@ -420,5 +435,63 @@ function delete_Task(queryObjects){
 
 	return Utils.setError('Invalid parametres');
 }
+
+function get_Collaborators(queryObjects) {
+		var search = queryObjects.HasProperty('search') ? queryObjects.search : '';
+		var page = queryObjects.HasProperty('page') ? OptInt(queryObjects.page) : 1;
+		var pageSize = queryObjects.HasProperty('page_size') ? OptInt(queryObjects.page_size) : 10;
+
+		var min = (page - 1) * pageSize;
+		var max = min + pageSize;
+		
+		var q = XQuery("sql: \n\
+			declare @s varchar(max) = '" + search + "'; \n\
+			select d.* \n\
+			from ( \n\
+				select \n\
+					count(cs.id) over() total, \n\
+					ROW_NUMBER() OVER (ORDER BY cs.fullname) AS [row_number], \n\
+					cs.id, \n\
+					cs.fullname name, \n\
+					cs.position_name description, \n\
+					cs.code, \n\
+					cs.hire_date, \n\
+					cs.dismiss_date, \n\
+					cs.pict_url, \n\
+					cast(t.p.query(' \n\
+						for $PD in  /collaborator/path_subs/path_sub \n\
+							return concat(data($PD/name[1]), \" / \") \n\
+						') as varchar(max) \n\
+					) as structure \n\
+				from collaborators cs \n\
+				inner join collaborator c on c.id = cs.id \n\
+				cross apply c.data.nodes('/collaborator/path_subs') as t(p) \n\
+				where \n\
+				    cs.is_dismiss = 0 \n\
+				    and cs.id <> " + curUserID + " \n\
+				    and cs.fullname like '%'+@s+'%' \n\
+			) d \n\
+			where \n\
+				d.[row_number] > " + min + " and d.[row_number] <= " + max + " \n\
+			order by d.name asc \n\
+		");
+
+		var total = 0;
+		var fobj = ArrayOptFirstElem(q);
+		if (fobj != undefined) {
+			total = fobj.total;
+		}
+
+		var obj = {
+			meta: {
+				total: Int(total),
+				pageSize: pageSize,
+				page: page
+			},
+			collaborators: q
+		}
+
+		return Utils.setSuccess(obj);
+	}
 
 %>

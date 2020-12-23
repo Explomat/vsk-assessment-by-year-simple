@@ -19,7 +19,7 @@
 
 
 	var st = Utils.getSystemSettings(6790263731625424310);
-	var curUserID = OptInt(st.TopElem.cur_user_id);
+	var curUserID = 6711785032659205612; //OptInt(st.TopElem.cur_user_id);
 
 	//var curUserID = 6711785032659205612; // me test
 	//var curUserID = 6719948502038810952; // volkov test

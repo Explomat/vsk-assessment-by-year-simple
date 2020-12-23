@@ -1,3 +1,22 @@
+.dp-meta-task {
+
+}
+
+.dp-meta-task__form-label-container {
+	margin-bottom: 24px;
+}
+
+.dp-meta-task__form-label {
+	display: block;
+	color: rgba(0, 0, 0, 0.36);
+	font-size: 12px;
+}
+
+
+.dp-meta__buttons {
+	padding: 20px 0;
+}
+
 .dp-list-2-step {
 	padding-left: 33px !important;
 }

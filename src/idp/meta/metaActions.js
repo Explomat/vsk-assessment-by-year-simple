@@ -39,10 +39,10 @@ export function loading(isLoading){
 	}
 };
 
-export function getCompetencesAndThemes(id){
+export function getMeta(id){
 	return dispatch => {
 		dispatch(loading(true));
-		request('idp', 'CompetencesAndThemes')
+		request('idp', 'Meta')
 			.get({
 				assessment_appraise_id: id
 			})
