@@ -35,7 +35,7 @@ function getByTaskId(taskId){
 }
 
 function create(description, resut_form, expert_collaborator_id, idp_task_type_id, development_plan_id, competence_id) {
-	var Utils = OpenCodeLib('./utils.js');
+	//var Utils = OpenCodeLib('./utils.js');
 
 	var taskDoc = tools.new_doc_by_name('cc_idp_task');
 	taskDoc.TopElem.description = description;
@@ -56,15 +56,17 @@ function create(description, resut_form, expert_collaborator_id, idp_task_type_i
 	taskDoc.TopElem.percent_complete = 0;
 	taskDoc.TopElem.development_plan_id = development_plan_id;
 	taskDoc.TopElem.competence_id = competence_id;
+	taskDoc.TopElem.created_date = new Date();
 
 	taskDoc.BindToDb(DefaultDb);
 	taskDoc.Save();
 
-	return _setComputedFields(Utils.toJSObject(taskDoc.TopElem), userId);
+	return taskDoc;
+	//return _setComputedFields(Utils.toJSObject(taskDoc.TopElem), userId);
 }
 
 function update(dpId, taskId, data, userId){
-	var Utils = OpenCodeLib('./utils.js');
+	//var Utils = OpenCodeLib('./utils.js');
 
 	var task = getByTaskId(taskId);
 	if (task == undefined){
@@ -80,7 +82,9 @@ function update(dpId, taskId, data, userId){
 	}
 	taskDoc.Save();
 
-	return _setComputedFields(Utils.toJSObject(taskDoc.TopElem), userId);
+	return taskDoc;
+
+	//return _setComputedFields(Utils.toJSObject(taskDoc.TopElem), userId);
 }
 
 function remove(taskId){
@@ -112,7 +116,7 @@ function list(dpId, competenceId, userId) {
 			itss.id task_state_id, \n\
 			itss.code task_state_code, \n\
 			itss.name task_state_name, \n\
-			it.data.query('/cc_idp_task/doc_info/creation/date').value('.', 'datetime2') created_date \n\
+			convert(varchar(30), its.created_date, 126) created_date \n\
 		from cc_idp_tasks its \n\
 		inner join cc_idp_task it on it.id = its.id \n\
 		inner join cc_idp_task_types itts on itts.id = its.idp_task_type_id \n\

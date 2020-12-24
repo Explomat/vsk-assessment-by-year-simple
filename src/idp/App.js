@@ -41,9 +41,12 @@ class App extends Component {
 		const dlen = dp.list.length > 0;
 		const mlen = manager.list.length > 0;
 
+		if (ui.isLoading) {
+			return <Loader message='Загрузка' description='Загружаются результаты'/>;
+		}
+
 		return (
 			<div className='idp'>
-				{ui.isLoading && <Loader message='Загрузка' description='Загружаются результаты'/>}
 				<ErrorAlert message={ui.error} visible={!!ui.error} onClose={() => error(false)}/>
 
 				<Tabs onChange={this.onTabChange}>

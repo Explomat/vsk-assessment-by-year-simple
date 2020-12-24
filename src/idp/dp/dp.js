@@ -100,7 +100,7 @@ class Dp extends Component {
 				title={<span>{card.person_fullname}</span>}
 				extra={[
 					<Tag key='date' color='green'>{cdate()}</Tag>,
-					<div key='status' className='detail'>Статус: <span className='dp__status'>{card.status}</span></div>,
+					<div key='status' className='detail'>Статус: <span className='dp__status'>{card.state_name}</span></div>,
 					<a style={{ 'paddingTop': '12px', display: 'block' }} key='report' href={rurl} className='term'>Скачать отчет <DownloadOutlined /></a>
 				]}
 			>
@@ -117,7 +117,7 @@ class Dp extends Component {
 							<Col>
 								<div className='description'>
 									<div className='term'>Текущий этап</div>
-									<div className='detail dp__current-step'>{card.main_step_name}</div>
+									<div className='detail dp__current-step'>{card.main_step_name} / {card.step_name}</div>
 								</div>
 							</Col>
 						</Row>
@@ -235,59 +235,32 @@ class Dp extends Component {
 
 	renderHistory(){
 		const { card } = this.props;
-		const competences = {};
-
-		card.task_flows.forEach(tf => {
-			if (!competences[tf.competence_id]) {
-				competences[tf.competence_id] = {
-					competence_id: tf.competence_id,
-					competence_name: tf.competence_name,
-					task_flows: []
-				};
-			}
-			competences[tf.competence_id].task_flows.push(tf);
-		});
 
 		return (
-			<Card
-				className='dp__history'
-				title='История этапов'>
-				{
-					Object.keys(competences).map(s => {
-						const c = competences[s];
-
+			<Card className='dp__history' title='История этапов'>
+				<List>
+					{card.main_flows.map(t => {
 						return (
-							<div className='dp__history-competence-container' key={c.competence_id}>
-								<span className='dp__history-competence'>{c.competence_name}</span>
-								<List>
-									{c.task_flows.map(t => {
-										return (
-											<List.Item
-												key={t.id}
-											>
-												 <List.Item.Meta
-												 	title={<span>
-												 		<span className='dp__date'>{renderDate(t.created_date)}</span>
-												 		<span className='dp__descr'>{t.task_description}</span>
-												 	</span>}
-												 />
-												 <span className='dp__history-step'>{t.main_step_name} / {t.step_name}</span>
-												 <div>{t.current_collaborator_fullname} <ArrowRightOutlined /> {t.next_collaborator_fullname}</div>
-												 {t.comment && (
-												 	<div className='dp__history-data'>
-												 		Комментарий: 
-												 		<div className='dp__history-comment'>{t.comment}</div>
-												 	</div>
-												 )}
-											</List.Item>
-										)
-									})}
-								</List>
-							</div>
+							<List.Item
+								key={t.id}
+							>
+								 <List.Item.Meta
+								 	title={<span>
+								 		<span className='dp__date'>{renderDate(t.created_date)}</span>
+								 		<span className='dp__history-step'>{t.idp_main_step_name} / {t.idp_step_name}</span>
+								 	</span>}
+								 />
+								 <div>{t.current_collaborator_fullname} <ArrowRightOutlined /> {t.next_collaborator_fullname}</div>
+								 {t.comment && (
+								 	<div className='dp__history-data'>
+								 		Комментарий: 
+								 		<div className='dp__history-comment'>{t.comment}</div>
+								 	</div>
+								 )}
+							</List.Item>
 						)
-						
-					})
-				}
+					})}
+				</List>
 			</Card>
 		);
 	}

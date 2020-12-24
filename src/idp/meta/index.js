@@ -42,7 +42,8 @@ class Meta extends Component {
 	}
 
 	handleSave() {
-		this.props.saveIdp();
+		const { match, saveIdp } = this.props;
+		this.props.saveIdp(match.params.id);
 	}
 
 	handleSaveTask(props) {

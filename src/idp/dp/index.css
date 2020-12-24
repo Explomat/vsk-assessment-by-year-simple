@@ -106,11 +106,13 @@
 }
 
 .description .term {
+	font-weight: 600;
 	display: table-cell;
 	margin-right: 8px;
 	padding-bottom: 8px;
 	white-space: nowrap;
 	line-height: 20px;
+	color: #444444d9;
 }
 
 .ant-page-header-heading-extra .detail {

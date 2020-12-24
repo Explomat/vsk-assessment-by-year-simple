@@ -23,7 +23,8 @@ export function loading(isLoading){
 
 export function getUserDps(id){
 	return dispatch => {
-		request('idp', 'Idps')
+		// return request сделан для того, чтобы получить промис в appActions.js и узнать, когда функция завершится
+		return request('idp', 'Idps')
 			.get({ assessment_appraise_id: id })
 			.then(r => r.json())
 			.then(d => {

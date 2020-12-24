@@ -38,7 +38,7 @@ const cardReducer = (state = {
 	managers: [],
 	main_steps: [],
 	competences: [],
-	task_flows: [],
+	main_flows: [],
 	meta: {
 		allow_add_tasks: true
 	}

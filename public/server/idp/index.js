@@ -44,7 +44,7 @@ function get_Idps(queryObjects) {
 
 	try {
 		if (dpId != undefined) {
-			var userRole = User.getRole(curUserID, dpId);
+			//var userRole = User.getRole(curUserID, dpId);
 			dpObj = Dp.getObject(dpId, assessmentAppraiseId, curUserID);
 			return Utils.setSuccess(dpObj);
 		} else if (isManager) {

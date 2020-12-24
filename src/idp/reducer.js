@@ -5,7 +5,7 @@ import managerReducer from './manager/managerReducer';
 import metaReducer from './meta/metaReducer';
 
 const uiReducer = (state = {
-	isLoading: false,
+	isLoading: true,
 	error: null,
 	isIdp: false
 }, action) => {

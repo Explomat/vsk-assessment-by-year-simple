@@ -25,6 +25,7 @@ export function error(error){
 
 export function getUsers(id) {
 	return (dispatch, getState) => {
+		dispatch(loading(true));
 		Promise.all([dispatch(getUserDps(id)), dispatch(getUserDpsByManager(id))])
 		.then(()  => {
 			dispatch(loading(false));

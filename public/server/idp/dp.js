@@ -74,6 +74,9 @@ function create(userId, comps, assessmentAppraiseId) {
 	var Assessment = OpenCodeLib('./assessment.js');
 	DropFormsCache('./assessment.js');
 
+	var Task = OpenCodeLib('./task.js');
+	DropFormsCache('./task.js');
+
 	var manager = User.getManagerForIdp(userId, assessmentAppraiseId);
 	var ap = Assessment.getAssessmentPlanByUserId(userId, assessmentAppraiseId);
 
@@ -105,7 +108,7 @@ function create(userId, comps, assessmentAppraiseId) {
 	mDoc.Save();
 
 	// начальный этап
-	var tfDoc = tools.new_doc_by_name('cc_idp_task_flow');
+	var tfDoc = tools.new_doc_by_name('cc_idp_main_flow');
 	tfDoc.TopElem.idp_main_id = mDoc.DocID;
 	tfDoc.TopElem.current_collaborator_id = userId;
 	tfDoc.TopElem.next_collaborator_id = userId;
@@ -116,10 +119,32 @@ function create(userId, comps, assessmentAppraiseId) {
 	tfDoc.BindToDb(DefaultDb);
 	tfDoc.Save();
 
+
+	for (c in comps) {
+		compChild = dpDoc.TopElem.competences.AddChild();
+		compChild.competence_id = c.id;
+
+		for (ct in c.competence_themes) {
+			ctDoc = tools.new_doc_by_name('cc_idp_competence');
+			ctDoc.TopElem.fullname = userDoc.TopElem.fullname;
+			ctDoc.TopElem.development_plan_id = dpDoc.DocID;
+			ctDoc.TopElem.competence_id = c.id;
+			ctDoc.TopElem.idp_theme_id = ct.id;
+			ctDoc.BindToDb(DefaultDb);
+			ctDoc.Save();
+		}
+
+		for (t in c.tasks) {
+			Task.create(t.description, t.resut_form, t.expert_collaborator_id, t.idp_task_type_id, dpDoc.DocID, c.id);
+		}
+	}
+
+	dpDoc.Save();
+
 	return mDoc;
 }
 
-function getObject(dpId, assessmentAppraiseId) {
+function getObject(dpId, assessmentAppraiseId, userId) {
 	var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
 
@@ -130,7 +155,7 @@ function getObject(dpId, assessmentAppraiseId) {
 		managers: [],
 		main_steps: [],
 		competences: [],
-		task_flows: []
+		main_flows: []
 	}
 
 	var qdp = ArrayOptFirstElem(
@@ -141,12 +166,16 @@ function getObject(dpId, assessmentAppraiseId) {
 				ccims.development_plan_id, \n\
 				ccims.create_date, \n\
 				ccims.plan_date, \n\
-				ccimss.id main_step_id, \n\
-				ccimss.name main_step_name, \n\
+				iss.id step_id, \n\
+				iss.name step_name, \n\
+				imss.id main_step_id, \n\
+				imss.name main_step_name, \n\
 				cciss.id state_id, \n\
 				cciss.name state_name \n\
 			from cc_idp_mains ccims \n\
-			inner join cc_idp_main_steps ccimss on ccimss.id = ccims.idp_main_step_id \n\
+			inner join cc_idp_main_flows imfs on imfs.idp_main_id = ccims.id \n\
+			inner join cc_idp_main_steps imss on imss.id = imfs.idp_main_step_id \n\
+			inner join cc_idp_steps iss on iss.id = imfs.idp_step_id \n\
 			inner join cc_idp_states cciss on cciss.id = ccims.idp_state_id \n\
 			inner join development_plans dps on dps.id = ccims.development_plan_id \n\
 			where \n\
@@ -161,6 +190,8 @@ function getObject(dpId, assessmentAppraiseId) {
 		obj.development_plan_id = OptInt(qdp.development_plan_id);
 		obj.create_date = StrXmlDate(Date(qdp.create_date));
 		obj.plan_date = StrXmlDate(Date(qdp.plan_date)),
+		obj.step_id = OptInt(qdp.step_id);
+		obj.step_name = String(qdp.step_name);
 		obj.main_step_id = OptInt(qdp.main_step_id);
 		obj.main_step_name = String(qdp.main_step_name);
 		obj.state_id = OptInt(qdp.state_id);
@@ -231,34 +262,25 @@ function getObject(dpId, assessmentAppraiseId) {
 		}
 		//
 
-		// истории этапов по каждой задаче
-		obj.task_flows = XQuery("sql: \n\
+		// истории этапов
+		obj.main_flows = XQuery("sql: \n\
 			select \n\
-				cs.id competence_id, \n\
-				cs.name competence_name, \n\
-				itfs.id, \n\
-				itfs.idp_task_id task_id, \n\
-				its.description task_description, \n\
-				itfs.current_collaborator_id, \n\
+				imfs.id, \n\
 				cs1.fullname current_collaborator_fullname, \n\
-				itfs.next_collaborator_id, \n\
 				cs2.fullname next_collaborator_fullname, \n\
-				itfs.idp_step_id step_id, \n\
-				iss.name step_name, \n\
-				itfs.idp_main_step_id main_step_id, \n\
-				imss.name main_step_name, \n\
-				itfs.comment, \n\
-				itfs.created_date, \n\
-				itfs.is_active_step \n\
-			from cc_idp_task_flows itfs \n\
-			inner join cc_idp_tasks its on its.id = itfs.idp_task_id \n\
-			inner join competences cs on cs.id = its.competence_id \n\
-			inner join collaborators cs1 on cs1.id = itfs.current_collaborator_id \n\
-			inner join collaborators cs2 on cs2.id = itfs.next_collaborator_id \n\
-			inner join cc_idp_steps iss on iss.id = itfs.idp_step_id \n\
-			inner join cc_idp_main_steps imss on imss.id = itfs.idp_main_step_id \n\
-			where its.development_plan_id = " + dpId + " \n\
-			order by itfs.created_date desc \n\
+				iss.name idp_step_name, \n\
+				imss.name idp_main_step_name, \n\
+				imfs.comment, \n\
+				imfs.created_date \n\
+			from cc_idp_main_flows imfs \n\
+			inner join cc_idp_mains ims on ims.id = imfs.idp_main_id \n\
+			inner join collaborators cs1 on cs1.id = imfs.current_collaborator_id \n\
+			inner join collaborators cs2 on cs2.id = imfs.next_collaborator_id \n\
+			inner join cc_idp_steps iss on iss.id = imfs.idp_step_id \n\
+			inner join cc_idp_main_steps imss on imss.id = imfs.idp_main_step_id \n\
+			where \n\
+				ims.development_plan_id = " + dpId + " \n\
+			order by imfs.created_date desc \n\
 		");
 	}
 
@@ -453,6 +475,18 @@ function getAssessments(){
 			aas.[percent] \n\
 		from cc_adaptation_assessments aas \n\
 	");
+}
+
+function isAccessToUpdate(id, userId) {
+	return true;
+}
+
+function isAccessToRemove(id, userId) {
+	return true;
+}
+
+function isAccessToAdd(userId) {
+	return true;
 }
 
 /*function getNextUserId(crId, role){

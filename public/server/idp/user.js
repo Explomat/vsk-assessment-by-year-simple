@@ -34,7 +34,7 @@ function getManagerForIdp(userId, assessmentAppraiseId) {
 			from cc_assessment_delegates ccads \n\
 			left join collaborators cs on cs.id = ccads.[boss_delegate_id] \n\
 			where \n\
-				ccads.[boss_delegate_id] = " + OptInt(mainManager.id) + " \n\
+				ccads.prev_boss_id = " + OptInt(mainManager.id) + " \n\
 				and ccads.[user_id] = " + userId + " \n\
 				and ccads.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 		"));

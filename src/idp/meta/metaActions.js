@@ -1,5 +1,5 @@
 import createRemoteActions from '../../utils/createRemoteActions';
-import { error } from '../appActions';
+import { error, loading as appLoading } from '../appActions';
 import request from '../../utils/request';
 
 export const constants = {
@@ -61,9 +61,9 @@ export function loading(isLoading){
 	}
 };
 
-export function saveIdp() {
+export function saveIdp(assessment_appraise_id) {
 	return (dispatch, getState) => {
-		dispatch(loading(true));
+		dispatch(appLoading(true));
 
 		const { idp } = getState();
 		const competences = idp.meta.main.competences.filter(c => c.checked);
@@ -73,23 +73,18 @@ export function saveIdp() {
 			c.competence_themes = themes;
 		});
 
-		request('idp', 'Idps')
+		request('idp', 'Idps', { assessment_appraise_id })
 			.post({ competences })
 			.then(r => r.json())
 			.then(d => {
 				if (d.type === 'error'){
 					throw d;
 				}
-				
-				/*dispatch({
-					type: constants.DP_META_FETCH_COMPETENCES_AND_THEMES_SUCCESS,
-					payload: d.data
-				});*/
 
-				dispatch(loading(false));
+				dispatch(appLoading(false));
 			})
 			.catch(e => {
-				dispatch(loading(false));
+				dispatch(appLoading(false));
 				console.error(e);
 				dispatch(error(e.message));
 			});
