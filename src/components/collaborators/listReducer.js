@@ -97,6 +97,7 @@ const listReducer = (state = {
 		case constants.COMPONENT_COLLABORATOR_LIST_SET_PARAMS: {
 			return {
 				...state,
+				selectedItems: [],
 				ui: {
 					...state.ui,
 					...action.payload

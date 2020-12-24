@@ -8,19 +8,20 @@ class TaskForm extends Component {
 	constructor(props){
 		super(props);
 
+		const defaultTaskType = props.task_types[0];
 		this.state = {
 			isShowCollaborators: false,
+			idp_task_type_id: props.idp_task_type_id || (defaultTaskType && defaultTaskType.id),
 			description: props.description || '',
 			resut_form: props.resut_form || '',
 			expert_collaborator_id: props.expert_collaborator_id || null,
-			expert_collaborator_fullname: props.expert_collaborator_fullname || '',
-			idp_task_type_id: props.idp_task_type_id || null,
-			idp_task_type_name: props.idp_task_type_name || ''
+			expert_collaborator_fullname: props.expert_collaborator_fullname || ''
 		}
 
 		this.handleShowCollaborators = this.handleShowCollaborators.bind(this);
 		this.handleChangeProp = this.handleChangeProp.bind(this);
 		this.handleCommit = this.handleCommit.bind(this);
+		this.handleSelectExpert = this.handleSelectExpert.bind(this);
 	}
 
 	handleShowCollaborators() {
@@ -41,6 +42,16 @@ class TaskForm extends Component {
 		});
 	}
 
+	handleSelectExpert(items) {
+		const item = items[0];
+
+		if (item) {
+			this.handleChangeProp('expert_collaborator_id', item.id);
+			this.handleChangeProp('expert_collaborator_fullname', item.name);
+			this.handleShowCollaborators();
+		}
+	}
+
 	render() {
 		const { task_types, onCancel } = this.props;
 		const {
@@ -52,8 +63,6 @@ class TaskForm extends Component {
 			expert_collaborator_id,
 			expert_collaborator_fullname
 		} = this.state;
-
-		const defaultTaskType = task_types[0];
 
 		return (
 			<Modal
@@ -74,8 +83,8 @@ class TaskForm extends Component {
 				<div className='dp-meta-task__form-label-container'>
 					<label className='dp-meta-task__form-label'>Тип задачи</label>
 					<Select
-						defaultValue={defaultTaskType && defaultTaskType.id}
-						onChange={value => this.handleChangeProp('idp_task_type_name', value)}
+						defaultValue={idp_task_type_id}
+						onChange={value => this.handleChangeProp('idp_task_type_id', value)}
 					>
 						{task_types.map(tp => {
 							return (
@@ -108,23 +117,17 @@ class TaskForm extends Component {
 						placeholder='Выберите эксперта'
 						value={expert_collaborator_fullname}
 						addonAfter={<EllipsisOutlined onClick={this.handleShowCollaborators}/>}
-						onChange={e => this.handleChangeProp('achieved_result', e.target.value)}
 					/>
 				</div>
-				{isShowCollaborators && <Modal
-					width = {820}
-					title='Сотрудники'
-					okText='Выбрать'
-					okButtonProps={{
-						disabled: false
-					}}
-					cancelText='Отмена'
-					visible
-					onCancel={this.handleShowCollaborators}
-					onOk={this.handleShowCollaborators}
-				>
-					<CollaboratorList type='Collaborators' params={{ multiple: false }}/>
-				</Modal>}
+				{isShowCollaborators &&
+					<CollaboratorList
+						title='Сотрудники'
+						type='Collaborators'
+						onOk={this.handleSelectExpert}
+						onCancel={this.handleShowCollaborators}
+						params={{ multiple: false }}
+					/>
+				}
 			</Modal>
 		);
 	}

@@ -3,8 +3,8 @@ import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { Card, Checkbox, Modal, Button, List, Avatar, Table } from 'antd';
 import TaskForm from './TaskForm';
-import { ContactsOutlined, CheckOutlined } from '@ant-design/icons';
-import { getMeta, onCompetenceChecked, onThemeChecked } from './metaActions';
+import { ContactsOutlined, CheckOutlined, DeleteOutlined } from '@ant-design/icons';
+import { getMeta, onCompetenceChecked, onThemeChecked, onSaveTask, onDeleteTask, saveIdp } from './metaActions';
 import './meta.css';
 
 class Meta extends Component {
@@ -12,6 +12,8 @@ class Meta extends Component {
 	constructor(props){
 		super(props);
 
+		this.handleSave = this.handleSave.bind(this);
+		this.handleSaveTask = this.handleSaveTask.bind(this);
 		this.handleToggleTaskModal = this.handleToggleTaskModal.bind(this);
 		this.handleShowConfirm = this.handleShowConfirm.bind(this);
 		this.handleCreateDp = this.handleCreateDp.bind(this);
@@ -30,11 +32,22 @@ class Meta extends Component {
 			stepsCount: 4,
 			currentStep: 1
 		}
+
+		this.currentCompetenceId = null;
 	}
 
 	componentDidMount(){
 		const { match, getMeta } = this.props;
 		getMeta(match.params.id);
+	}
+
+	handleSave() {
+		this.props.saveIdp();
+	}
+
+	handleSaveTask(props) {
+		this.props.onSaveTask(props, this.currentCompetenceId);
+		this.handleToggleTaskModal();
 	}
 
 	handleToggleTaskModal(competenceId) {
@@ -97,12 +110,15 @@ class Meta extends Component {
 		);
 	}
 
-	renderTasks(tasks = []) {
+	renderTasks(competenceId, tasks = []) {
+		const { meta, onDeleteTask } = this.props;
+
 		const columns = [
 			{
 				title: 'Тип задачи',
 				dataIndex: 'idp_task_type_id',
-				key: 'idp_task_type_id'
+				key: 'idp_task_type_id',
+				render: id => meta.task_types.find(tp => tp.id === id).name
 			},
 			{
 				title: 'Описание',
@@ -117,11 +133,25 @@ class Meta extends Component {
 			{
 				title: 'Эксперт',
 				dataIndex: 'expert_collaborator_id',
-				key: 'expert_collaborator_id'
+				key: 'expert_collaborator_id',
+				render: id => {
+					const item = tasks.find(t => t.expert_collaborator_id === id);
+					if (item) {
+						return item.expert_collaborator_fullname;
+					}
+					return '';
+				}
+			},
+			{
+				title: '',
+				key: 'action',
+				render: task => {
+					return <DeleteOutlined onClick={() => onDeleteTask(competenceId, task.id)}/>
+				}
 			}
 		];
 
-		return <Table dataSource={tasks} columns={columns} />;
+		return <Table dataSource={tasks} columns={columns} rowKey='id' pagination={false}/>;
 	}
 
 	renderButtons() {
@@ -130,7 +160,8 @@ class Meta extends Component {
 		const buttons = [];
 
 		const buttonNext = <Button key='1' className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleNextStep}>Далее</Button>;
-		const buttonPrev = <Button key='2' className='clearfix' type='primary' style={{float: 'left'}} onClick={this.handlePrevStep}>Назад</Button>;
+		const buttonPrev = <Button key='2' className='clearfix' style={{float: 'left'}} onClick={this.handlePrevStep}>Назад</Button>;
+		const buttonSave = <Button onClick={this.handleSave} key='3' className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleSave}>Сохранить</Button>;
 
 		if (currentStep < stepsCount && currentStep !== 1) {
 			buttons.push(buttonPrev);
@@ -140,6 +171,8 @@ class Meta extends Component {
 			buttons.push(buttonNext);
 		} else if (currentStep === 2 && meta.hasThemesChecked) {
 			buttons.push(buttonNext);
+		} else if (currentStep === (stepsCount - 1)) {
+			buttons.push(buttonSave);
 		}
 
 		return <div className='dp-meta__buttons clearfix'>{buttons}</div>;
@@ -148,19 +181,16 @@ class Meta extends Component {
 	renderTaskModal() {
 		const { isShowTaskForm } = this.state;
 		const { meta } = this.props;
+		const comp = meta.competences.find(c => c.id === this.currentCompetenceId);
 
 		if (isShowTaskForm) {
 			return (
-				<Modal
-					visible
-					title='Задача'
-					cancelText='Отмена'
-					okText='Ok'
+				<TaskForm
+					type='Collaborators'
+					onCommit={this.handleSaveTask}
 					onCancel={this.handleToggleTaskModal}
-					onOk={this.handleToggleTaskModal}
-				>
-					<TaskForm type='Collaborators' task_types={meta.task_types}/>
-				</Modal>
+					task_types={meta.task_types}
+				/>
 			);
 		}
 	}
@@ -262,7 +292,6 @@ class Meta extends Component {
 					className='dp-meta'
 					title='Выберите дополнительные задачи для развития компетенций'
 				>
-					<div className='dp-meta__description'>Вы можете выбрать дополнительные задачи для развития выбранных компетенций</div>
 					<List
 						className='dp-list'
 						itemLayout='horizontal'
@@ -272,7 +301,7 @@ class Meta extends Component {
 							const className = scale ? 'dp-meta__label--active': '';
 
 							return (
-								<div key={item.id}>
+								<div key={item.id} className='dp-meta-competence-container'>
 									<List.Item
 										className={`dp-meta-competence dp-meta-competence--2-step`}
 										actions={[
@@ -296,7 +325,7 @@ class Meta extends Component {
 									 		}
 										/>
 									</List.Item>
-									{this.renderTasks(item.tasks)}
+									{this.renderTasks(item.id, item.tasks)}
 								</div>
 							)
 						})}
@@ -316,4 +345,4 @@ function mapStateToProps(state){
 	}
 }
 
-export default withRouter(connect(mapStateToProps, { getMeta, onCompetenceChecked, onThemeChecked })(Meta));
+export default withRouter(connect(mapStateToProps, { getMeta, onCompetenceChecked, onThemeChecked, onSaveTask, onDeleteTask, saveIdp })(Meta));

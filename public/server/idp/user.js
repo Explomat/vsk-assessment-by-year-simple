@@ -7,6 +7,46 @@ function roles() {
 	}
 }
 
+function getManagerForIdp(userId, assessmentAppraiseId) {
+	var mainManager = ArrayOptFirstElem(XQuery("sql: \n\
+		select \n\
+			cs.id, \n\
+			cs.fullname, \n\
+			cs.email, \n\
+			cs.position_name, \n\
+			cs.position_parent_name \n\
+		from collaborators cs \n\
+		left join func_managers fm on fm.person_id = cs.id \n\
+		left join boss_types bts on bts.id = fm.boss_type_id \n\
+		where \n\
+			fm.[object_id] = " + userId + " \n\
+			and bts.code = 'main' \n\
+	"));
+
+	if (mainManager != undefined) {
+		var dm = ArrayOptFirstElem(XQuery("sql: \n\
+			select \n\
+				cs.id, \n\
+				cs.fullname, \n\
+				cs.email, \n\
+				cs.position_name, \n\
+				cs.position_parent_name \n\
+			from cc_assessment_delegates ccads \n\
+			left join collaborators cs on cs.id = ccads.[boss_delegate_id] \n\
+			where \n\
+				ccads.[boss_delegate_id] = " + OptInt(mainManager.id) + " \n\
+				and ccads.[user_id] = " + userId + " \n\
+				and ccads.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+		"));
+
+		if (dm != undefined) {
+			return dm;
+		}
+
+		return mainManager;
+	}
+}
+
 function getManagers(userId, assessmentAppraiseId){
 	var mq = XQuery("sql: \n\
 		select \n\
@@ -129,17 +169,6 @@ function getBoss(collaboratorId) {
 }
 
 
-
-
-
-
-function getManagerTypes(){
-	return {
-		user: 'adaptation:new_collaborator',
-		manager: 'adaptation:manager',
-		curator: 'adaptation:curator'
-	}
-}
 
 // вычисляем руководителей для отправки уведомлений, учитываю лесенку по иерархии
 function getNextManagerTypes(curOrderNum, nextOrderNum) {

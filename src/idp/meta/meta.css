@@ -67,6 +67,10 @@
 	border: 2px solid #888 !important;
 }
 
+.dp-meta-competence-container {
+	margin-bottom: 40px;
+}
+
 .dp-meta .dp-list .dp-meta-competence {
 	margin-bottom: 20px;
 }

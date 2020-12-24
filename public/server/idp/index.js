@@ -80,17 +80,23 @@ function get_Idps(queryObjects) {
 				ccims.development_plan_id, \n\
 				ccims.create_date, \n\
 				ccims.plan_date, \n\
-				ccimss.id main_step_id, \n\
-				ccimss.name main_step_name, \n\
+				iss.id step_id, \n\
+				iss.name step_name, \n\
+				imss.id main_step_id, \n\
+				imss.name main_step_name, \n\
 				cciss.id state_id, \n\
 				cciss.name state_name \n\
 			from cc_idp_mains ccims \n\
-			inner join cc_idp_main_steps ccimss on ccimss.id = ccims.idp_main_step_id \n\
+			inner join cc_idp_main_flows imfs on imfs.idp_main_id = ccims.id \n\
+			inner join cc_idp_main_steps imss on imss.id = imfs.idp_main_step_id \n\
+			inner join cc_idp_steps iss on iss.id = imfs.idp_step_id \n\
 			inner join cc_idp_states cciss on cciss.id = ccims.idp_state_id \n\
 			inner join development_plans dps on dps.id = ccims.development_plan_id \n\
 			where \n\
 				dps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
-				and dps.person_id = " + curUserID)
+				and dps.person_id = " + curUserID + " \n\
+				and imfs.is_active_step = 1"
+			)
 		);	
 	} catch(e) {
 		return Utils.setError(e);
@@ -115,16 +121,6 @@ function get_Meta(queryObjects) {
 			and ps.is_done = 1"
 	));
 
-	alert("sql: \n\
-		select ps.id \n\
-		from \n\
-			pas ps\n\
-		where \n\
-			ps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
-			and ps.person_id = " + curUserID + " \n\
-			and ps.expert_person_id <> " + curUserID + "\n\
-			and ps.is_done = 1");
-
 	if (qs == undefined) {
 		return Utils.setError('Не найдена завершенная анкета оценки');
 	}
@@ -146,7 +142,7 @@ function post_Idps(queryObjects) {
 		return Utils.setError('Не указана процедура оценки');
 	}
 
-	var dpId = queryObjects.GetOptProperty('id');
+	var dpId = queryObjects.GetOptProperty('development_plan_id');
 	var data = tools.read_object(queryObjects.Body);
 	var comps = data.GetOptProperty('competences');
 
@@ -157,24 +153,24 @@ function post_Idps(queryObjects) {
 				return Utils.setError('У вас нет прав на создание');
 			}
 
-			var dpDoc = Dp.create(curUserID, comps);
+			var dpDoc = Dp.create(curUserID, comps, assessmentAppraiseId);
 			
-			if (isNotificate != undefined && (isNotificate || isNotificate == 'true')) {
+			/*if (isNotificate != undefined && (isNotificate || isNotificate == 'true')) {
 				Utils.notificate('idp_1', collaboratorId);
 
 				var bossId = User.getBoss(collaboratorId);
 				if (bossId != undefined) {
 					Utils.notificate('idp_2', bossId, '', collaboratorId);
 				}
-			}
-			return Utils.setSuccess(aDoc);
+			}*/
+			return Utils.setSuccess(dpDoc);
 		} catch(e) {
 			return Utils.setError(e);
 		}
 	}
 
 	//update
-	try {
+	/*try {
 		if (!Dp.isAccessToUpdate(assessmentId, curUserID)) {
 			return Utils.setError('У вас нет прав на редактирование');
 		}
@@ -184,7 +180,7 @@ function post_Idps(queryObjects) {
 		return Utils.setSuccess(aDoc);
 	} catch(e) {
 		return Utils.setError(e);
-	}
+	}*/
 }
 
 

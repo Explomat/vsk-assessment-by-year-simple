@@ -6,10 +6,32 @@ export const constants = {
 	...createRemoteActions([
 		'DP_META_FETCH_COMPETENCES_AND_THEMES'
 	]),
+	'DP_META_DELETE_TASK': 'DP_META_DELETE_TASK',
+	'DP_META_SAVE_TASK': 'DP_META_SAVE_TASK',
 	'DP_META_LOADING': 'DP_META_LOADING',
 	'DP_META_COMPETENCE_CHECKED': 'DP_META_COMPETENCE_CHECKED',
 	'DP_META_THEME_CHECKED': 'DP_META_THEME_CHECKED'
 };
+
+export function onDeleteTask(competence_id, task_id) {
+	return {
+		type: constants.DP_META_DELETE_TASK,
+		payload: {
+			competence_id,
+			task_id
+		}
+	}
+}
+
+export function onSaveTask(task, competence_id) {
+	return {
+		type: constants.DP_META_SAVE_TASK,
+		payload: {
+			task,
+			competence_id
+		}
+	}
+}
 
 export function onCompetenceChecked(isChecked, competence_id) {
 	return {
@@ -38,6 +60,41 @@ export function loading(isLoading){
 		payload: isLoading
 	}
 };
+
+export function saveIdp() {
+	return (dispatch, getState) => {
+		dispatch(loading(true));
+
+		const { idp } = getState();
+		const competences = idp.meta.main.competences.filter(c => c.checked);
+
+		competences.forEach(c => {
+			const themes = c.competence_themes.filter(ct => ct.checked);
+			c.competence_themes = themes;
+		});
+
+		request('idp', 'Idps')
+			.post({ competences })
+			.then(r => r.json())
+			.then(d => {
+				if (d.type === 'error'){
+					throw d;
+				}
+				
+				/*dispatch({
+					type: constants.DP_META_FETCH_COMPETENCES_AND_THEMES_SUCCESS,
+					payload: d.data
+				});*/
+
+				dispatch(loading(false));
+			})
+			.catch(e => {
+				dispatch(loading(false));
+				console.error(e);
+				dispatch(error(e.message));
+			});
+	}
+}
 
 export function getMeta(id){
 	return dispatch => {

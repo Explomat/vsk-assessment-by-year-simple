@@ -50,6 +50,59 @@ const metaReducer = (state = {
 			}
 		}
 
+		case constants.DP_META_DELETE_TASK: {
+			const { competence_id, task_id } = action.payload;
+
+			const comp = state.competences.find(c => c.id === competence_id);
+
+			if (comp) {
+				if (!comp.tasks) {
+					comp.tasks = [];
+				}
+
+				comp.tasks = comp.tasks.filter(t => t.id !== task_id);
+			}
+
+			return {
+				...state,
+				competences: [ ...state.competences ]
+			}
+		}
+
+		case constants.DP_META_SAVE_TASK: {
+			const { competence_id, task } = action.payload;
+			const comp = state.competences.find(c => c.id === competence_id);
+
+			if (comp) {
+				if (!comp.tasks) {
+					comp.tasks = [];
+				}
+
+				comp.tasks = comp.tasks.concat({
+					id: comp.tasks.length,
+					...task
+				});
+			}
+
+			/*const comps = state.competences.map(c => {
+				if (c.id === competence_id) {
+					return {
+						...c,
+						...task
+					}
+				}
+				return c;
+			});*/
+
+			//const countChecked = comps.filter(c => c.checked).length;
+			//const result = countChecked > state.maxCountCompetencesForSelected ? state.competences : comps;
+			
+			return {
+				...state,
+				competences: [ ...state.competences ]
+			}
+		}
+
 		case constants.DP_META_COMPETENCE_CHECKED: {
 			const { competence_id, isChecked } = action.payload;
 			const comps = state.competences.map(c => {

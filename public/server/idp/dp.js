@@ -11,6 +11,113 @@ function getMainSteps(){
 	");
 }
 
+function getFirstStepId() {
+	var s = ArrayOptFirstElem(XQuery("sql: \n\
+		select st.* \n\
+		from cc_idp_steps st \n\
+		order by st.order_number asc \n\
+	"));
+
+	return s == undefined ? null : s.id;
+}
+
+function getFirstMainStepId() {
+	var s = ArrayOptFirstElem(XQuery("sql: \n\
+		select st.* \n\
+		from cc_idp_main_steps st \n\
+		order by st.order_number asc \n\
+	"));
+
+	return s == undefined ? null : s.id;
+}
+
+function getFirstStateId() {
+	var s = ArrayOptFirstElem(XQuery("sql: \n\
+		select st.* \n\
+		from cc_idp_states st \n\
+		order by st.code asc \n\
+	"));
+
+	return s == undefined ? null : s.id;
+}
+
+function create(userId, comps, assessmentAppraiseId) {
+	function calculatePlanDate(startDate, duration /* в месяцах */) {
+		var d = OptInt(duration);
+		
+		if (d != undefined){
+			var _date = new Date(startDate);
+			var nextMonth = (Month(_date) + d) % 12;
+			nextMonth = nextMonth == 0 ? 12 : nextMonth;
+			var nextDay = Day(_date);
+			var nextYear = Year(_date);
+			if ((Month(_date) + d) > 12) {
+				nextYear = nextYear + 1;
+			}
+
+			if (nextMonth == 2 && nextDay > 28){
+				nextDay = 28;
+				if ((nextYear % 4) == 0) { //високосный
+					nextDay = 29;
+				}
+			}
+
+			return Date(nextDay + '.' + nextMonth + '.' + nextYear);
+		}
+
+		return '';
+	}
+
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
+
+	var Assessment = OpenCodeLib('./assessment.js');
+	DropFormsCache('./assessment.js');
+
+	var manager = User.getManagerForIdp(userId, assessmentAppraiseId);
+	var ap = Assessment.getAssessmentPlanByUserId(userId, assessmentAppraiseId);
+
+	if (manager == undefined || ap == undefined) {
+		throw 'Руководитель или оценка не определены';
+	}
+
+	//план развития
+	var dpDoc = tools.new_doc_by_name('development_plan');
+	dpDoc.TopElem.person_id = userId;
+	dpDoc.TopElem.expert_person_id = manager.id;
+	dpDoc.TopElem.assessment_appraise_id = assessmentAppraiseId;
+	dpDoc.TopElem.assessment_plan_id = ap.id;
+	dpDoc.TopElem.workflow_id = ap.workflow_id;
+	dpDoc.TopElem.workflow_state = ap.workflow_state;
+	dpDoc.TopElem.workflow_state_name = ap.workflow_state_name;
+	dpDoc.BindToDb(DefaultDb);
+	dpDoc.Save();
+
+	//главный документ
+	var userDoc = OpenDoc(UrlFromDocID(Int(userId)));
+	var mDoc = tools.new_doc_by_name('cc_idp_main');
+	mDoc.TopElem.fullname = userDoc.TopElem.fullname;
+	mDoc.TopElem.development_plan_id = dpDoc.DocID;
+	mDoc.TopElem.create_date = new Date();
+	mDoc.TopElem.plan_date = calculatePlanDate(new Date(), 3);
+	mDoc.TopElem.idp_state_id = getFirstStateId();
+	mDoc.BindToDb(DefaultDb);
+	mDoc.Save();
+
+	// начальный этап
+	var tfDoc = tools.new_doc_by_name('cc_idp_task_flow');
+	tfDoc.TopElem.idp_main_id = mDoc.DocID;
+	tfDoc.TopElem.current_collaborator_id = userId;
+	tfDoc.TopElem.next_collaborator_id = userId;
+	tfDoc.TopElem.idp_step_id = getFirstStepId();
+	tfDoc.TopElem.idp_main_step_id = getFirstMainStepId();
+	tfDoc.TopElem.created_date = new Date();
+	tfDoc.TopElem.is_active_step = true;
+	tfDoc.BindToDb(DefaultDb);
+	tfDoc.Save();
+
+	return mDoc;
+}
 
 function getObject(dpId, assessmentAppraiseId) {
 	var User = OpenCodeLib('./user.js');
