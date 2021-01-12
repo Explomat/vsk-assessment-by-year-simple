@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router';
-import { Spin, List, Button, Modal, Input, PageHeader, Row, Col, Steps, Card, Tag } from 'antd';
+import { Spin, List, Button, Modal, Input, PageHeader, Row, Col, Steps, Card, Tag, Table } from 'antd';
 import { CheckOutlined, DownloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import Task from './task';
 import TaskForm from './taskForm';
@@ -151,10 +151,62 @@ class Dp extends Component {
 		);
 	}
 
+	renderCompetenceAndThemes() {
+		const { card } = this.props;
+		const competences = {};
+
+		card.competence_and_themes.forEach(cat => {
+			if (!competences[cat.competence_id]) {
+				competences[cat.competence_id] = {
+					id: cat.competence_id,
+					name: cat.competence_name,
+					comment: cat.competence_comment,
+					themes: []
+				};
+			}
+
+			competences[cat.competence_id].themes.push({
+				id: cat.theme_id,
+				name: cat.theme_name,
+				percent_complete: cat.percent_complete
+			});
+		});
+
+		const themeColumns = [
+			{
+				title: 'Название темы',
+				dataIndex: 'name',
+				key: 'name'
+			},
+			{
+				title: 'Процент выполнения',
+				dataIndex: 'percent_complete',
+				key: 'percent_complete'
+			}
+		];
+
+		return (
+			Object.keys(competences).map(c =>
+				<Card
+					key={competences[c].id}
+					title={competences[c].name}
+					className='dp__competence-and-themes'
+					extra={
+						card.meta.allow_add_themes ? (
+							<Button className='dp__themes-add' type='primary' ghost onClick={this.handleToggleThemeModal}>
+								Добавить тему
+							</Button>
+						) : null
+					}
+				>
+					<Table dataSource={competences[c].themes} columns={themeColumns} rowKey='id' pagination={false}/>
+				</Card>
+			)
+		);
+	}
+
 	renderTasks(tasks) {
 		const { card, updateTask, removeTask } = this.props;
-		//const collaboratorAssessement = calculatePercent(card.tasks.map(t => t.collaborator_assessment), card.meta.assessments);
-		///const managerAssessement = calculatePercent(card.tasks.map(t => t.manager_assessment), card.meta.assessments);
 		if (tasks) {
 			const columns = [
 				{
@@ -216,6 +268,7 @@ class Dp extends Component {
 															key={t.id}
 															updateTask={updateTask}
 															removeTask={removeTask}
+															task_types={card.task_types}
 															meta={card.meta}
 															{...t}
 														/>
@@ -274,42 +327,55 @@ class Dp extends Component {
 				<div className='dp'>
 					{ this.renderHeader() }
 					<div className='dp__body'>
-						{ this.renderMainSteps() }
-						{card.competences.map(c => 
-							<Card
-								key={c.id}
-								className='dp__tasks'
-								title={c.name}
-								extra={
-									card.meta.allow_add_tasks ? (
-										<Button className='dp__tasks-add' type='primary' ghost onClick={this.handleToggleTaskModal}>
-											Добавить задачу
-										</Button>
-									) : null
-								}
-								actions={
-									card.meta.actions && card.meta.actions.map(a => {
-										return (
-											<Button
-													key={a.name}
-													disabled={card.tasks.length === 0}
-													className='dp__tasks-actions'
-													type='primary'
-													onClick={() => this.handeAction(a)}
-											>
-												{a.title}
+						{this.renderMainSteps()}
+						<div className='dp__competence-and-themes-container'>
+							<div className='dp__title'>Обязательные обучения для развития компетенций</div>
+							{this.renderCompetenceAndThemes()}
+						</div>
+						<div className='dp__body-competence-tasks'>
+							<div className='dp__title'>Дополнительные задачи</div>
+							{card.competences.map(c => 
+								<Card
+									key={c.id}
+									className='dp__tasks'
+									title={c.name}
+									extra={
+										card.meta.allow_add_tasks ? (
+											<Button className='dp__tasks-add' type='primary' ghost onClick={this.handleToggleTaskModal}>
+												Добавить задачу
 											</Button>
-										);
-									})
-								}
-							>
-								{this.renderTasks(c.tasks)}
-							</Card>
-						)}
+										) : null
+									}
+								>
+									{this.renderTasks(c.tasks)}
+								</Card>
+							)}
+							<div className='dp__body-competence-tasks-actions'>
+								{card.meta.actions && card.meta.actions.map(a => {
+									let tasksLen = 0;
+									card.competences.forEach(c => {
+										tasksLen += c.tasks.length;
+									});
+
+									return (
+										<Button
+												key={a.code}
+												disabled={tasksLen === 0}
+												className='dp__tasks-actions'
+												type='primary'
+												onClick={() => this.handeAction(a)}
+										>
+											{a.name}
+										</Button>
+									);
+								})}
+							</div>
+						</div>
 						{isShowModalTask && <TaskForm
 							title='Новая задача'
 							onCommit={this.handleAddTask}
 							onCancel={this.handleToggleTaskModal}
+							task_types={card.task_types}
 							meta={card.meta}
 						/>}
 						<Modal

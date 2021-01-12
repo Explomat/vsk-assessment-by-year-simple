@@ -30,6 +30,80 @@ var curUserID = 6711785032659205612; //OptInt(st.TopElem.cur_user_id);
 
 var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
 
+function _setComputedFields(dpDoc) {
+	var btypes = User.roles();
+
+	function isAlowEditTasks(curStep, userRole){
+		return (Int(curStep.next_collaborator_id) == curUserID || userRole == btypes.moderator);
+	}
+
+	function isUser(dpDoc, userRole){
+		return (dpDoc.TopElem.person_id == curUserID || userRole == btypes.moderator);
+	}
+
+	function isManager(userRole){
+		return (userRole == btypes.manager || userRole == btypes.moderator);
+	}
+
+	function isAllowEditDp(_dpDoc, _curStep) {
+		var lst = Dp.getLastMainStep();
+		var lstm = Dp.getLastStepByMainStepId(_dpDoc.DocID, _curStep.idp_main_step_id);
+
+		if (lstm == undefined) {
+			return true;
+		}
+
+		if ((_curStep.idp_main_step_order_number == lst.order_number && _curStep.idp_step_order_number == lstm.order_number)
+			|| (lstm.order_number == _curStep.idp_step_order_number)
+		) {
+			return false;
+		}
+		return true;
+	}
+
+	//alert('_1');
+	var currentStep = Dp.getCurrentStep(dpDoc.DocID);
+	//alert('_2');
+	//alert('curUserID: ' + curUserID);
+	//alert('crdoc.DocID: ' + crdoc.DocID);
+	var urole = User.getRole(curUserID, dpDoc.DocID, dpDoc);
+	//alert('urole: ' + urole);
+	//alert('_3');
+	var uactions = User.getActionsByRole(urole, currentStep.idp_step_id);
+	//alert('uactions:' + tools.object_to_text(uactions, 'json'));
+	//alert('_5');
+	var isEditDp = isAllowEditDp(dpDoc, currentStep);
+	//alert('isEditDp: ' + tools.object_to_text(isEditDp, 'json'));
+	//alert('_6');
+	var isEditTasks = isAlowEditTasks(currentStep, urole);
+	//alert('isEditTasks: ' + tools.object_to_text(isEditTasks, 'json'));
+	//alert('_7');
+	//var ats = Dp.getAssessments();
+	//alert('_9');
+	var curMainStepNumber = currentStep.idp_main_step_order_number;
+	//alert('curMainStepNumber: ' + curMainStepNumber);
+
+	var _isUser = isUser(dpDoc, urole);
+	var _isManager = isManager(urole);
+	//alert('_10');
+
+	return {
+		actions: uactions,
+		is_show_assessments: isEditTasks && curMainStepNumber > 0,
+		allow_add_themes: true,
+		allow_edit_themes: true,
+		allow_remove_themes: true,
+		allow_edit_target: isEditTasks && isEditDp && curMainStepNumber == 0, // цель
+		allow_edit_expected_result: isEditTasks && isEditDp && curMainStepNumber == 0, // ожидаемый результат
+		allow_edit_achieved_result: isEditTasks && isEditDp && curMainStepNumber > 0 && _isUser, // Достигнутый результат
+		allow_edit_tasks: isEditTasks && isEditDp,
+		allow_add_tasks: isEditTasks && isEditDp && curMainStepNumber == 0,
+		allow_remove_tasks: isEditTasks && isEditDp && curMainStepNumber == 0,
+		allow_edit_collaborator_assessment: isEditDp && (isEditTasks && curMainStepNumber > 0 && _isUser),
+		allow_edit_manager_assessment: isEditDp && (isEditTasks && curMainStepNumber > 0 && _isManager)
+	}
+}
+
 
 function get_Idps(queryObjects) {
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
@@ -40,13 +114,16 @@ function get_Idps(queryObjects) {
 
 	var dpId = queryObjects.GetOptProperty('development_plan_id');
 	var isManager = Utils.toBoolean(queryObjects.GetOptProperty('is_manager'));
-	var dpObj = {};
 
 	try {
 		if (dpId != undefined) {
-			//var userRole = User.getRole(curUserID, dpId);
-			dpObj = Dp.getObject(dpId, assessmentAppraiseId, curUserID);
-			return Utils.setSuccess(dpObj);
+			var card = Dp.getObject(dpId, assessmentAppraiseId, curUserID);
+			var dpDoc = OpenDoc(UrlFromDocID(Int(dpId)));
+			var meta = _setComputedFields(dpDoc);
+			return Utils.setSuccess({
+				card: card,
+				meta: meta
+			});
 		} else if (isManager) {
 			var search = queryObjects.HasProperty('search') ? queryObjects.search : '';
 			var status = queryObjects.HasProperty('status') ? queryObjects.status : 0;

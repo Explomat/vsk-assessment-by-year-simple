@@ -43,15 +43,6 @@ class Task extends Component {
 			percent_complete
 		} = this.props;
 		const { isShowModal } = this.state;
-
-		/*let defaultCollaboratorAssessment = meta.assessments.find(a => a.name === collaborator_assessment);
-		if (!defaultCollaboratorAssessment){
-			defaultCollaboratorAssessment = meta.assessments[0];
-		}
-		let defaultManagerAssessment = meta.assessments.find(a => a.name === manager_assessment);
-		if (!defaultManagerAssessment){
-			defaultManagerAssessment = meta.assessments[0];
-		}*/
 		return (
 			<tr className='ant-table-row ant-table-row-level-0'>
 				<td>
@@ -79,7 +70,7 @@ class Task extends Component {
 				</td>
 				{isShowModal && <TaskForm
 					title='Редактирование'
-					onCommit={this.handleUpdate}
+					onOk={this.handleUpdate}
 					onCancel={this.handleToggleModal}
 					{...this.props}
 				/>}

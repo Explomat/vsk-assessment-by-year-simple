@@ -41,6 +41,67 @@ function getFirstStateId() {
 	return s == undefined ? null : s.id;
 }
 
+function getCurrentStep(dpId) {
+	return ArrayOptFirstElem(XQuery("sql: \n\
+		select \n\
+			imfs.current_collaborator_id, \n\
+			imfs.next_collaborator_id, \n\
+			iss.id idp_step_id, \n\
+			iss.name idp_step_name, \n\
+			iss.order_number idp_step_order_number, \n\
+			imss.id idp_main_step_id, \n\
+			imss.name idp_main_step_name, \n\
+			imss.order_number idp_main_step_order_number \n\
+		from cc_idp_mains ccims \n\
+		inner join cc_idp_main_flows imfs on imfs.idp_main_id = ccims.id \n\
+		inner join cc_idp_main_steps imss on imss.id = imfs.idp_main_step_id \n\
+		inner join cc_idp_steps iss on iss.id = imfs.idp_step_id \n\
+		inner join development_plans dps on dps.id = ccims.development_plan_id \n\
+		where \n\
+			dps.id = " + dpId + " \n\
+	"));
+}
+
+function getLastMainStep(){
+	return ArrayOptFirstElem(XQuery("sql: \n\
+		select ccas.* \n\
+		from cc_idp_main_steps ccas \n\
+		inner join ( \n\
+			select \n\
+				max(order_number) orn \n\
+			from cc_idp_main_steps \n\
+		) c on c.orn = ccas.order_number \n\
+	"));
+}
+
+function getLastStepByMainStepId(dpId, mainStepId){
+	return ArrayOptFirstElem(XQuery("sql: \n\
+		select \n\
+			imfs.id, \n\
+			imfs.current_collaborator_id, \n\
+			imfs.next_collaborator_id, \n\
+			imfs.idp_step_id, \n\
+			ast.order_number idp_step_order_number, \n\
+			imss.id idp_main_step_id, \n\
+			imss.order_number idp_main_step_order_number \n\
+		from cc_idp_main_flows imfs \n\
+		inner join ( \n\
+			select iss.*  \n\
+			from cc_idp_steps iss \n\
+			inner join ( \n\
+				select \n\
+					max(order_number) orn \n\
+				from cc_idp_steps \n\
+			) c on c.orn = iss.order_number \n\
+		) ast on ast.id = imfs.idp_step_id \n\
+		inner join cc_idp_main_steps imss on imss.id = imfs.idp_main_step_id \n\
+		inner join cc_idp_mains ims on ims.id = imfs.idp_main_id \n\
+		where \n\
+			ims.development_plan_id = " + dpId + " \n\
+			and imss.id = " + mainStepId + " \n\
+	"));
+}
+
 function create(userId, comps, assessmentAppraiseId) {
 	function calculatePlanDate(startDate, duration /* в месяцах */) {
 		var d = OptInt(duration);
@@ -130,6 +191,7 @@ function create(userId, comps, assessmentAppraiseId) {
 			ctDoc.TopElem.development_plan_id = dpDoc.DocID;
 			ctDoc.TopElem.competence_id = c.id;
 			ctDoc.TopElem.idp_theme_id = ct.id;
+			ctDoc.TopElem.percent_complete = 0;
 			ctDoc.BindToDb(DefaultDb);
 			ctDoc.Save();
 		}
@@ -154,8 +216,10 @@ function getObject(dpId, assessmentAppraiseId, userId) {
 	var obj = {
 		managers: [],
 		main_steps: [],
+		competence_and_themes: [],
 		competences: [],
-		main_flows: []
+		main_flows: [],
+		task_types: Task.getTaskTypes()
 	}
 
 	var qdp = ArrayOptFirstElem(
@@ -242,6 +306,25 @@ function getObject(dpId, assessmentAppraiseId, userId) {
 			obj.main_steps.push(sobj);
 		}
 		//
+
+
+		// компетенции и темы
+		obj.competence_and_themes = XQuery("sql: \n\
+			select \n\
+				ics.id, \n\
+				ics.percent_complete, \n\
+				cs.id competence_id, \n\
+				cs.name competence_name, \n\
+				c.data.query('/competence/comment').value('.', 'nvarchar(1000)') competence_comment, \n\
+				its.id theme_id, \n\
+				its.name theme_name \n\
+			from cc_idp_competences ics \n\
+			inner join competences cs on cs.id = ics.competence_id \n\
+			inner join competence c on c.id = cs.id \n\
+			inner join cc_idp_themes its on its.id = ics.idp_theme_id \n\
+			where \n\
+				ics.development_plan_id = " + dpId + " \n\
+		");
 
 		// компетенции и задачи
 		var comps = XQuery("sql: \n\
@@ -459,24 +542,6 @@ function getCompetencesAndThemes(paId, assessmentAppraiseId) {
 }
 
 
-
-
-function getCrByPersonId(personId){
-	return XQuery("for $el in career_reserves where $el/person_id = " + personId + " return $el");
-}
-
-function getAssessments(){
-	return XQuery("sql: \n\
-		select \n\
-			convert(varchar(max), aas.id) id, \n\
-			aas.name, \n\
-			aas.description, \n\
-			aas.color, \n\
-			aas.[percent] \n\
-		from cc_adaptation_assessments aas \n\
-	");
-}
-
 function isAccessToUpdate(id, userId) {
 	return true;
 }
@@ -488,85 +553,3 @@ function isAccessToRemove(id, userId) {
 function isAccessToAdd(userId) {
 	return true;
 }
-
-/*function getNextUserId(crId, role){
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/adaptation/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/adaptation/server/user.js');
-
-	var doc = OpenDoc(UrlFromDocID(Int(crId)));
-
-	var udoc = OpenDoc(UrlFromDocID(Int(doc.TopElem.person_id)));
-	var isAdaptation = ArrayOptFind(udoc.TopElem.custom_elems, 'This.name == \'is_adaptation\'');
-	if (isAdaptation != undefined){
-		var types = User.getManagerTypes();
-		if (isAdaptation.value == 'true' && types.user == role) {
-			return doc.TopElem.person_id;
-		}
-	}
-
-	for (el in doc.TopElem.tutors){
-		if (el.boss_type_id.OptForeignElem.code == role){
-			return el.person_id;
-		}
-	}
-
-	return null;
-}
-
-
-function getById(crId){
-	return ArrayOptFirstElem(XQuery('for $el in career_reserves where $el/id = ' + crId + ' return $el'));
-}
-
-function isAccessToView(userId, doc, crid){
-	if (doc == null){
-		doc = OpenDoc(UrlFromDocID(Int(crid)));
-	}
-
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/adaptation/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/adaptation/server/user.js');
-	
-	var urole = User.getRole(userId, doc.DocID, doc);
-	return (
-		(doc.TopElem.person_id == userId) ||
-		(ArrayOptFind(doc.TopElem.tutors, 'This.person_id == ' + userId) != undefined) ||
-		urole == 'admin'
-	);
-}
-
-function getCurators(userId, userRole){
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/adaptation/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/adaptation/server/user.js');
-
-	var bossTypes = User.getManagerTypes();
-	// если админ, то должен видеть всех кураторов
-
-	return XQuery("sql: \n\
-		select \n\
-			distinct(cs.id) tutor_id, \n\
-			cs.fullname + ' (' + cs.position_name + ')' [name] \n\
-		from ( \n\
-			select \n\
-				c.career_reserve_id, \n\
-				t.p.query('person_id').value('.','varchar(50)') tutor_id, \n\
-				t.p.query('boss_type_id').value('.','varchar(50)') boss_type_id \n\
-			from career_reserves crs \n\
-			inner join ( \n\
-				select \n\
-					crt.career_reserve_id, \n\
-					crt.tutor_id \n\
-				from career_reserve_tutors crt \n\
-				where (crt.tutor_id = " + userId + ") \n\
-				--where (crt.tutor_id = " + userId + " or 'admin' = '" + userRole + "') \n\
-			) c on c.career_reserve_id = crs.id \n\
-			inner join career_reserve cr on cr.id = crs.id \n\
-			cross apply cr.data.nodes('/career_reserve/tutors/tutor') as t(p) \n\
-			where t.p.exist('person_id[text()[1] = " + userId + "]') <> 1 \n\
-		) c \n\
-		inner join boss_types bt on bt.id = c.boss_type_id \n\
-		inner join collaborators cs on cs.id = c.tutor_id \n\
-		where \n\
-			bt.code = '" + bossTypes.curator + "' \n\
-			and tutor_id <> " + userId + " \n\
-	");
-}*/

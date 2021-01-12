@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Modal, Input, Select, Button } from 'antd';
 import { EllipsisOutlined } from '@ant-design/icons';
-import CollaboratorList from '../../components/collaborators';
+import CollaboratorList from '../../components/list';
 
 class TaskForm extends Component {
 
@@ -125,7 +125,7 @@ class TaskForm extends Component {
 						type='Collaborators'
 						onOk={this.handleSelectExpert}
 						onCancel={this.handleShowCollaborators}
-						params={{ multiple: false }}
+						commonParams={{ project: 'idp', multiple: false }}
 					/>
 				}
 			</Modal>

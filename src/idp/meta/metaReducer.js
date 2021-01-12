@@ -1,6 +1,4 @@
 import { constants } from './metaActions';
-import collaborators from '../../components/collaborators/listReducer';
-import { combineReducers } from 'redux';
 
 const themeReducer = (state = [], action) => {
 	switch(action.type) {
@@ -160,9 +158,4 @@ const metaReducer = (state = {
 	}
 }
 
-const reducer = combineReducers({
-	main: metaReducer,
-	collaborators: collaborators
-});
-
-export default reducer;
+export default metaReducer;

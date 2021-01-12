@@ -309,26 +309,25 @@ function getActionsByRole(role, stepId){
 	var o = [];
 	var strq = " \n\
 		select \n\
-			distinct(ans.name), \n\
-			ans.title, \n\
-			ans.allow_additional_data \n\
-		from cc_adaptation_role_operations ars \n\
-		inner join cc_adaptation_operations ans on ans.id = ars.operation_id \n\
+			distinct(iafs.code), \n\
+			iafs.name \n\
+		from cc_idp_role_operations ars \n\
+		inner join cc_idp_roles irs on irs.id = ars.current_idp_role_id \n\
+		inner join cc_idp_action_flows iafs on iafs.id = ars.idp_action_flow_id \n\
 		where \n\
-			ars.role = '" + role + "'";
+			irs.code = '" + role + "'";
 		
 	if (stepId != undefined){
-		strq = strq + " and step = " + Int(stepId)
+		strq = strq + " and ars.current_idp_step_id = " + Int(stepId)
 	}
 
-	strq = strq + " order by ans.title"
+	strq = strq + " order by iafs.name"
 
 	var q = XQuery("sql: " + strq);
 	for (el in q){
 		o.push({
-			name: String(el.name),
-			title: String(el.title),
-			allow_additional_data: String(el.allow_additional_data)
+			code: String(el.code),
+			name: String(el.name)
 		});
 	}
 	return o;

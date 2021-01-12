@@ -9,19 +9,13 @@ class Ilist extends Component {
 
 	constructor(props) {
 		super(props);
-
-		this.setParams = this.setParams.bind(this);
-
-		this.setParams(props.params);
+		
+		props.onSetParams(props.commonParams);
 	}
 
 	componentDidMount() {
 		const { type, getItems } = this.props;
 		getItems(type);
-	}
-
-	setParams() {
-		this.props.onSetParams(this.props.params);
 	}
 
 	render() {
@@ -119,7 +113,7 @@ class Ilist extends Component {
 
 function mapStateToProps(state){
 	return {
-		...state.idp.meta.collaborators
+		...state.components.listComponent
 	}
 }
 

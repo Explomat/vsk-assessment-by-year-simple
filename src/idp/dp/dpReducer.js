@@ -37,17 +37,20 @@ const cardReducer = (state = {
 	state_name: '',
 	managers: [],
 	main_steps: [],
+	competence_and_themes: [],
 	competences: [],
 	main_flows: [],
 	meta: {
-		allow_add_tasks: true
+		allow_add_tasks: true,
+		allow_add_themes: true
 	}
 }, action) => {
 	switch(action.type) {
 		case constants.FETCH_DP_SUCCESS: {
 			return {
 				...state,
-				...action.payload
+				...action.payload.card,
+				meta: action.payload.meta
 			}
 		}
 

@@ -10,13 +10,16 @@ const listReducer = (state = {
 		pageSize: 10
 	},
 	ui: {
-		isLoading: false,
+		isLoading: false
+	},
+	params: {
+		project: '',
 		multiple: true
 	}
 }, action) => {
 	switch(action.type) {
 
-		case constants.COMPONENT_COLLABORATOR_LIST_FETCH_SUCCESS: {
+		case constants.COMPONENT_LIST_FETCH_SUCCESS: {
 			return {
 				...state,
 				list: action.payload.collaborators,
@@ -27,10 +30,10 @@ const listReducer = (state = {
 			}
 		}
 
-		case constants.COMPONENT_COLLABORATOR_LIST_SELECT_ITEM: {
+		case constants.COMPONENT_LIST_SELECT_ITEM: {
 			const { checked, item } = action.payload;
 
-			if (!state.ui.multiple && state.selectedItems.length > 0 && checked) {
+			if (!state.params.multiple && state.selectedItems.length > 0 && checked) {
 				return {
 					...state
 				}
@@ -61,7 +64,7 @@ const listReducer = (state = {
 			}
 		}
 
-		case constants.COMPONENT_COLLABORATOR_LIST_RESET_SELECTED: {
+		case constants.COMPONENT_LIST_RESET_SELECTED: {
 			return {
 				...state,
 				list: state.list.map(s => {
@@ -74,7 +77,7 @@ const listReducer = (state = {
 			}
 		}
 
-		case constants.COMPONENT_COLLABORATOR_LIST_SET_SEARCH: {
+		case constants.COMPONENT_LIST_SET_SEARCH: {
 			return {
 				...state,
 				meta: {
@@ -84,7 +87,7 @@ const listReducer = (state = {
 			}
 		}
 
-		case constants.COMPONENT_COLLABORATOR_LIST_LOADING: {
+		case constants.COMPONENT_LIST_LOADING: {
 			return {
 				...state,
 				ui: {
@@ -94,12 +97,12 @@ const listReducer = (state = {
 			};
 		}
 
-		case constants.COMPONENT_COLLABORATOR_LIST_SET_PARAMS: {
+		case constants.COMPONENT_LIST_SET_PARAMS: {
 			return {
 				...state,
 				selectedItems: [],
-				ui: {
-					...state.ui,
+				params: {
+					...state.params,
 					...action.payload
 				}
 			}

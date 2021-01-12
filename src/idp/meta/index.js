@@ -342,7 +342,7 @@ class Meta extends Component {
 
 function mapStateToProps(state){
 	return {
-		meta: state.idp.meta.main
+		meta: state.idp.meta
 	}
 }
 
