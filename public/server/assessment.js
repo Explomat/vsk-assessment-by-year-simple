@@ -77,7 +77,7 @@ function createBoss(paId, assessmentAppraiseId) {
 	return docManager;
 }
 
-function create (userId, assessmentAppraiseId, blockSubId, blockId) {
+function create(userId, assessmentAppraiseId, blockSubId, blockId) {
 	var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
 

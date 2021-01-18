@@ -7,9 +7,15 @@ import { withRouter } from 'react-router';
 
 function mapStateToProps(state){
 	const { profile } = state.assessment;
+	const { idp } = state;
 	const result = omit(profile, 'result');
 	return {
 		PaContainer,
+		idp: {
+			hasThemesChecked: idp.meta.hasThemesChecked,
+			currentStep: idp.meta.ui.currentStep,
+			stepsCount: idp.meta.ui.stepsCount
+		},
 		meta: profile.result.meta,
 		user: profile.result.user,
 		managers: profile.result.managers,

@@ -19,7 +19,7 @@
 
 
 	var st = Utils.getSystemSettings(6790263731625424310);
-	var curUserID = 6711785032659205612; //OptInt(st.TopElem.cur_user_id);
+	var curUserID = OptInt(st.TopElem.cur_user_id); //6711785032659205612;
 
 	//var curUserID = 6711785032659205612; // me test
 	//var curUserID = 6719948502038810952; // volkov test
@@ -336,6 +336,16 @@
 				}
 			}
 
+			var dp = ArrayOptFirstElem(XQuery("sql: \n\
+				select id \n\
+				from development_plans \n\
+				where \n\
+					person_id = " + userID + " \n\
+					and assessment_appraise_id = " + assessmentAppraiseId)
+			);
+
+			meta.hasIdp = (dp != undefined);
+
 			return Utils.setSuccess({
 				meta: meta,
 				user: user,
@@ -445,7 +455,7 @@
 		);
 
 		var planId = null;
-		for (p in q){
+		for (p in q) {
 			try {
 				docPaUser = OpenDoc(UrlFromDocID(Int(p.id)));
 				planId = docPaUser.TopElem.assessment_plan_id;

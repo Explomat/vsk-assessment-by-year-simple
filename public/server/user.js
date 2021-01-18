@@ -468,6 +468,10 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 					and ps.expert_person_id = " + s.id + " \n\
 			"));
 
+			/*alert('s.assessment_plan_id: ' + s.assessment_plan_id);
+			alert('s.id: ' + s.id);
+			alert('o == undefined: ' + (o == undefined));*/
+
 			data = {
 				id: String(s.id),
 				fullname: String(s.fullname),
@@ -483,7 +487,7 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 				data.assessment = {
 					step: String(plan.step),
 					stepName: String(plan.stepName),
-					overall: String(o.overall)
+					overall: (o != undefined ? String(o.overall) : '')
 				}
 			}
 			result.push(data);

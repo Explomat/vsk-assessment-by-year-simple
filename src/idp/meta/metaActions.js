@@ -10,8 +10,23 @@ export const constants = {
 	'DP_META_SAVE_TASK': 'DP_META_SAVE_TASK',
 	'DP_META_LOADING': 'DP_META_LOADING',
 	'DP_META_COMPETENCE_CHECKED': 'DP_META_COMPETENCE_CHECKED',
-	'DP_META_THEME_CHECKED': 'DP_META_THEME_CHECKED'
+	'DP_META_THEME_CHECKED': 'DP_META_THEME_CHECKED',
+	'DP_META_CHANGE_STEP': 'DP_META_CHANGE_STEP',
+	'DP_META_RESET_STATE': 'DP_META_RESET_STATE'
 };
+
+export function resetState() {
+	return {
+		type: constants.DP_META_RESET_STATE
+	}
+}
+
+export function onChangeStep(step) {
+	return {
+		type: constants.DP_META_CHANGE_STEP,
+		payload: step
+	}
+}
 
 export function onDeleteTask(competence_id, task_id) {
 	return {
@@ -66,7 +81,7 @@ export function saveIdp(assessment_appraise_id) {
 		dispatch(appLoading(true));
 
 		const { idp } = getState();
-		const competences = idp.meta.main.competences.filter(c => c.checked);
+		const competences = idp.meta.competences.filter(c => c.checked);
 
 		competences.forEach(c => {
 			const themes = c.competence_themes.filter(ct => ct.checked);
@@ -91,12 +106,24 @@ export function saveIdp(assessment_appraise_id) {
 	}
 }
 
-export function getMeta(id){
-	return dispatch => {
+export function getMeta(assessment_appraise_id){
+	return (dispatch, getState) => {
 		dispatch(loading(true));
-		request('idp', 'Meta')
-			.get({
-				assessment_appraise_id: id
+
+		const { assessment } = getState();
+		const paKey = Object.keys(assessment.profile.pas).find(p => assessment.profile.pas[p].status === 'self');
+		if (!paKey) {
+			dispatch(error('client: Не найдена анкета самооценки'));
+			return;
+		}
+
+		const comps = assessment.profile.pas[paKey].competences.map(c =>
+			assessment.profile.competences[c]
+		);
+
+		request('idp', 'Meta', { assessment_appraise_id })
+			.post({
+				competences: comps
 			})
 			.then(r => r.json())
 			.then(d => {

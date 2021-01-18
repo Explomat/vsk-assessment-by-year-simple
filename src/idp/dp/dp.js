@@ -24,7 +24,7 @@ const UserDescription = ({ ...props }) => (
 
 class Dp extends Component {
 
-	constructor(props){
+	constructor(props) {
 		super(props);
 
 		this.state = {
@@ -42,30 +42,30 @@ class Dp extends Component {
 		this.handleChangeComment = this.handleChangeComment.bind(this);
 	}
 
-	componentDidMount(){
+	componentDidMount() {
 		const { match, getDp } = this.props;
 		getDp(match.params.id, match.params.dp_id);
 		//this.props.loading(true);
 	}
 
-	handleToggleTaskModal(){
+	handleToggleTaskModal() {
 		this.setState({
 			isShowModalTask: !this.state.isShowModalTask
 		});
 	}
 
-	handleToggleCommentModal(){
+	handleToggleCommentModal() {
 		this.setState({
 			isShowModalComment: !this.state.isShowModalComment,
 			comment: ''
 		});
 	}
 
-	handleChangeComment ({ target: { value } }) {
+	handleChangeComment({ target: { value } }) {
 		this.setState({ comment: value });
 	}
 
-	handeAction(action){
+	handeAction(action) {
 		const { changeStep } = this.props;
 
 		if (action.allow_additional_data === 'true'){
@@ -76,14 +76,14 @@ class Dp extends Component {
 		}
 	}
 
-	handleChangeStep(isComment){
+	handleChangeStep(isComment) {
 		const { changeStep } = this.props;
 		const comment = isComment ? this.state.comment : null;
 		changeStep(this.currentAction.name, comment);
 		this.handleToggleCommentModal();
 	}
 
-	handleAddTask(task){
+	handleAddTask(task) {
 		const { addTask } = this.props;
 		addTask(task);
 		this.handleToggleTaskModal();
@@ -325,15 +325,15 @@ class Dp extends Component {
 		return (
 			<Spin spinning={ui.isLoading}>
 				<div className='dp'>
-					{ this.renderHeader() }
+					{ /*this.renderHeader()*/ }
 					<div className='dp__body'>
-						{this.renderMainSteps()}
+						{/*this.renderMainSteps()*/}
 						<div className='dp__competence-and-themes-container'>
 							<div className='dp__title'>Обязательные обучения для развития компетенций</div>
 							{this.renderCompetenceAndThemes()}
 						</div>
 						<div className='dp__body-competence-tasks'>
-							<div className='dp__title'>Дополнительные задачи</div>
+							<div className='dp__title'>Развивающиее задачи</div>
 							{card.competences.map(c => 
 								<Card
 									key={c.id}
@@ -398,9 +398,9 @@ class Dp extends Component {
 							<Input.TextArea placeholder='Описание' value={comment} autosize={{ minRows: 3}} onChange={this.handleChangeComment}/>
 						</Modal>
 					</div>
-					<div className='dp__footer'>
+					{/*<div className='dp__footer'>
 						{this.renderHistory()}
-					</div>
+					</div>*/}
 				</div>
 			</Spin>
 		);

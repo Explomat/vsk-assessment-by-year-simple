@@ -7,6 +7,7 @@ import Subordinates from './subordinates';
 import { withRouter } from 'react-router';
 import { Menu, Segment, Input, List, Dimmer, Loader, Modal, Header, Button, Icon, Message } from 'semantic-ui-react';
 import { setTab, getInitialData,  delegateUser } from './profileActions';
+//import { getDp } from '../../idp/dp/dpActions';
 import { connect } from 'react-redux';
 import { find } from 'lodash';
 
@@ -17,8 +18,9 @@ class Main extends Component {
 	}
 
 	componentDidMount(){
-		const { match, loadData } = this.props;
+		const { match, loadData, getDp } = this.props;
 		loadData(match.params.id);
+		//getDp(match.params.id);
 	}
 
 	render(){
@@ -89,7 +91,8 @@ function mapDispatchProps(dispatch, ownProps) {
 	return {
 		onChangeTab: (e, data) => dispatch(setTab(data.name)),
 		//onSearchSubordinates: (e, { value }) => dispatch(searchSubordinates(value)),
-		loadData: id => dispatch(getInitialData(id))
+		loadData: id => dispatch(getInitialData(id)),
+		//getDp: assessmentId => dispatch(getDp(assessmentId))
 		//selectToggleSubordinate: (subordinateId, checked) => dispatch(subordinateChecked(subordinateId, checked)),
 		//onDelegateUser: assessmentId => dispatch(delegateUser(assessmentId))
 	}

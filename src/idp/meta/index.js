@@ -3,8 +3,8 @@ import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import { Card, Checkbox, Modal, Button, List, Avatar, Table } from 'antd';
 import TaskForm from './TaskForm';
-import { ContactsOutlined, CheckOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getMeta, onCompetenceChecked, onThemeChecked, onSaveTask, onDeleteTask, saveIdp } from './metaActions';
+import { ContactsOutlined, CheckOutlined, DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { getMeta, onCompetenceChecked, onThemeChecked, onSaveTask, onDeleteTask, saveIdp, onChangeStep, resetState } from './metaActions';
 import './meta.css';
 
 class Meta extends Component {
@@ -28,10 +28,10 @@ class Meta extends Component {
 
 		this.state = {
 			isShowConfirm: false,
-			isShowTaskForm: false,
-			stepsCount: 4,
-			currentStep: 1
+			isShowTaskForm: false
 		}
+
+		props.resetState();
 
 		this.currentCompetenceId = null;
 	}
@@ -76,15 +76,13 @@ class Meta extends Component {
 	}
 
 	handlePrevStep() {
-		this.setState({
-			currentStep: (this.state.currentStep - 1)
-		});
+		const { ui, onChangeStep } = this.props;
+		onChangeStep(ui.currentStep - 1);
 	}
 
 	handleNextStep() {
-		this.setState({
-			currentStep: (this.state.currentStep + 1)
-		});
+		const { ui, onChangeStep } = this.props;
+		onChangeStep(ui.currentStep + 1);
 	}
 
 	handleCheckedTheme(e, competenceId, themeId) {
@@ -92,7 +90,7 @@ class Meta extends Component {
 	}
 
 	renderConfirm() {
-		const { meta } = this.props;
+		const { selectedNode } = this.props;
 
 		return (
 			<Modal
@@ -104,7 +102,7 @@ class Meta extends Component {
 				onOk={this.handleCreateDp}
 			>
 				<span className='content'>
-					<p>{`Вы действительно хотите выбрать "${meta.selectedNode && meta.selectedNode.name}" ?`}</p>
+					<p>{`Вы действительно хотите выбрать "${selectedNode && selectedNode.name}" ?`}</p>
 					<p>Будьте внимательны, эти данные нельзя будет изменить.</p>
 				</span>
 			</Modal>
@@ -112,14 +110,14 @@ class Meta extends Component {
 	}
 
 	renderTasks(competenceId, tasks = []) {
-		const { meta, onDeleteTask } = this.props;
+		const { task_types, onDeleteTask } = this.props;
 
 		const columns = [
 			{
 				title: 'Тип задачи',
 				dataIndex: 'idp_task_type_id',
 				key: 'idp_task_type_id',
-				render: id => meta.task_types.find(tp => tp.id === id).name
+				render: id => task_types.find(tp => tp.id === id).name
 			},
 			{
 				title: 'Описание',
@@ -156,33 +154,32 @@ class Meta extends Component {
 	}
 
 	renderButtons() {
-		const { currentStep, stepsCount } = this.state;
-		const { meta } = this.props;
+		const { ui, hasChecked } = this.props;
 		const buttons = [];
 
-		const buttonNext = <Button key='1' className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleNextStep}>Далее</Button>;
-		const buttonPrev = <Button key='2' className='clearfix' style={{float: 'left'}} onClick={this.handlePrevStep}>Назад</Button>;
+		const buttonNext = <Button key='1' className='clearfix' style={{float: 'right'}} onClick={this.handleNextStep}><RightOutlined /></Button>;
+		const buttonPrev = <Button key='2' className='clearfix' style={{float: 'left'}} onClick={this.handlePrevStep}><LeftOutlined /></Button>;
 		const buttonSave = <Button onClick={this.handleSave} key='3' className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleSave}>Сохранить</Button>;
 
-		if (currentStep < stepsCount && currentStep !== 1) {
+		if (ui.currentStep <= ui.stepsCount && ui.currentStep !== 1) {
 			buttons.push(buttonPrev);
 		}
 
-		if (currentStep === 1 && meta.hasChecked) {
+		if (ui.currentStep === 1 && hasChecked) {
 			buttons.push(buttonNext);
-		} else if (currentStep === 2 && meta.hasThemesChecked) {
+		} /*else if (currentStep === 2 && meta.hasThemesChecked) {
 			buttons.push(buttonNext);
 		} else if (currentStep === (stepsCount - 1)) {
 			buttons.push(buttonSave);
-		}
+		}*/
 
 		return <div className='dp-meta__buttons clearfix'>{buttons}</div>;
 	}
 
 	renderTaskModal() {
 		const { isShowTaskForm } = this.state;
-		const { meta } = this.props;
-		const comp = meta.competences.find(c => c.id === this.currentCompetenceId);
+		const { competences, task_types } = this.props;
+		const comp = competences.find(c => c.id === this.currentCompetenceId);
 
 		if (isShowTaskForm) {
 			return (
@@ -190,7 +187,7 @@ class Meta extends Component {
 					type='Collaborators'
 					onCommit={this.handleSaveTask}
 					onCancel={this.handleToggleTaskModal}
-					task_types={meta.task_types}
+					task_types={task_types}
 				/>
 			);
 		}
@@ -198,23 +195,22 @@ class Meta extends Component {
 
 	render() {
 		const { isShowConfirm } = this.state;
-		const { meta, match } = this.props;
-		const { currentStep, stepsCount } = this.state;
+		const { ui, competences, scales, match } = this.props;
 
-		if (meta.ui.isLoading) {
+		if (ui.isLoading) {
 			return null;
 		}
 
 		return (<div>
-			{currentStep === 1 &&
+			{ui.currentStep === 1 &&
 				<Card className='dp-meta' title='Компетенции'>
 					<div className='dp-meta__description'>Выберите 1 или 2 компетенции для развития. При выборе двух компетенций - вам нужно будет выбрать по одному обязательному обучению для каждой, при выборе одно - два обучения для развития этой компетенции.</div>
 					<List
 						className='dp-list'
 						itemLayout='horizontal'
 					>
-						{meta.competences.map(item => {
-							const scale = meta.scales.find(s => s.scale === item.mark_text);
+						{competences.map(item => {
+							const scale = scales.find(s => s.scale === item.mark_text);
 							const className = scale ? 'dp-meta__label--active': '';
 
 							return (
@@ -239,17 +235,18 @@ class Meta extends Component {
 							)
 						})}
 					</List>
+					{this.renderButtons()}
 				</Card>
 			}
-			{currentStep === 2 &&
+			{ui.currentStep === 2 &&
 				<Card className='dp-meta' title='Темы обучений для развития компетенций'>
 					<div className='dp-meta__description'>Выберите темы для развития</div>
 					<List
 						className='dp-list'
 						itemLayout='horizontal'
 					>
-						{meta.competences.filter(c => c.checked).map(item => {
-							const scale = meta.scales.find(s => s.scale === item.mark_text);
+						{competences.filter(c => c.checked).map(item => {
+							const scale = scales.find(s => s.scale === item.mark_text);
 							const className = scale ? 'dp-meta__label--active': '';
 
 							return (
@@ -286,9 +283,10 @@ class Meta extends Component {
 							)
 						})}
 					</List>
+					{this.renderButtons()}
 				</Card>
 			}
-			{currentStep === 3 &&
+			{/*currentStep === 3 &&
 				<Card
 					className='dp-meta'
 					title='Выберите дополнительные задачи для развития компетенций'
@@ -332,9 +330,8 @@ class Meta extends Component {
 						})}
 					</List>
 				</Card>
-			}
+			*/}
 			<div className='clearfix' />
-			{this.renderButtons()}
 			{this.renderTaskModal()}
 		</div>)
 	}
@@ -342,8 +339,8 @@ class Meta extends Component {
 
 function mapStateToProps(state){
 	return {
-		meta: state.idp.meta
+		...state.idp.meta
 	}
 }
 
-export default withRouter(connect(mapStateToProps, { getMeta, onCompetenceChecked, onThemeChecked, onSaveTask, onDeleteTask, saveIdp })(Meta));
+export default withRouter(connect(mapStateToProps, { getMeta, onCompetenceChecked, onThemeChecked, onSaveTask, onDeleteTask, saveIdp, onChangeStep, resetState })(Meta));

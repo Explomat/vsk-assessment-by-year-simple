@@ -3,6 +3,8 @@ import Instruction from './Instruction';
 import { createBaseUrl } from '../../utils/request';
 import { Card, Image, Icon, Message, Table, Divider, Dropdown, Button, Label, Header } from 'semantic-ui-react';
 import { isCompetencesCompleted } from '../calculations';
+import DpMeta from '../../idp/meta';
+import Dp from '../../idp/dp/dp';
 
 import './profile.css';
 
@@ -14,10 +16,29 @@ class Profile extends Component {
 		this.renderResultMark = this.renderResultMark.bind(this);
 		this.handleToggleInstruction = this.handleToggleInstruction.bind(this);
 		this.handleSecondStep = this.handleSecondStep.bind(this);
+		this.handleNextPage = this.handleNextPage.bind(this);
+		this.handlePrevPage = this.handlePrevPage.bind(this);
 
+		this.pages = {
+			1: 1,
+			2: 2
+		};
 		this.state = {
-			isShowInstruction: false
+			isShowInstruction: false,
+			curPage: 1
 		}
+	}
+
+	handlePrevPage() {
+		this.setState({
+			curPage: this.state.curPage - 1
+		});
+	}
+
+	handleNextPage() {
+		this.setState({
+			curPage: this.state.curPage + 1
+		});
 	}
 
 	handleSecondStep() {
@@ -54,7 +75,7 @@ class Profile extends Component {
 		return assessment.pas.length > 1 ? ui.pas[paId] : !ui.pas[paId];
 	}
 
-	render(){
+	render() {
 		const {
 			PaContainer,
 			onSecondStep,
@@ -65,12 +86,14 @@ class Profile extends Component {
 			assessment,
 			managers,
 			match,
-			ui
+			ui,
+			hasIdp,
+			idp
 		} = this.props;
 
 		const pasLen = assessment.pas.length;
 		const isCompleted = isCompetencesCompleted(this.props);
-		const { isShowInstruction } = this.state;
+		const { isShowInstruction, curPage } = this.state;
 		return (
 			<div className='assessment-profile'>
 				<Card fluid>
@@ -175,7 +198,7 @@ class Profile extends Component {
 					</Table.Body>
 				</Table>
 				<Divider />
-				<div className='assessment-profile__pas'>
+				{curPage === 1 && <div className='assessment-profile__pas'>
 					{
 						assessment.pas.map((p, index) => {
 							//const pa = pas[p];
@@ -184,12 +207,39 @@ class Profile extends Component {
 							return <PaContainer key={p} id={p} isHeaderOpened={pasLen > 1} isOpened={isOpened} />
 						})
 					}
-				</div>
+					{meta.hasIdp && <Dp />}
+				</div>}
+				{curPage === 2 && <DpMeta />}
 				<div className='assessment-profile__result'>
 					{
-						meta.canEditSelf && (
+						meta.canEditSelf && curPage === 1 && isCompleted && (
 							<div>
 								{ui.isShowBossButton && <Button
+									disabled={!isCompleted}
+									color='blue' 
+									onClick={this.handleNextPage}
+								>
+									Выбрать компетенции для развития
+								</Button>}
+								{!isCompleted &&
+									<Message negative>
+										<Message.Content>
+											Анкета заполнена не полностью!
+										</Message.Content>
+									</Message>
+								}
+							</div>
+						)
+					}
+					{
+						meta.canEditSelf && curPage === 2 && (
+							<div>
+								{ui.isShowBossButton && <Button
+									onClick={this.handlePrevPage}
+								>
+									Назад
+								</Button>}
+								{ui.isShowBossButton && idp.hasThemesChecked && (idp.currentStep === idp.stepsCount) && <Button
 									disabled={!isCompleted}
 									color='blue' 
 									onClick={this.handleSecondStep}

@@ -90,15 +90,15 @@ function _setComputedFields(dpDoc) {
 	return {
 		actions: uactions,
 		is_show_assessments: isEditTasks && curMainStepNumber > 0,
-		allow_add_themes: true,
-		allow_edit_themes: true,
-		allow_remove_themes: true,
+		allow_add_themes: _isManager,
+		allow_edit_themes: _isManager,
+		allow_remove_themes: _isManager,
 		allow_edit_target: isEditTasks && isEditDp && curMainStepNumber == 0, // цель
 		allow_edit_expected_result: isEditTasks && isEditDp && curMainStepNumber == 0, // ожидаемый результат
 		allow_edit_achieved_result: isEditTasks && isEditDp && curMainStepNumber > 0 && _isUser, // Достигнутый результат
-		allow_edit_tasks: isEditTasks && isEditDp,
-		allow_add_tasks: isEditTasks && isEditDp && curMainStepNumber == 0,
-		allow_remove_tasks: isEditTasks && isEditDp && curMainStepNumber == 0,
+		allow_edit_tasks: isEditTasks && isEditDp && curMainStepNumber > 0,
+		allow_add_tasks: _isManager && isEditTasks && isEditDp && curMainStepNumber > 0,
+		allow_remove_tasks: _isManager && isEditTasks && isEditDp && curMainStepNumber > 0,
 		allow_edit_collaborator_assessment: isEditDp && (isEditTasks && curMainStepNumber > 0 && _isUser),
 		allow_edit_manager_assessment: isEditDp && (isEditTasks && curMainStepNumber > 0 && _isManager)
 	}
@@ -107,12 +107,35 @@ function _setComputedFields(dpDoc) {
 
 function get_Idps(queryObjects) {
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
+	var userId = queryObjects.GetOptProperty('user_id');
+	userId = userId == undefined ? curUserID : userId;
 
 	if (assessmentAppraiseId == undefined) {
 		return Utils.setError('Не указана процедура оценки');
 	}
 
-	var dpId = queryObjects.GetOptProperty('development_plan_id');
+	var dp = ArrayOptFirstElem(XQuery("sql: \n\
+		select id \n\
+		from development_plans \n\
+		where \n\
+			person_id = " + userId + " \n\
+			and assessment_appraise_id = " + assessmentAppraiseId)
+	);
+
+	try {
+		if (dp != undefined) {
+			var card = Dp.getObject(dp.id, assessmentAppraiseId);
+			var dpDoc = OpenDoc(UrlFromDocID(Int(dp.id)));
+			var meta = _setComputedFields(dpDoc);
+			return Utils.setSuccess({
+				card: card,
+				meta: meta
+			});
+		}
+
+		return Utils.setError('Анкета не найдена');
+
+	/*var dpId = queryObjects.GetOptProperty('development_plan_id');
 	var isManager = Utils.toBoolean(queryObjects.GetOptProperty('is_manager'));
 
 	try {
@@ -174,20 +197,26 @@ function get_Idps(queryObjects) {
 				and dps.person_id = " + curUserID + " \n\
 				and imfs.is_active_step = 1"
 			)
-		);	
+		);*/	
 	} catch(e) {
 		return Utils.setError(e);
 	}
 }
 
-function get_Meta(queryObjects) {
+function post_Meta(queryObjects) {
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
+	var data = tools.read_object(queryObjects.Body);
+	var comps = data.GetOptProperty('competences');
 
 	if (assessmentAppraiseId == undefined) {
 		return Utils.setError('Не указана процедура оценки');
 	}
 
-	var qs = ArrayOptFirstElem(XQuery("sql: \n\
+	if (comps == undefined) {
+		return Utils.setError('Не указаны компетенции');
+	}
+
+	/*var qs = ArrayOptFirstElem(XQuery("sql: \n\
 		select ps.id \n\
 		from \n\
 			pas ps\n\
@@ -200,9 +229,9 @@ function get_Meta(queryObjects) {
 
 	if (qs == undefined) {
 		return Utils.setError('Не найдена завершенная анкета оценки');
-	}
+	}*/
 
-	var result = Dp.getCompetencesAndThemes(qs.id, assessmentAppraiseId);
+	var result = Dp.getCompetencesAndThemes(comps, assessmentAppraiseId);
 	var commonScales = Assessment.getCommonScales();
 	var taskTypes = Task.getTaskTypes();
 	return Utils.setSuccess({

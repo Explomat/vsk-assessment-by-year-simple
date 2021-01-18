@@ -34,13 +34,27 @@ const metaReducer = (state = {
 	task_types: [],
 	hasChecked: false,
 	hasThemesChecked: false,
-	maxCountCompetencesForSelected: 2,
-	maxCountThemesForSelected: 3,
 	ui: {
-		isLoading: true
+		isLoading: true,
+		currentStep: 1,
+		stepsCount: 2,
+		maxCountCompetencesForSelected: 2,
+		maxCountThemesForSelected: 2
 	}
 }, action) => {
 	switch(action.type) {
+		case constants.DP_META_RESET_STATE: {
+			return {
+				...state,
+				hasChecked: false,
+				hasThemesChecked: false,
+				ui: {
+					...state.ui,
+					currentStep: 1
+				}
+			}
+		}
+
 		case constants.DP_META_FETCH_COMPETENCES_AND_THEMES_SUCCESS: {
 			return {
 				...state,
@@ -114,7 +128,7 @@ const metaReducer = (state = {
 			});
 
 			const countChecked = comps.filter(c => c.checked).length;
-			const result = countChecked > state.maxCountCompetencesForSelected ? state.competences : comps;
+			const result = countChecked > state.ui.maxCountCompetencesForSelected ? state.competences : comps;
 			
 			return {
 				...state,
@@ -125,14 +139,14 @@ const metaReducer = (state = {
 
 		case constants.DP_META_THEME_CHECKED: {
 			const { payload } = action;
-			const comp = state.competences.find(c => c.id === payload.competence_id);
+			const comp = state.competences.find(c => c.id == payload.competence_id);
 
 			if (comp) {
 				comp.competence_themes = themeReducer(comp.competence_themes, {
 					...action,
 					payload: {
 						...action.payload,
-						maxCountThemesForSelected: state.maxCountThemesForSelected
+						maxCountThemesForSelected: state.ui.maxCountThemesForSelected
 					}
 				});
 				return {
@@ -142,6 +156,18 @@ const metaReducer = (state = {
 				}
 			}
 			return state;
+		}
+
+		case constants.DP_META_CHANGE_STEP: {
+			const { payload } = action;
+
+			return {
+				...state,
+				ui: {
+					...state.ui,
+					currentStep: payload
+				}
+			}
 		}
 
 		case constants.DP_META_LOADING: {

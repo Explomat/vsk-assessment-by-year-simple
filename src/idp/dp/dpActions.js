@@ -43,15 +43,14 @@ export function getUserDps(id){
 	}
 };
 
-export function getDp(id, dpId){
+export function getDp(assessment_appraise_id){
 	return (dispatch, getState) => {
 		const { idp } = getState();
 		dispatch(loading(true));
 
 		request('idp', 'Idps')
 			.get({
-				assessment_appraise_id: id,
-				development_plan_id: dpId
+				assessment_appraise_id
 			})
 			.then(r => r.json())
 			.then(d => {

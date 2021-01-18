@@ -196,8 +196,10 @@ function create(userId, comps, assessmentAppraiseId) {
 			ctDoc.Save();
 		}
 
-		for (t in c.tasks) {
-			Task.create(t.description, t.resut_form, t.expert_collaborator_id, t.idp_task_type_id, dpDoc.DocID, c.id);
+		if (c.GetOptProperty('tasks') != undefined) {
+			for (t in c.tasks) {
+				Task.create(t.description, t.resut_form, t.expert_collaborator_id, t.idp_task_type_id, dpDoc.DocID, c.id);
+			}
 		}
 	}
 
@@ -206,7 +208,7 @@ function create(userId, comps, assessmentAppraiseId) {
 	return mDoc;
 }
 
-function getObject(dpId, assessmentAppraiseId, userId) {
+function getObject(dpId, assessmentAppraiseId) {
 	var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
 
@@ -328,11 +330,15 @@ function getObject(dpId, assessmentAppraiseId, userId) {
 
 		// компетенции и задачи
 		var comps = XQuery("sql: \n\
-			select distinct(its.competence_id) competence_id, cs.name competence_name\n\
-			from cc_idp_tasks its\n\
-			inner join competences cs on cs.id = its.competence_id \n\
+			select \n\
+				cns.id competence_id, \n\
+				cns.name competence_name \n\
+			from development_plans dps \n\
+			inner join development_plan dp on dp.id = dps.id \n\
+			cross apply dp.data.nodes('/development_plan/competences/competence') as T(p) \n\
+			inner join competences cns on cns.id = T.p.query('competence_id').value('.', 'bigint') \n\
 			where \n\
-				its.development_plan_id = " + dpId + " \n\
+				dps.id = " + dpId + " \n\
 		");
 
 		for (c in comps) {
@@ -486,8 +492,61 @@ function listByManager(
 	return obj;
 }
 
+function getCompetencesAndThemes(_competences, assessmentAppraiseId) {
+	var comps = [];
 
-function getCompetencesAndThemes(paId, assessmentAppraiseId) {
+	for (c in _competences) {
+		try {
+			compDoc = OpenDoc(UrlFromDocID(Int(c.competence_id)));
+
+			cc = {
+				id: String(c.competence_id),
+				name: String(compDoc.TopElem.name),
+				weight: String(c.weight),
+				mark: String(c.mark),
+				mark_text: String(c.mark_text),
+				mark_value: String(c.mark_value),
+				comment: String(c.comment),
+				common_positive_comment: String(compDoc.TopElem.positive_comment),
+				common_overdeveloped_comment: String(compDoc.TopElem.custom_elems.ObtainChildByKey('overdeveloped').value),
+				common_negative_comment: String(compDoc.TopElem.negative_comment),
+				common_comment: String(compDoc.TopElem.comment),
+				competence_themes: []
+			}
+
+			qct = XQuery("sql: \n\
+				select \n\
+					ccits.id theme_id, \n\
+					ccits.[name] theme_name, \n\
+					ccitls.[level] theme_level \n\
+				from cc_idp_competence_themes ccicts \n\
+				inner join cc_idp_themes ccits on ccits.id = ccicts.idp_theme_id \n\
+				inner join cc_idp_theme_levels ccitls on ccitls.id = ccits.idp_theme_level_id \n\
+				inner join cc_idp_assessment_levels ccials on ccials.idp_theme_level_id = ccitls.id \n\
+				inner join cc_assessment_commons ccacs on ccacs.id = ccials.cc_assessment_common_id \n\
+				where \n\
+					ccicts.competence_id = " + c.competence_id + " \n\
+					and ccicts.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+					and ccacs.scale = '" + String(c.mark_text) + "' \n\
+			");
+
+
+			for (ct in qct) {
+				cc.competence_themes.push({
+					id: String(ct.theme_id),
+					name: String(ct.theme_name),
+					level: String(ct.theme_level)
+				});
+			}
+			comps.push(cc);
+		} catch(e) {}
+	}
+
+	return comps;
+}
+
+
+function getCompetencesAndThemesByPaId(paId, assessmentAppraiseId) {
 	var paDoc = OpenDoc(UrlFromDocID(Int(paId)));
 	var comps = [];
 

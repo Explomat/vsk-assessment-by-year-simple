@@ -1,6 +1,7 @@
 import createRemoteActions from '../../utils/createRemoteActions';
 import { constants as appConstants, error } from '../appActions';
 import { constants as idpConstants } from '../../idp/appActions';
+import { saveIdp } from '../../idp/meta/metaActions';
 import { normalize, denormalize, schema } from 'normalizr';
 import { find } from 'lodash';
 import {
@@ -242,7 +243,7 @@ export function secondStep(assessmentId){
 		const denormalizedData = denormalize({pas: Object.keys(pas)}, competence, entities);*/
 
 		const pa = find(result.assessment.pas.map(p => pas[p]), { status: 'self' });
-		if (pa !== undefined){
+		if (pa !== undefined) {
 			const comps = pa.competences.map(c => {
 				const comp = competences[c];
 				return {
@@ -276,6 +277,7 @@ export function secondStep(assessmentId){
 					dispatch(error(e.message));
 				});
 
+			dispatch(saveIdp(assessmentId));
 		}
 	}
 }
