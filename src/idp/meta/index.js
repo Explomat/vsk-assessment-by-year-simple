@@ -21,7 +21,7 @@ class Meta extends Component {
 		this.handlePrevStep = this.handlePrevStep.bind(this);
 		this.handleNextStep = this.handleNextStep.bind(this);
 		this.handleCheckedTheme = this.handleCheckedTheme.bind(this);
-		this.renderConfirm = this.renderConfirm.bind(this);
+		//this.renderConfirm = this.renderConfirm.bind(this);
 		this.renderTasks = this.renderTasks.bind(this);
 		this.renderButtons = this.renderButtons.bind(this);
 		this.renderTaskModal = this.renderTaskModal.bind(this);
@@ -37,8 +37,8 @@ class Meta extends Component {
 	}
 
 	componentDidMount(){
-		const { match, getMeta } = this.props;
-		getMeta(match.params.id);
+		const { match, getMeta, dpId } = this.props;
+		getMeta(match.params.id, dpId);
 	}
 
 	handleSave() {
@@ -89,7 +89,7 @@ class Meta extends Component {
 		this.props.onThemeChecked(e.target.checked, competenceId, themeId);
 	}
 
-	renderConfirm() {
+	/*renderConfirm() {
 		const { selectedNode } = this.props;
 
 		return (
@@ -107,7 +107,7 @@ class Meta extends Component {
 				</span>
 			</Modal>
 		);
-	}
+	}*/
 
 	renderTasks(competenceId, tasks = []) {
 		const { task_types, onDeleteTask } = this.props;
@@ -268,7 +268,7 @@ class Meta extends Component {
 										/>
 									</List.Item>
 									<List className='dp-list-2-step' itemLayout='horizontal'>
-										{item.competence_themes.map(t => {
+										{item.themes.map(t => {
 											return (
 												<List.Item key={t.id} className='dp-list-2-meta-theme'>
 													<List.Item.Meta
@@ -332,7 +332,7 @@ class Meta extends Component {
 				</Card>
 			*/}
 			<div className='clearfix' />
-			{this.renderTaskModal()}
+			{/*this.renderTaskModal()*/}
 		</div>)
 	}
 }

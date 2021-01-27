@@ -1,36 +1,3 @@
-function getMainSteps(){
-	return XQuery("sql: \n\
-		select \n\
-			convert(varchar(20), ccimss.id) id, \n\
-			ccimss.order_number, \n\
-			ccimss.name, \n\
-			ccimss.duration_days, \n\
-			ccimss.duration_months \n\
-		from cc_idp_main_steps ccimss \n\
-		order by ccimss.order_number asc \n\
-	");
-}
-
-function getFirstStepId() {
-	var s = ArrayOptFirstElem(XQuery("sql: \n\
-		select st.* \n\
-		from cc_idp_steps st \n\
-		order by st.order_number asc \n\
-	"));
-
-	return s == undefined ? null : s.id;
-}
-
-function getFirstMainStepId() {
-	var s = ArrayOptFirstElem(XQuery("sql: \n\
-		select st.* \n\
-		from cc_idp_main_steps st \n\
-		order by st.order_number asc \n\
-	"));
-
-	return s == undefined ? null : s.id;
-}
-
 function getFirstStateId() {
 	var s = ArrayOptFirstElem(XQuery("sql: \n\
 		select st.* \n\
@@ -41,65 +8,75 @@ function getFirstStateId() {
 	return s == undefined ? null : s.id;
 }
 
-function getCurrentStep(dpId) {
-	return ArrayOptFirstElem(XQuery("sql: \n\
-		select \n\
-			imfs.current_collaborator_id, \n\
-			imfs.next_collaborator_id, \n\
-			iss.id idp_step_id, \n\
-			iss.name idp_step_name, \n\
-			iss.order_number idp_step_order_number, \n\
-			imss.id idp_main_step_id, \n\
-			imss.name idp_main_step_name, \n\
-			imss.order_number idp_main_step_order_number \n\
-		from cc_idp_mains ccims \n\
-		inner join cc_idp_main_flows imfs on imfs.idp_main_id = ccims.id \n\
-		inner join cc_idp_main_steps imss on imss.id = imfs.idp_main_step_id \n\
-		inner join cc_idp_steps iss on iss.id = imfs.idp_step_id \n\
-		inner join development_plans dps on dps.id = ccims.development_plan_id \n\
-		where \n\
-			dps.id = " + dpId + " \n\
-	"));
-}
+function update(dpId, comps, assessmentAppraiseId) {
+	function findItemsForRemove(firstArr, secondArr, firstKey, secondKey) {
+		var rarr = [];
 
-function getLastMainStep(){
-	return ArrayOptFirstElem(XQuery("sql: \n\
-		select ccas.* \n\
-		from cc_idp_main_steps ccas \n\
-		inner join ( \n\
-			select \n\
-				max(order_number) orn \n\
-			from cc_idp_main_steps \n\
-		) c on c.orn = ccas.order_number \n\
-	"));
-}
+		for (el in secondArr) {
+			item = ArrayOptFind(firstArr, ('This.' + firstKey + ' == ' + el.GetOptProperty(secondKey)));
+			if (item == undefined) {
+				rarr.push(el);
+			}
+		}
 
-function getLastStepByMainStepId(dpId, mainStepId){
-	return ArrayOptFirstElem(XQuery("sql: \n\
-		select \n\
-			imfs.id, \n\
-			imfs.current_collaborator_id, \n\
-			imfs.next_collaborator_id, \n\
-			imfs.idp_step_id, \n\
-			ast.order_number idp_step_order_number, \n\
-			imss.id idp_main_step_id, \n\
-			imss.order_number idp_main_step_order_number \n\
-		from cc_idp_main_flows imfs \n\
-		inner join ( \n\
-			select iss.*  \n\
-			from cc_idp_steps iss \n\
-			inner join ( \n\
-				select \n\
-					max(order_number) orn \n\
-				from cc_idp_steps \n\
-			) c on c.orn = iss.order_number \n\
-		) ast on ast.id = imfs.idp_step_id \n\
-		inner join cc_idp_main_steps imss on imss.id = imfs.idp_main_step_id \n\
-		inner join cc_idp_mains ims on ims.id = imfs.idp_main_id \n\
+		return rarr;
+	}
+
+	var dpDoc = OpenDoc(UrlFromDocID(Int(dpId)));
+
+	// удаляем задачи только задачи, у которых удалили компетенцию
+	var rcomps = findItemsForRemove(comps, ArrayDirect(dpDoc.TopElem.competences), 'id', 'competence_id');
+	for (el in rcomps) {
+		tsq = XQuery("sql: \n\
+			select its.id \n\
+			from cc_idp_tasks its \n\
+			where \n\
+				its.development_plan_id = " + dpId + " \n\
+				and its.competence_id = " + el.competence_id + " \n\
+		");
+
+		for (iel in tsq) {
+			DeleteDoc(UrlFromDocID(Int(iel.id)));
+		}
+	}
+
+	// удаляем компетенции из плана развития
+	dpDoc.TopElem.competences.DeleteChildren('This.competence_id != null');
+
+	// удаляем темы
+	tmq = XQuery("sql: \n\
+		select ics.id \n\
+		from cc_idp_competences ics \n\
 		where \n\
-			ims.development_plan_id = " + dpId + " \n\
-			and imss.id = " + mainStepId + " \n\
-	"));
+			ics.development_plan_id = " + dpId + " \n\
+	");
+
+	for (iel in tmq) {
+		DeleteDoc(UrlFromDocID(Int(iel.id)));
+	}
+
+	dpDoc.Save();
+	////
+	
+	for (el in comps) {
+		compChild = dpDoc.TopElem.competences.AddChild();
+		compChild.competence_id = el.id;
+
+		if (el.GetOptProperty('themes') != undefined) {
+			for (ct in el.themes) {
+				ctDoc = tools.new_doc_by_name('cc_idp_competence');
+				ctDoc.TopElem.fullname = dpDoc.TopElem.person_id.OptForeignElem.fullname;
+				ctDoc.TopElem.development_plan_id = dpDoc.DocID;
+				ctDoc.TopElem.competence_id = el.id;
+				ctDoc.TopElem.idp_theme_id = ct.id;
+				ctDoc.TopElem.percent_complete = 0;
+				ctDoc.BindToDb(DefaultDb);
+				ctDoc.Save();
+			}
+		}
+	}
+
+	dpDoc.Save();
 }
 
 function create(userId, comps, assessmentAppraiseId) {
@@ -131,6 +108,9 @@ function create(userId, comps, assessmentAppraiseId) {
 
 	var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
+
+	var Step = OpenCodeLib('./step.js');
+	DropFormsCache('./step.js');
 
 	var Assessment = OpenCodeLib('./assessment.js');
 	DropFormsCache('./assessment.js');
@@ -169,23 +149,55 @@ function create(userId, comps, assessmentAppraiseId) {
 	mDoc.Save();
 
 	// начальный этап
-	var tfDoc = tools.new_doc_by_name('cc_idp_main_flow');
+	var firstMainStep = Step.getFirstMainStep();
+	var firstStep = Step.getFirstStep();
+
+	var firstMainStepId = firstMainStep != undefined ? firstMainStep.id : null;
+	var firstStepId = firstStep != undefined ? firstStep.id : null;
+
+	var tfDoc = Step.create(null, {
+		idp_main_id: mDoc.DocID,
+		current_collaborator_id: userId,
+		next_collaborator_id: userId,
+		idp_step_id: firstStepId,
+		idp_main_step_id: firstMainStepId
+	});
+
+	var nextStep = Step.getNextStepById(firstStepId);
+	Step.create(tfDoc.DocID, {
+		next_collaborator_id: manager.id,
+		idp_step_id: (nextStep != undefined ? nextStep.id : null)
+	});
+
+/*	var tfDoc = tools.new_doc_by_name('cc_idp_main_flow');
 	tfDoc.TopElem.idp_main_id = mDoc.DocID;
 	tfDoc.TopElem.current_collaborator_id = userId;
 	tfDoc.TopElem.next_collaborator_id = userId;
 	tfDoc.TopElem.idp_step_id = getFirstStepId();
-	tfDoc.TopElem.idp_main_step_id = getFirstMainStepId();
+	tfDoc.TopElem.idp_main_step_id = firstMainStepId;
+	tfDoc.TopElem.created_date = new Date();
+	tfDoc.TopElem.is_active_step = false;
+	tfDoc.BindToDb(DefaultDb);
+	tfDoc.Save();
+
+	// следующий этап, перевод на рук-ля
+	tfDoc = tools.new_doc_by_name('cc_idp_main_flow');
+	tfDoc.TopElem.idp_main_id = mDoc.DocID;
+	tfDoc.TopElem.current_collaborator_id = userId;
+	tfDoc.TopElem.next_collaborator_id = manager.id;
+	tfDoc.TopElem.idp_step_id = getFirstStepId();
+	tfDoc.TopElem.idp_main_step_id = firstMainStepId;
 	tfDoc.TopElem.created_date = new Date();
 	tfDoc.TopElem.is_active_step = true;
 	tfDoc.BindToDb(DefaultDb);
-	tfDoc.Save();
+	tfDoc.Save();*/
 
 
 	for (c in comps) {
 		compChild = dpDoc.TopElem.competences.AddChild();
 		compChild.competence_id = c.id;
 
-		for (ct in c.competence_themes) {
+		for (ct in c.themes) {
 			ctDoc = tools.new_doc_by_name('cc_idp_competence');
 			ctDoc.TopElem.fullname = userDoc.TopElem.fullname;
 			ctDoc.TopElem.development_plan_id = dpDoc.DocID;
@@ -209,16 +221,21 @@ function create(userId, comps, assessmentAppraiseId) {
 }
 
 function getObject(dpId, assessmentAppraiseId) {
+	var Step = OpenCodeLib('./step.js');
+	DropFormsCache('./step.js');
+
 	var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
 
 	var Task = OpenCodeLib('./task.js');
 	DropFormsCache('./task.js');
 
+	var Theme = OpenCodeLib('./theme.js');
+	DropFormsCache('./theme.js');
+
 	var obj = {
 		managers: [],
 		main_steps: [],
-		competence_and_themes: [],
 		competences: [],
 		main_flows: [],
 		task_types: Task.getTaskTypes()
@@ -268,7 +285,7 @@ function getObject(dpId, assessmentAppraiseId) {
 		obj.managers = User.getManagers(qdp.person_id, assessmentAppraiseId);
 
 		// общие этапы
-		var mainSteps = getMainSteps();
+		var mainSteps = Step.getMainSteps();
 		var startDate = obj.create_date;
 
 		for (s in mainSteps) {
@@ -310,46 +327,32 @@ function getObject(dpId, assessmentAppraiseId) {
 		//
 
 
-		// компетенции и темы
-		obj.competence_and_themes = XQuery("sql: \n\
-			select \n\
-				ics.id, \n\
-				ics.percent_complete, \n\
-				cs.id competence_id, \n\
-				cs.name competence_name, \n\
-				c.data.query('/competence/comment').value('.', 'nvarchar(1000)') competence_comment, \n\
-				its.id theme_id, \n\
-				its.name theme_name \n\
-			from cc_idp_competences ics \n\
-			inner join competences cs on cs.id = ics.competence_id \n\
-			inner join competence c on c.id = cs.id \n\
-			inner join cc_idp_themes its on its.id = ics.idp_theme_id \n\
-			where \n\
-				ics.development_plan_id = " + dpId + " \n\
-		");
-
-		// компетенции и задачи
+		// компетенции, задачи и темы
 		var comps = XQuery("sql: \n\
-			select \n\
-				cns.id competence_id, \n\
-				cns.name competence_name \n\
-			from development_plans dps \n\
-			inner join development_plan dp on dp.id = dps.id \n\
-			cross apply dp.data.nodes('/development_plan/competences/competence') as T(p) \n\
-			inner join competences cns on cns.id = T.p.query('competence_id').value('.', 'bigint') \n\
-			where \n\
-				dps.id = " + dpId + " \n\
+			select cs.id, cs.name \n\
+			from competences cs \n\
+			inner join competence c on c.id = cs.id \n\
+			inner join ( \n\
+				select distinct(ics.competence_id) \n\
+				from cc_idp_competences ics \n\
+				where \n\
+					ics.development_plan_id = " + dpId + " \n\
+			) ics on ics.competence_id = cs.id \n\
 		");
 
 		for (c in comps) {
-			_tasks = Task.list(dpId, c.competence_id);
+			_tasks = Task.list(dpId, c.id);
+			//alert('_tasks: ' + tools.object_to_text(_tasks,  'json'));
+			_themes = Theme.list(dpId, c.id);
+			//alert('_themes: ' + tools.object_to_text(_themes,  'json'));
 			obj.competences.push({
-				id: Int(c.competence_id),
-				name: String(c.competence_name),
-				tasks: _tasks
+				id: Int(c.id),
+				name: String(c.name),
+				tasks: _tasks,
+				themes: _themes
 			});
 		}
-		//
+
 
 		// истории этапов
 		obj.main_flows = XQuery("sql: \n\
@@ -492,7 +495,7 @@ function listByManager(
 	return obj;
 }
 
-function getCompetencesAndThemes(_competences, assessmentAppraiseId) {
+function getThemesByCompetences(_competences, assessmentAppraiseId) {
 	var comps = [];
 
 	for (c in _competences) {
@@ -511,7 +514,7 @@ function getCompetencesAndThemes(_competences, assessmentAppraiseId) {
 				common_overdeveloped_comment: String(compDoc.TopElem.custom_elems.ObtainChildByKey('overdeveloped').value),
 				common_negative_comment: String(compDoc.TopElem.negative_comment),
 				common_comment: String(compDoc.TopElem.comment),
-				competence_themes: []
+				themes: []
 			}
 
 			qct = XQuery("sql: \n\
@@ -532,7 +535,7 @@ function getCompetencesAndThemes(_competences, assessmentAppraiseId) {
 
 
 			for (ct in qct) {
-				cc.competence_themes.push({
+				cc.themes.push({
 					id: String(ct.theme_id),
 					name: String(ct.theme_name),
 					level: String(ct.theme_level)
@@ -546,7 +549,7 @@ function getCompetencesAndThemes(_competences, assessmentAppraiseId) {
 }
 
 
-function getCompetencesAndThemesByPaId(paId, assessmentAppraiseId) {
+function getThemesByCompetencesByDpId(dpId, assessmentAppraiseId) {
 	var paDoc = OpenDoc(UrlFromDocID(Int(paId)));
 	var comps = [];
 
@@ -566,7 +569,7 @@ function getCompetencesAndThemesByPaId(paId, assessmentAppraiseId) {
 				common_overdeveloped_comment: String(compDoc.TopElem.custom_elems.ObtainChildByKey('overdeveloped').value),
 				common_negative_comment: String(compDoc.TopElem.negative_comment),
 				common_comment: String(compDoc.TopElem.comment),
-				competence_themes: []
+				themes: []
 			}
 
 			qct = XQuery("sql: \n\
@@ -587,7 +590,7 @@ function getCompetencesAndThemesByPaId(paId, assessmentAppraiseId) {
 
 
 			for (ct in qct) {
-				cc.competence_themes.push({
+				cc.themes.push({
 					id: String(ct.theme_id),
 					name: String(ct.theme_name),
 					level: String(ct.theme_level)

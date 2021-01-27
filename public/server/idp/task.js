@@ -34,14 +34,21 @@ function getByTaskId(taskId){
 	return ArrayOptFirstElem(XQuery('for $el in cc_idp_tasks where $el/id = \'' + taskId + '\' return $el'));
 }
 
-function create(description, resut_form, expert_collaborator_id, idp_task_type_id, development_plan_id, competence_id) {
+function create(development_plan_id, competence_id, data) {
 	//var Utils = OpenCodeLib('./utils.js');
 
 	var taskDoc = tools.new_doc_by_name('cc_idp_task');
-	taskDoc.TopElem.description = description;
+	for (el in data){
+		try {
+			ch = taskDoc.TopElem.OptChild(el);
+			ch.Value = data[el];
+		} catch(e) {}
+	}
+
+	/*taskDoc.TopElem.description = description;
 	taskDoc.TopElem.resut_form = resut_form;
 	taskDoc.TopElem.expert_collaborator_id = expert_collaborator_id;
-	taskDoc.TopElem.idp_task_type_id = idp_task_type_id;
+	taskDoc.TopElem.idp_task_type_id = idp_task_type_id;*/
 
 	var qt = ArrayOptFirstElem(XQuery("sql \n\
 		select id \n\
@@ -65,7 +72,7 @@ function create(description, resut_form, expert_collaborator_id, idp_task_type_i
 	//return _setComputedFields(Utils.toJSObject(taskDoc.TopElem), userId);
 }
 
-function update(dpId, taskId, data, userId){
+function update(taskId, data){
 	//var Utils = OpenCodeLib('./utils.js');
 
 	var task = getByTaskId(taskId);
@@ -120,7 +127,7 @@ function list(dpId, competenceId, userId) {
 		from cc_idp_tasks its \n\
 		inner join cc_idp_task it on it.id = its.id \n\
 		inner join cc_idp_task_types itts on itts.id = its.idp_task_type_id \n\
-		inner join cc_idp_task_states itss on itss.id = its.idp_task_state_id \n\
+		left join cc_idp_task_states itss on itss.id = its.idp_task_state_id \n\
 		left join collaborators cs on cs.id = its.expert_collaborator_id \n\
 		where \n\
 			its.development_plan_id = " + dpId + " \n\
@@ -143,28 +150,33 @@ function getTaskTypes() {
 }
 
 function isAccessToUpdate(id, userId) {
-	var User = OpenCodeLib('./user.js');
+	/*var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
 
 	var actions = User.getActions(userId, 'cc_idp_task');
 	var updateAction = ArrayOptFind(actions, 'This == \'update\'');
-	return updateAction != undefined;
+	return updateAction != undefined;*/
+
+	return true;
 }
 
 function isAccessToRemove(id, userId) {
-	var User = OpenCodeLib('./user.js');
+	/*var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
 
 	var actions = User.getActions(userId, 'cc_idp_task');
 	var removeAction = ArrayOptFind(actions, 'This == \'remove\'');
-	return removeAction != undefined;
+	return removeAction != undefined;*/
+
+	return true;
 }
 
 function isAccessToAdd(userId) {
-	var User = OpenCodeLib('./user.js');
+	/*var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
 
 	var actions = User.getActions(userId, 'cc_idp_task');
 	var addAction = ArrayOptFind(actions, 'This == \'add\'');
-	return addAction != undefined;
+	return addAction != undefined;*/
+	return true;
 }

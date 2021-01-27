@@ -37,7 +37,7 @@ const cardReducer = (state = {
 	state_name: '',
 	managers: [],
 	main_steps: [],
-	competence_and_themes: [],
+	//tasks: [], themes: []
 	competences: [],
 	main_flows: [],
 	meta: {

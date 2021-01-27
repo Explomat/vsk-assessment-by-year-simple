@@ -1,3 +1,12 @@
+.dp_header {
+	padding: 0 0 20px 0;
+}
+
+.dp__themes-add {
+	float: right;
+    top: -4px;
+}
+
 .dp__body-competence-tasks-actions {
 	padding: 20px 0px;
 	text-align: center;
@@ -16,7 +25,7 @@
 	color: rgb(24, 144, 255);
 	font-weight: 600;
 	font-size: 16px;
-	margin-bottom: 12px;
+	display: inline-block;
 }
 
 .dp {

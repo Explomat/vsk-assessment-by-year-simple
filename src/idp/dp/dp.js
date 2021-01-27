@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import { withRouter } from 'react-router';
 import { Spin, List, Button, Modal, Input, PageHeader, Row, Col, Steps, Card, Tag, Table } from 'antd';
 import { CheckOutlined, DownloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
-import Task from './task';
+import DpMeta from '../meta';
+import TaskList from './taskList';
 import TaskForm from './taskForm';
+import ThemeList from './themeList';
+import ThemeForm from './themeForm';
 import { renderDate } from '../../utils/date';
 import { connect } from 'react-redux';
-import { getDp, changeStep, addTask, updateTask, removeTask } from './dpActions';
-import { loading } from '../appActions';
+import { getDp, changeStep, addTask, updateTask, removeTask, updateThemes, saveIdp } from './dpActions';
 import { createBaseUrl } from '../../utils/request';
 import { calculatePercent } from './utils/calculate';
 import './index.css';
@@ -29,26 +31,47 @@ class Dp extends Component {
 
 		this.state = {
 			isShowModalTask: false,
+			isShowModalTheme: false,
 			isShowModalComment: false,
 			comment: ''
 		}
 
+		this.currentCompetenceIdForAdd = null;
+
 		this.currentAction = null;
 		this.handleToggleTaskModal = this.handleToggleTaskModal.bind(this);
 		this.handleAddTask = this.handleAddTask.bind(this);
+		this.handleToggleThemeModal = this.handleToggleThemeModal.bind(this);
+		this.handleAddTheme = this.handleAddTheme.bind(this);
 		this.handleChangeStep = this.handleChangeStep.bind(this);
 		this.handeAction = this.handeAction.bind(this);
 		this.handleToggleCommentModal = this.handleToggleCommentModal.bind(this);
 		this.handleChangeComment = this.handleChangeComment.bind(this);
+		this.handleUpdate = this.handleUpdate.bind(this);
 	}
 
 	componentDidMount() {
-		const { match, getDp } = this.props;
-		getDp(match.params.id, match.params.dp_id);
-		//this.props.loading(true);
+		const { match, getDp, user } = this.props;
+		const userId = user ? user.id : null;
+		getDp(match.params.id, userId);
 	}
 
-	handleToggleTaskModal() {
+	handleUpdate() {
+		const { match, getDp, saveIdp, card, user } = this.props;
+		const userId = user ? user.id : null;
+		saveIdp(match.params.id, card.development_plan_id, userId);
+
+		this.handleToggleThemeModal();
+	}
+
+	handleToggleThemeModal() {
+		this.setState({
+			isShowModalTheme: !this.state.isShowModalTheme
+		});
+	}
+
+	handleToggleTaskModal(competenceId) {
+		this.currentCompetenceIdForAdd = competenceId;
 		this.setState({
 			isShowModalTask: !this.state.isShowModalTask
 		});
@@ -84,9 +107,15 @@ class Dp extends Component {
 	}
 
 	handleAddTask(task) {
-		const { addTask } = this.props;
-		addTask(task);
+		const { addTask, match, card } = this.props;
+		addTask(task, match.params.id, card.development_plan_id, this.currentCompetenceIdForAdd);
 		this.handleToggleTaskModal();
+	}
+
+	handleAddTheme(theme) {
+		const { addTheme } = this.props;
+		addTheme(theme);
+		this.handleToggleThemeModal();
 	}
 
 	renderHeader() {
@@ -151,141 +180,6 @@ class Dp extends Component {
 		);
 	}
 
-	renderCompetenceAndThemes() {
-		const { card } = this.props;
-		const competences = {};
-
-		card.competence_and_themes.forEach(cat => {
-			if (!competences[cat.competence_id]) {
-				competences[cat.competence_id] = {
-					id: cat.competence_id,
-					name: cat.competence_name,
-					comment: cat.competence_comment,
-					themes: []
-				};
-			}
-
-			competences[cat.competence_id].themes.push({
-				id: cat.theme_id,
-				name: cat.theme_name,
-				percent_complete: cat.percent_complete
-			});
-		});
-
-		const themeColumns = [
-			{
-				title: 'Название темы',
-				dataIndex: 'name',
-				key: 'name'
-			},
-			{
-				title: 'Процент выполнения',
-				dataIndex: 'percent_complete',
-				key: 'percent_complete'
-			}
-		];
-
-		return (
-			Object.keys(competences).map(c =>
-				<Card
-					key={competences[c].id}
-					title={competences[c].name}
-					className='dp__competence-and-themes'
-					extra={
-						card.meta.allow_add_themes ? (
-							<Button className='dp__themes-add' type='primary' ghost onClick={this.handleToggleThemeModal}>
-								Добавить тему
-							</Button>
-						) : null
-					}
-				>
-					<Table dataSource={competences[c].themes} columns={themeColumns} rowKey='id' pagination={false}/>
-				</Card>
-			)
-		);
-	}
-
-	renderTasks(tasks) {
-		const { card, updateTask, removeTask } = this.props;
-		if (tasks) {
-			const columns = [
-				{
-					title: 'Тип задачи',
-					dataIndex: 'task_type_name',
-					key: 'task_type_name'
-				},
-				{
-					title: 'Поля для выбора/заполнения',
-					dataIndex: 'description',
-					key: 'description'
-				},
-				{
-					title: 'Образ результата',
-					dataIndex: 'resut_form',
-					key: 'resut_form'
-				},
-				{
-					title: 'Эксперт',
-					dataIndex: 'expert_collaborator_fullname',
-					key: 'expert_collaborator_fullname'
-				},
-				{
-					title: 'Процент выполнения',
-					dataIndex: 'percent_complete',
-					key: 'percent_complete'
-				}
-			];
-			return (
-				<div>
-					<div className='ant-table-wrapper'>
-						<div className='ant-spin-nested-loading'>
-							<div className='ant-table ant-table-default ant-table-scroll-position-left'>
-								<div className='ant-table-content'>
-									<div className='ant-table-body'>
-										<table>
-											<colgroup><col/><col/><col/></colgroup>
-											<thead className='ant-table-thead'>
-												<tr>
-												{columns.map(c => {
-													return (
-														<th key={c.key}>
-															<span className='ant-table-header-column'>
-																<div>
-																	<span className='ant-table-column-title'>
-																		{c.title}
-																	</span>
-																</div>
-															</span>
-														</th>
-													);
-												})}
-												</tr>
-											</thead>
-											<tbody className='ant-table-tbody'>
-												{tasks.map(t => {
-													return (
-														<Task
-															key={t.id}
-															updateTask={updateTask}
-															removeTask={removeTask}
-															task_types={card.task_types}
-															meta={card.meta}
-															{...t}
-														/>
-													);
-												})}
-											</tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			);	
-		}
-	}
-
 	renderHistory(){
 		const { card } = this.props;
 
@@ -319,9 +213,9 @@ class Dp extends Component {
 	}
 
 	render() {
-		const { card, ui } = this.props;
-		const { isShowModalTask } = this.state;
-		const { isShowModalComment, comment } = this.state;
+		const { card, ui, updateTask, removeTask, updateThemes } = this.props;
+		const { isShowModalTask, isShowModalTheme, isShowModalComment, comment } = this.state;
+
 		return (
 			<Spin spinning={ui.isLoading}>
 				<div className='dp'>
@@ -329,8 +223,15 @@ class Dp extends Component {
 					<div className='dp__body'>
 						{/*this.renderMainSteps()*/}
 						<div className='dp__competence-and-themes-container'>
-							<div className='dp__title'>Обязательные обучения для развития компетенций</div>
-							{this.renderCompetenceAndThemes()}
+							<div className='dp_header'>
+								<div className='dp__title'>Обязательные обучения для развития компетенций</div>
+									{card.meta.allow_add_themes ? (
+										<Button className='dp__themes-add' type='primary' ghost onClick={this.handleToggleThemeModal}>
+											Редактировать
+										</Button>
+									) : null}
+								</div>
+								<ThemeList competences={card.competences} />
 						</div>
 						<div className='dp__body-competence-tasks'>
 							<div className='dp__title'>Развивающиее задачи</div>
@@ -341,13 +242,19 @@ class Dp extends Component {
 									title={c.name}
 									extra={
 										card.meta.allow_add_tasks ? (
-											<Button className='dp__tasks-add' type='primary' ghost onClick={this.handleToggleTaskModal}>
+											<Button className='dp__tasks-add' type='primary' ghost onClick={() => this.handleToggleTaskModal(c.id)}>
 												Добавить задачу
 											</Button>
 										) : null
 									}
 								>
-									{this.renderTasks(c.tasks)}
+									<TaskList
+										tasks={c.tasks}
+										updateTask={updateTask}
+										removeTask={removeTask}
+										meta={card.meta}
+										task_types={card.task_types}
+									/>
 								</Card>
 							)}
 							<div className='dp__body-competence-tasks-actions'>
@@ -371,10 +278,23 @@ class Dp extends Component {
 								})}
 							</div>
 						</div>
+						{isShowModalTheme &&
+							<Modal
+								visible={true}
+								width={1000}
+								title='Редактирование'
+								cancelText='Отмена'
+								okText='Сохранить'
+								onCancel={this.handleToggleThemeModal}
+								onOk={this.handleUpdate}
+							>
+								<DpMeta dpId={card.development_plan_id}/>
+							</Modal>
+						}
 						{isShowModalTask && <TaskForm
 							title='Новая задача'
 							onCommit={this.handleAddTask}
-							onCancel={this.handleToggleTaskModal}
+							onCancel={this.handleToggleTaskNewModal}
 							task_types={card.task_types}
 							meta={card.meta}
 						/>}
@@ -415,4 +335,4 @@ function mapStateToProps(state){
 	}
 }
 
-export default withRouter(connect(mapStateToProps, { getDp, changeStep, addTask, updateTask, removeTask, loading })(Dp));
+export default withRouter(connect(mapStateToProps, { getDp, saveIdp, changeStep, addTask, updateTask, removeTask, updateThemes })(Dp));

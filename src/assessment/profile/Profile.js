@@ -207,7 +207,7 @@ class Profile extends Component {
 							return <PaContainer key={p} id={p} isHeaderOpened={pasLen > 1} isOpened={isOpened} />
 						})
 					}
-					{meta.hasIdp && <Dp />}
+					{meta.hasIdp && <Dp user={user}/>}
 				</div>}
 				{curPage === 2 && <DpMeta />}
 				<div className='assessment-profile__result'>

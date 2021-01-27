@@ -27,9 +27,10 @@ const themeReducer = (state = [], action) => {
 const metaReducer = (state = {
 	competences: [
 		{
-			competence_themes: []
+			themes: []
 		}
 	],
+	selected_items: [],
 	scales: [],
 	task_types: [],
 	hasChecked: false,
@@ -48,6 +49,7 @@ const metaReducer = (state = {
 				...state,
 				hasChecked: false,
 				hasThemesChecked: false,
+				selected_items: [],
 				ui: {
 					...state.ui,
 					currentStep: 1
@@ -56,9 +58,40 @@ const metaReducer = (state = {
 		}
 
 		case constants.DP_META_FETCH_COMPETENCES_AND_THEMES_SUCCESS: {
+			const { competences, selected_items } = action.payload;
+			let hasChecked = false;
+			let hasThemesChecked = false;
+
+			const ncompetences = competences.map(c => {
+				const selectedComp = selected_items.find(sc => sc.competence_id === c.id);
+				if (selectedComp) {
+					hasChecked = true;
+					const newComp = { ...c, checked: true };
+					const nthemes = newComp.themes.map(ct => {
+						const selectedTheme = selected_items.find(sc => (sc.theme_id === ct.id && sc.competence_id === newComp.id));
+						if (selectedTheme) {
+							hasThemesChecked = true;
+						}
+
+						return {
+							...ct,
+							checked: !!selectedTheme
+						}
+					});
+					newComp.themes = nthemes;
+
+					return newComp;
+				}
+
+				return c;
+			});
+
 			return {
 				...state,
-				...action.payload
+				...action.payload,
+				competences: ncompetences,
+				hasChecked,
+				hasThemesChecked
 			}
 		}
 
@@ -142,7 +175,7 @@ const metaReducer = (state = {
 			const comp = state.competences.find(c => c.id == payload.competence_id);
 
 			if (comp) {
-				comp.competence_themes = themeReducer(comp.competence_themes, {
+				comp.themes = themeReducer(comp.themes, {
 					...action,
 					payload: {
 						...action.payload,
@@ -152,7 +185,7 @@ const metaReducer = (state = {
 				return {
 					...state,
 					competences: [...state.competences],
-					hasThemesChecked: comp.competence_themes.filter(c => c.checked).length > 0
+					hasThemesChecked: comp.themes.filter(c => c.checked).length > 0
 				}
 			}
 			return state;

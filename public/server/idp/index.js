@@ -15,9 +15,12 @@ DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/tas
 var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/assessment.js');
 DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/assessment.js');
 
+var Step = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/step.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/step.js');
+
 
 var st = Utils.getSystemSettings(6790263731625424310);
-var curUserID = 6711785032659205612; //OptInt(st.TopElem.cur_user_id);
+var curUserID = OptInt(st.TopElem.cur_user_id);
 
 //var curUserID = 6711785032659205612; // me test
 //var curUserID = 6719948502038810952; // volkov test
@@ -37,6 +40,12 @@ function _setComputedFields(dpDoc) {
 		return (Int(curStep.next_collaborator_id) == curUserID || userRole == btypes.moderator);
 	}
 
+	function isTop() {
+		var userDoc = OpenDoc(UrlFromDocID(curUserID));
+		var pl = userDoc.TopElem.custom_elems.ObtainChildByKey('position_level').value;
+		return (pl == '1' || pl == '2');
+	}
+
 	function isUser(dpDoc, userRole){
 		return (dpDoc.TopElem.person_id == curUserID || userRole == btypes.moderator);
 	}
@@ -46,8 +55,8 @@ function _setComputedFields(dpDoc) {
 	}
 
 	function isAllowEditDp(_dpDoc, _curStep) {
-		var lst = Dp.getLastMainStep();
-		var lstm = Dp.getLastStepByMainStepId(_dpDoc.DocID, _curStep.idp_main_step_id);
+		var lst = Step.getLastMainStep();
+		var lstm = Step.getLastStepByMainStepId(_dpDoc.DocID, _curStep.idp_main_step_id);
 
 		if (lstm == undefined) {
 			return true;
@@ -62,8 +71,8 @@ function _setComputedFields(dpDoc) {
 	}
 
 	//alert('_1');
-	var currentStep = Dp.getCurrentStep(dpDoc.DocID);
-	//alert('_2');
+	var currentStep = Step.getCurrentStep(dpDoc.DocID);
+	//alert('currentStep: ' + tools.object_to_text(currentStep, 'json'));
 	//alert('curUserID: ' + curUserID);
 	//alert('crdoc.DocID: ' + crdoc.DocID);
 	var urole = User.getRole(curUserID, dpDoc.DocID, dpDoc);
@@ -84,23 +93,27 @@ function _setComputedFields(dpDoc) {
 	//alert('curMainStepNumber: ' + curMainStepNumber);
 
 	var _isUser = isUser(dpDoc, urole);
+	//alert('_isUser: ' + _isUser);
 	var _isManager = isManager(urole);
-	//alert('_10');
+	var _isTop = isTop();
+	/*alert('_isTop: ' + _isTop);
+	alert('allow_edit_tasks: ' + ((_isTop && curMainStepNumber == 0) || (_isUser && (curMainStepNumber > 0))));
+	alert('allow_add_tasks: ' + (_isTop && curMainStepNumber == 0));
+	alert('allow_remove_tasks: ' + (_isTop && curMainStepNumber == 0));*/
+	//alert('_isManager: ' + _isManager);
 
 	return {
 		actions: uactions,
 		is_show_assessments: isEditTasks && curMainStepNumber > 0,
-		allow_add_themes: _isManager,
-		allow_edit_themes: _isManager,
-		allow_remove_themes: _isManager,
+		allow_add_themes: _isManager && (curMainStepNumber == 0),
+		allow_edit_themes: _isManager && (curMainStepNumber == 0),
+		allow_remove_themes: _isManager && (curMainStepNumber == 0),
 		allow_edit_target: isEditTasks && isEditDp && curMainStepNumber == 0, // цель
 		allow_edit_expected_result: isEditTasks && isEditDp && curMainStepNumber == 0, // ожидаемый результат
 		allow_edit_achieved_result: isEditTasks && isEditDp && curMainStepNumber > 0 && _isUser, // Достигнутый результат
-		allow_edit_tasks: isEditTasks && isEditDp && curMainStepNumber > 0,
-		allow_add_tasks: _isManager && isEditTasks && isEditDp && curMainStepNumber > 0,
-		allow_remove_tasks: _isManager && isEditTasks && isEditDp && curMainStepNumber > 0,
-		allow_edit_collaborator_assessment: isEditDp && (isEditTasks && curMainStepNumber > 0 && _isUser),
-		allow_edit_manager_assessment: isEditDp && (isEditTasks && curMainStepNumber > 0 && _isManager)
+		allow_edit_tasks: (_isTop && curMainStepNumber == 0) || (_isUser && (curMainStepNumber > 0)),
+		allow_add_tasks: _isTop && curMainStepNumber == 0,
+		allow_remove_tasks: _isTop && curMainStepNumber == 0
 	}
 }
 
@@ -205,6 +218,7 @@ function get_Idps(queryObjects) {
 
 function post_Meta(queryObjects) {
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
+	var dpId = queryObjects.GetOptProperty('dp_id');
 	var data = tools.read_object(queryObjects.Body);
 	var comps = data.GetOptProperty('competences');
 
@@ -213,7 +227,21 @@ function post_Meta(queryObjects) {
 	}
 
 	if (comps == undefined) {
-		return Utils.setError('Не указаны компетенции');
+		return Utils.setError('Неверные параметры');	
+	} 
+
+	var selected_items = [];
+	if (dpId != undefined) {
+		selected_items = XQuery("sql: \n\
+			select \n\
+				cs.id competence_id, \n\
+				its.id theme_id \n\
+			from cc_idp_competences ics \n\
+			inner join competences cs on cs.id = ics.competence_id \n\
+			inner join cc_idp_themes its on its.id = ics.idp_theme_id \n\
+			where \n\
+				ics.development_plan_id = " + dpId + " \n\
+		")
 	}
 
 	/*var qs = ArrayOptFirstElem(XQuery("sql: \n\
@@ -230,12 +258,12 @@ function post_Meta(queryObjects) {
 	if (qs == undefined) {
 		return Utils.setError('Не найдена завершенная анкета оценки');
 	}*/
-
-	var result = Dp.getCompetencesAndThemes(comps, assessmentAppraiseId);
+	var result = Dp.getThemesByCompetences(comps, assessmentAppraiseId);
 	var commonScales = Assessment.getCommonScales();
 	var taskTypes = Task.getTaskTypes();
 	return Utils.setSuccess({
 		competences: result,
+		selected_items: selected_items,
 		scales: commonScales,
 		task_types: taskTypes
 	});
@@ -252,8 +280,8 @@ function post_Idps(queryObjects) {
 	var data = tools.read_object(queryObjects.Body);
 	var comps = data.GetOptProperty('competences');
 
-	// create new
 	if (dpId == undefined || dpId == 'undefined') {
+		// create new
 		try {
 			if (!Dp.isAccessToAdd(curUserID)) {
 				return Utils.setError('У вас нет прав на создание');
@@ -273,6 +301,10 @@ function post_Idps(queryObjects) {
 		} catch(e) {
 			return Utils.setError(e);
 		}
+	} else {
+		//update
+		Dp.update(dpId, comps, assessmentAppraiseId);
+		return Utils.setSuccess({});
 	}
 
 	//update
@@ -484,7 +516,7 @@ function post_taskChangeStep(queryObjects){
 	return Utils.setSuccess({});
 }
 
-function post_Task(queryObjects){
+function post_Tasks(queryObjects){
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
 
 	if (assessmentAppraiseId == undefined) {
@@ -492,8 +524,9 @@ function post_Task(queryObjects){
 	}
 
 	var taskId = queryObjects.GetOptProperty('task_id');
+	var dpId = queryObjects.GetOptProperty('development_plan_id');
+	var competenceId = queryObjects.GetOptProperty('competence_id');
 	var data = tools.read_object(queryObjects.Body);
-	var dpId = data.GetOptProperty('dp_id');
 	var task = null;
 
 	if (taskId != undefined) {
@@ -506,19 +539,19 @@ function post_Task(queryObjects){
 		
 	}
 
-	if (!Task.isAccessToAdd()) {
+	if (!Task.isAccessToAdd(curUserID)) {
 		return Utils.setError('У вас нет прав на создание');
 	}
 
-	if (dpId == undefined) {
+	if (dpId == undefined || competenceId == undefined) {
 		return Utils.setError('Invalid parametres');
 	}
 
-	task = Task.create(dpId, data);
+	task = Task.create(dpId, competenceId, data);
 	return Utils.setSuccess(task);
 }
 
-function delete_Task(queryObjects){
+function delete_Tasks(queryObjects){
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
 
 	if (assessmentAppraiseId == undefined) {
@@ -532,7 +565,7 @@ function delete_Task(queryObjects){
 		}
 
 		Task.remove(taskId);
-		return Utils.setSuccess();
+		return Utils.setSuccess({});
 	}
 
 	return Utils.setError('Invalid parametres');
@@ -559,19 +592,13 @@ function get_Collaborators(queryObjects) {
 					cs.code, \n\
 					cs.hire_date, \n\
 					cs.dismiss_date, \n\
-					cs.pict_url, \n\
-					cast(t.p.query(' \n\
-						for $PD in  /collaborator/path_subs/path_sub \n\
-							return concat(data($PD/name[1]), \" / \") \n\
-						') as varchar(max) \n\
-					) as structure \n\
+					cs.pict_url \n\
 				from collaborators cs \n\
-				inner join collaborator c on c.id = cs.id \n\
-				cross apply c.data.nodes('/collaborator/path_subs') as t(p) \n\
 				where \n\
 				    cs.is_dismiss = 0 \n\
 				    and cs.id <> " + curUserID + " \n\
 				    and cs.fullname like '%'+@s+'%' \n\
+				    and cs.position_name not in ('Агент (ЮЛ)', 'Агент (ИП)', 'Агент (ФЛ)') \n\
 			) d \n\
 			where \n\
 				d.[row_number] > " + min + " and d.[row_number] <= " + max + " \n\

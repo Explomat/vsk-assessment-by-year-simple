@@ -43,15 +43,62 @@ export function getUserDps(id){
 	}
 };
 
-export function getDp(assessment_appraise_id){
+export function saveIdp(assessment_appraise_id, dp_id, user_id) {
+	return (dispatch, getState) => {
+		dispatch(loading(true));
+
+		const { idp } = getState();
+		const competences = [];
+
+		// темы
+		idp.meta.competences.forEach(c => {
+			if (c.checked) {
+				const nc = { ...c };
+				nc.themes = nc.themes.filter(t => t.checked);
+				competences.push(nc);
+			}
+		});
+
+		// задачи
+		const robj = { assessment_appraise_id };
+		if (dp_id) {
+			robj.development_plan_id = dp_id;
+		}
+
+		request('idp', 'Idps', robj)
+			.post({ competences })
+			.then(r => r.json())
+			.then(d => {
+				if (d.type === 'error') {
+					throw d;
+				}
+
+				dispatch(loading(false));
+				dispatch(getDp(assessment_appraise_id, user_id));
+			})
+			.catch(e => {
+				dispatch(loading(false));
+				console.error(e);
+				dispatch(error(e.message));
+			});
+	}
+}
+
+export function getDp(assessment_appraise_id, user_id){
 	return (dispatch, getState) => {
 		const { idp } = getState();
 		dispatch(loading(true));
 
+		const obj = {
+			assessment_appraise_id
+		}
+
+		if (user_id) {
+			obj.user_id = user_id;
+		}
+
 		request('idp', 'Idps')
-			.get({
-				assessment_appraise_id
-			})
+			.get(obj)
 			.then(r => r.json())
 			.then(d => {
 				if (d.type === 'error'){
@@ -71,11 +118,20 @@ export function getDp(assessment_appraise_id){
 };
 
 
-export function addTask(data){
+export function addTask(data, assessment_appraise_id, development_plan_id, competence_id){
 	return (dispatch, getState) => {
 		const { idp } = getState();
 
-		request('idp', 'Tasks', { development_plan_id: idp.dp.development_plan_id })
+		const obj = { assessment_appraise_id };
+		if (development_plan_id) {
+			obj.development_plan_id = development_plan_id;
+		}
+
+		if (competence_id) {
+			obj.competence_id = competence_id;
+		}
+
+		request('idp', 'Tasks', obj)
 			.post(data)
 			.then(r => r.json())
 			.then(d => {
@@ -116,9 +172,9 @@ export function updateTask(id, data){
 	}
 };
 
-export function removeTask(id){
+export function removeTask(task_id, assessment_appraise_id){
 	return dispatch => {
-		request('idp', 'Tasks', { task_id: id })
+		request('idp', 'Tasks', { assessment_appraise_id, task_id })
 			.delete()
 			.then(r => r.json())
 			.then(d => {
@@ -127,8 +183,28 @@ export function removeTask(id){
 				}
 				dispatch({
 					type: constants.REMOVE_TASK_SUCCESS,
-					payload: d.data,
-					id
+					payload: d.data
+				});
+			})
+			.catch(e => {
+				console.error(e);
+				dispatch(error(e.message));
+			});
+	}
+};
+
+export function updateThemes(competences){
+	return (dispatch) => {
+		request('idp', 'Themes')
+			.post(competences)
+			.then(r => r.json())
+			.then(d => {
+				if (d.type === 'error'){
+					throw d;
+				}
+				dispatch({
+					type: constants.EDIT_THEME_SUCCESS,
+					payload: d.data
 				});
 			})
 			.catch(e => {
