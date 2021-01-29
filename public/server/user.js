@@ -28,6 +28,37 @@ function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excl
 	return ArrayCount(q) == 1;
 }
 
+function isInSubs(userId, lsubs, positions, excludePositions, excludeCollaborators) {
+	//var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', ',');
+	var joinSubs = ArrayMerge(lsubs, 'This', ',');
+	var joinPositions = StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', '');
+	var joinExcludePositions = StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', '');
+	var joinExcludeCollaborators = ArrayMerge(excludeCollaborators, 'This', ',');
+
+	var q = XQuery("sql: \n\
+		select c.* \n\
+		from ( \n\
+			select \n\
+				cs.id, \n\
+				cs.position_name, \n\
+				c.p.query('id[text()[1]]').value('.', 'bigint') parent_sub_id \n\
+			from collaborators cs \n\
+			inner join collaborator cr on cr.id = cs.id \n\
+			cross apply cr.data.nodes('/collaborator/path_subs/path_sub') as c(p) \n\
+			where \n\
+				cs.id = " + OptInt(userId) + " \n\
+		) c \n\
+		where \n\
+			1=1 \n\
+			" + (joinSubs.length > 0 ? "and c.parent_sub_id in (" + joinSubs + ")" : "") + " \n\
+			" + (joinPositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') in ('" + joinPositions + "')" : "") + " \n\
+			" + (joinExcludePositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') not in ('" + joinExcludePositions + "')" : "") + " \n\
+			" + (joinExcludeCollaborators.length > 0 ? "and c.id not in (" + joinExcludeCollaborators + ")" : "") + " \n\
+	");
+
+	return ArrayCount(q) == 1;
+}
+
 function getBlockGroup(blockCode, assessmentAppraiseId) {
 	var q = XQuery("sql: \n\
 		select \n\
@@ -92,8 +123,9 @@ function getBlockSubByUserId(userId, blockCode, assessmentAppraiseId) {
 		_excludePositions = String(doc.TopElem.exclude_positions).split(',');
 		//alert('_excludePositions: ' + tools.object_to_text(_excludePositions, 'json'));
 
-		inSub = isInSub(userId, OptInt(el.subdivision), _excSubs, _positions, _excludePositions, _excCollaborators);
-
+		//inSub = isInSub(userId, OptInt(el.subdivision), _excSubs, _positions, _excludePositions, _excCollaborators);
+		_lsubs = ArrayExtractKeys(doc.TopElem.lsubdivisions, 'lsubdivision_id');
+		inSub = isInSubs(userId, _lsubs, _positions, _excludePositions, _excCollaborators);
 		if (inSub) {
 			//alert('inSub');
 			return doc;

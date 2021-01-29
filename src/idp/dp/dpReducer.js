@@ -6,7 +6,7 @@ const tasksReducer = (state = [], action) => {
 		case constants.ADD_TASK_SUCCESS: {
 			return state.concat(action.payload);
 		}
-
+		
 		case constants.REMOVE_TASK_SUCCESS: {
 			const id = action.id;
 			return state.filter(t => t.id !== id);

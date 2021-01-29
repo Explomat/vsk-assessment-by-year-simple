@@ -14,21 +14,21 @@ export const constants = {
 	'LOADING_DP': 'LOADING_DP'
 };
 
-export function loading(isLoading){
+export function loading(isLoading) {
 	return {
 		type: constants.LOADING_DP,
 		payload: isLoading
 	}
 };
 
-export function getUserDps(id){
+export function getUserDps(id) {
 	return dispatch => {
 		// return request сделан для того, чтобы получить промис в appActions.js и узнать, когда функция завершится
 		return request('idp', 'Idps')
 			.get({ assessment_appraise_id: id })
 			.then(r => r.json())
 			.then(d => {
-				if (d.type === 'error'){
+				if (d.type === 'error') {
 					throw d;
 				}
 				dispatch({
@@ -118,7 +118,7 @@ export function getDp(assessment_appraise_id, user_id){
 };
 
 
-export function addTask(data, assessment_appraise_id, development_plan_id, competence_id){
+export function addTask(data, assessment_appraise_id, development_plan_id, competence_id) {
 	return (dispatch, getState) => {
 		const { idp } = getState();
 
@@ -135,12 +135,15 @@ export function addTask(data, assessment_appraise_id, development_plan_id, compe
 			.post(data)
 			.then(r => r.json())
 			.then(d => {
-				if (d.type === 'error'){
+				if (d.type === 'error') {
 					throw d;
 				}
 				dispatch({
 					type: constants.ADD_TASK_SUCCESS,
-					payload: d.data
+					payload: {
+						...data,
+						competence_id
+					}
 				});
 			})
 			.catch(e => {
@@ -150,13 +153,13 @@ export function addTask(data, assessment_appraise_id, development_plan_id, compe
 	}
 };
 
-export function updateTask(id, data){
+export function updateTask(id, data) {
 	return (dispatch) => {
 		request('idp', 'Tasks', { task_id: id })
 			.post(data)
 			.then(r => r.json())
 			.then(d => {
-				if (d.type === 'error'){
+				if (d.type === 'error') {
 					throw d;
 				}
 				dispatch({
@@ -172,13 +175,13 @@ export function updateTask(id, data){
 	}
 };
 
-export function removeTask(task_id, assessment_appraise_id){
+export function removeTask(task_id, assessment_appraise_id) {
 	return dispatch => {
 		request('idp', 'Tasks', { assessment_appraise_id, task_id })
 			.delete()
 			.then(r => r.json())
 			.then(d => {
-				if (d.type === 'error'){
+				if (d.type === 'error') {
 					throw d;
 				}
 				dispatch({
@@ -193,13 +196,13 @@ export function removeTask(task_id, assessment_appraise_id){
 	}
 };
 
-export function updateThemes(competences){
+export function updateThemes(competences) {
 	return (dispatch) => {
 		request('idp', 'Themes')
 			.post(competences)
 			.then(r => r.json())
 			.then(d => {
-				if (d.type === 'error'){
+				if (d.type === 'error') {
 					throw d;
 				}
 				dispatch({
@@ -214,7 +217,7 @@ export function updateThemes(competences){
 	}
 };
 
-export function changeStep(task_id, action, comment){
+export function changeStep(task_id, action, comment) {
 	return (dispatch, getState) => {
 		dispatch(loading(true));
 
@@ -228,7 +231,7 @@ export function changeStep(task_id, action, comment){
 			})
 			.then(r => r.json())
 			.then(d => {
-				if (d.type === 'error'){
+				if (d.type === 'error') {
 					throw d;
 				}
 				dispatch(getDp(idp.dp.development_plan_id));
