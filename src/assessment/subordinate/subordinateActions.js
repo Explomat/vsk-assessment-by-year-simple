@@ -108,7 +108,7 @@ export function thirdStep(assessmentId){
 
 		const app = getState().assessment;
 		const { competences, indicators, pas } = app.subordinate;
-		const { user, assessment } = app.subordinate.result;
+		const { assessment } = app.subordinate.result;
 
 		const pa = find(assessment.pas.map(p => pas[p]), { status: 'manager' });
 		if (pa !== undefined){

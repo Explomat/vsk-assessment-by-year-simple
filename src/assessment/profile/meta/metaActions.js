@@ -1,6 +1,5 @@
 import createRemoteActions from '../../../utils/createRemoteActions';
 import { error, loading } from '../../appActions';
-import { getInitialData } from '../profileActions';
 import request from '../../../utils/request';
 
 export const constants = {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Header, Segment, Label, Icon } from 'semantic-ui-react';
+import { Header, Label, Icon } from 'semantic-ui-react';
 import { computeScaleByPercent, isCompetencesCompleted } from '../calculations';
 import cs from 'classnames';
 

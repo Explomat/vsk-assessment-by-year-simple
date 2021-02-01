@@ -1,5 +1,5 @@
 import createRemoteActions from '../../../utils/createRemoteActions';
-import { constants as appConstants, error, loading } from '../../appActions';
+import { error, loading } from '../../appActions';
 import request from '../../../utils/request';
 
 export const constants = {

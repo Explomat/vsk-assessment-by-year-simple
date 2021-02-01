@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Card, Table } from 'antd';
-import { renderDate } from '../../utils/date';
 
 class ThemeList extends Component {
 

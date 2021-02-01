@@ -97,7 +97,7 @@ class Subordinates extends Component {
 	}
 
 	render(){
-		const { ui, meta, subordinates, delegate, checkedSubordinates, onDelegateUser } = this.props;
+		const { ui, meta, subordinates, delegate, checkedSubordinates } = this.props;
 		const { isShowDelegate, isShowSubordinate, isManagerCanNotEstimate, curSubordinate, subordinateId } = this.state;
 
 		if (ui.isLoading) {

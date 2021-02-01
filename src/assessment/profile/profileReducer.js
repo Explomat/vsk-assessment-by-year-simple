@@ -98,7 +98,7 @@ const competencesReducer = (state = {}, action) => {
 	}
 }
 
-const indicatorsReducer = (state = {}, action) => {
+/*const indicatorsReducer = (state = {}, action) => {
 	switch(action.type){
 		case constants.PROFILE_SET_MARK: {
 			return {
@@ -123,7 +123,7 @@ const indicatorsReducer = (state = {}, action) => {
 
 		default: return state;
 	}
-}
+}*/
 
 const profileReducer = (state = {
 	commonIndicators: {},

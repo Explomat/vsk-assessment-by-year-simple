@@ -30,7 +30,7 @@ class Item extends Component {
 
 	render() {
 		const { isOpen } = this.state;
-		const { checked, name, children, onChange } = this.props;
+		const { checked, name, children } = this.props;
 		const hasChildren = !!children;
 
 		return (

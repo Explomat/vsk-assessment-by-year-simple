@@ -1,30 +1,22 @@
 import React, { Component } from 'react';
-import { Route } from 'react-router-dom';
-import IdpApp from '../../idp/App';
-import { assessmentSteps } from '../config/steps';
+//import IdpApp from '../../idp/App';
 import ProfileContainer from './ProfileContainer';
 import Subordinates from './subordinates';
 import { withRouter } from 'react-router';
-import { Menu, Segment, Input, List, Dimmer, Loader, Modal, Header, Button, Icon, Message } from 'semantic-ui-react';
-import { setTab, getInitialData,  delegateUser } from './profileActions';
-//import { getDp } from '../../idp/dp/dpActions';
+import { Menu, Segment, Dimmer, Loader } from 'semantic-ui-react';
+import { setTab, getInitialData } from './profileActions';
 import { connect } from 'react-redux';
-import { find } from 'lodash';
 
 class Main extends Component {
 
-	constructor(props){
-		super(props);
-	}
-
-	componentDidMount(){
-		const { match, loadData, getDp } = this.props;
+	componentDidMount() {
+		const { match, loadData } = this.props;
 		loadData(match.params.id);
 		//getDp(match.params.id);
 	}
 
-	render(){
-		const { ui, idpUi, user, onChangeTab, match } = this.props;
+	render() {
+		const { ui, user, onChangeTab } = this.props;
 
 		if (ui.isLoading) {
 			return (
@@ -52,19 +44,19 @@ class Main extends Component {
 					>
 						Мои сотрудники
 					</Menu.Item>}
-					{idpUi.isIdp && <Menu.Item
+					{/*idpUi.isIdp && <Menu.Item
 						name='idp'
 						active={ui.activeTab === 'idp'}
 						onClick={onChangeTab}
 					>
 						ИПР
-					</Menu.Item>}
+					</Menu.Item>*/}
 				</Menu>
 
 				<Segment attached='bottom'>
 					{ui.activeTab === 'profile' && <ProfileContainer />}
 					{ui.activeTab === 'subordinates' && <Subordinates />}
-					{ui.activeTab === 'idp' && <IdpApp />}
+					{/*ui.activeTab === 'idp' && <IdpApp />*/}
 				</Segment>
 			</div>
 		);

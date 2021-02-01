@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { searchUsers, setUser } from './subordinatesActions';
 import { connect } from 'react-redux';
-import { Search, Grid, Segment } from 'semantic-ui-react';
+import { Search, Segment } from 'semantic-ui-react';
 import { debounce } from 'lodash';
 
 class SelectUser extends Component {

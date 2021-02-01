@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
-import { Card, Checkbox, Modal, Button, List, Avatar, Table } from 'antd';
+import { Card, Checkbox, Button, List, Table } from 'antd';
 import TaskForm from './TaskForm';
-import { ContactsOutlined, CheckOutlined, DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { DeleteOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import { getMeta, onCompetenceChecked, onThemeChecked, onSaveTask, onDeleteTask, saveIdp, onChangeStep, resetState } from './metaActions';
 import './meta.css';
 
@@ -43,7 +43,7 @@ class Meta extends Component {
 
 	handleSave() {
 		const { match, saveIdp } = this.props;
-		this.props.saveIdp(match.params.id);
+		saveIdp(match.params.id);
 	}
 
 	handleSaveTask(props) {
@@ -159,7 +159,7 @@ class Meta extends Component {
 
 		const buttonNext = <Button key='1' className='clearfix' style={{float: 'right'}} onClick={this.handleNextStep}><RightOutlined /></Button>;
 		const buttonPrev = <Button key='2' className='clearfix' style={{float: 'left'}} onClick={this.handlePrevStep}><LeftOutlined /></Button>;
-		const buttonSave = <Button onClick={this.handleSave} key='3' className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleSave}>Сохранить</Button>;
+		//const buttonSave = <Button onClick={this.handleSave} key='3' className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleSave}>Сохранить</Button>;
 
 		if (ui.currentStep <= ui.stepsCount && ui.currentStep !== 1) {
 			buttons.push(buttonPrev);
@@ -178,8 +178,8 @@ class Meta extends Component {
 
 	renderTaskModal() {
 		const { isShowTaskForm } = this.state;
-		const { competences, task_types } = this.props;
-		const comp = competences.find(c => c.id === this.currentCompetenceId);
+		const { task_types } = this.props;
+		//const comp = competences.find(c => c.id === this.currentCompetenceId);
 
 		if (isShowTaskForm) {
 			return (
@@ -194,8 +194,7 @@ class Meta extends Component {
 	}
 
 	render() {
-		const { isShowConfirm } = this.state;
-		const { ui, competences, scales, match } = this.props;
+		const { ui, competences, scales } = this.props;
 
 		if (ui.isLoading) {
 			return null;

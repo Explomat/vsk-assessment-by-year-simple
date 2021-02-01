@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Instruction from './Instruction';
 import { createBaseUrl } from '../../utils/request';
-import { Card, Image, Icon, Message, Table, Divider, Dropdown, Button, Label, Header } from 'semantic-ui-react';
+import { Card, Image, Icon, Message, Table, Divider, Dropdown, Button, Label } from 'semantic-ui-react';
 import { isCompetencesCompleted } from '../calculations';
 import DpMeta from '../../idp/meta';
 import Dp from '../../idp/dp/dp';
@@ -78,8 +78,6 @@ class Profile extends Component {
 	render() {
 		const {
 			PaContainer,
-			onSecondStep,
-			onFourthStep,
 			legends,
 			meta,
 			user,
@@ -87,7 +85,6 @@ class Profile extends Component {
 			managers,
 			match,
 			ui,
-			hasIdp,
 			idp
 		} = this.props;
 

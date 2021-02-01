@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Divider, Tag, Table } from 'antd';
+import { Divider, Table } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import TaskForm from './taskForm';
 import { renderDate } from '../../utils/date';
@@ -20,11 +20,14 @@ class TaskList extends Component {
 	}
 
 	handleUpdate(state){
-		const { id, updateTask } = this.props;
-		updateTask(id, {
-			id,
-			...state
-		});
+		const { competenceId, assessment_appraise_id, development_plan_id, updateTask } = this.props;
+		updateTask(
+			this.currentTask.id,
+			state,
+			assessment_appraise_id,
+			development_plan_id,
+			competenceId
+		);
 		this.handleToggleEditModal();
 	}
 
@@ -36,7 +39,7 @@ class TaskList extends Component {
 	}
 
 	render() {
-		const { match, tasks, updateTask, removeTask, meta } = this.props;
+		const { competenceId, tasks, removeTask, meta } = this.props;
 		const { isShowModalEdit } = this.state;
 
 		if (tasks) {
@@ -79,7 +82,7 @@ class TaskList extends Component {
 						<span>
 							{meta.allow_edit_tasks && <EditOutlined className='task__icon' onClick={() => this.handleToggleEditModal(task)}/>}
 							{meta.allow_edit_tasks && meta.allow_remove_tasks && <Divider type='vertical' />}
-							{meta.allow_remove_tasks && <DeleteOutlined className='task__icon' onClick={() => removeTask(task.id, match.params.id)}/>}
+							{meta.allow_remove_tasks && <DeleteOutlined className='task__icon' onClick={() => removeTask(task.id, competenceId)}/>}
 						</span>
 					)
 				}
@@ -89,7 +92,7 @@ class TaskList extends Component {
 					<Table dataSource={tasks} columns={columns} rowKey='id' pagination={false}/>
 					{isShowModalEdit && <TaskForm
 						title='Редактирование'
-						onOk={this.handleUpdate}
+						onCommit={this.handleUpdate}
 						onCancel={this.handleToggleEditModal}
 						{...this.currentTask}
 						{...this.props}

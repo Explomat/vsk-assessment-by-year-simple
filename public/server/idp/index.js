@@ -322,39 +322,39 @@ function post_Idps(queryObjects) {
 }
 
 
-function post_taskChangeStep(queryObjects){
+function post_changeStep(queryObjects){
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
 
 	if (assessmentAppraiseId == undefined) {
 		return Utils.setError('Не указана процедура оценки');
 	}
 
-	var crid = queryObjects.HasProperty('cr_id') ? Trim(queryObjects.cr_id) : undefined;
+	var dpid = queryObjects.HasProperty('development_plan_id') ? Trim(queryObjects.development_plan_id) : undefined;
 
-	if (crid == undefined){
+	if (dpid == undefined){
 		return Utils.toJSON(Utils.setError('Invalid parametres'));
 	}
 
-	var isAccess = Adaptation.isAccessToView(curUserID, null, crid);
+	var isAccess = Dp.isAccessToView(curUserID, null, dpid);
 	if (!isAccess){
 		return Utils.toJSON(Utils.setError('You don`t have permissions to this document'));
 	}
 
 	var data = tools.read_object(queryObjects.Body);
 	var action = data.HasProperty('action') ? data.action : undefined;
-	if (action == undefined){
+	if (action == undefined) {
 		return Utils.setError('Invalid parametres');
 	}
 
-	var urole = User.getRole(curUserID, crid);
+	var urole = User.getRole(curUserID, dpid);
 	var uactions = User.getActionsByRole(urole);
 
 	if (ArrayOptFind(uactions, 'This.name == \'' + action + '\'') == undefined) {
 		return Utils.setError('Unknown action for user');
 	}
 
-	var currentStep = Adaptation.getCurrentStep(crid);
-	var personFromRole = User.getRole(currentStep.object_id, crid);
+	var currentStep = Step.getCurrentStep(dpid);
+	var personFromRole = User.getRole(currentStep.object_id, dpid);
 
 
 	/*alert('personFromRole: ' + personFromRole);
@@ -364,7 +364,7 @@ function post_taskChangeStep(queryObjects){
 	//Теперь функция getProcessSteps может вернуть несколько записей. 
 	//Т.к. у  сотрудника может не быть куратора, и он должен отправить сразу руководителю.
 	//Получаем этапы, ранжируем по номеру
-	var processSteps = Adaptation.getProcessSteps(personFromRole, currentStep.step_id, action);
+	var processSteps = Step.getProcessSteps(personFromRole, currentStep.step_id, action);
 	//alert('processSteps: ' + tools.object_to_text(processSteps, 'json'))
 	
 	if (ArrayCount(processSteps) == 0){
@@ -375,7 +375,7 @@ function post_taskChangeStep(queryObjects){
 	var nextUserId = null;
 	//alert('ArrayCount(processSteps): ' + (ArrayCount(processSteps)))
 	for (ps in processSteps){
-		nextUserId = Adaptation.getNextUserId(crid, ps.next_role);
+		nextUserId = Dp.getNextUserId(dpid, ps.next_role);
 		if (nextUserId != null){
 			processStep = ps;
 			break;
@@ -392,8 +392,8 @@ function post_taskChangeStep(queryObjects){
 
 	// если этап(общий) последний и не заполнены оценки рук-ля / сотрудника,
 	// и если сотрудник пытается отправить дальше по этапу (верх по лесенке), то возвращаем ошибку
-	var lst = Adaptation.getLastMainStep();
-	var crDoc = OpenDoc(UrlFromDocID(Int(crid)));
+	var lst = Step.getLastMainStep();
+	var crDoc = OpenDoc(UrlFromDocID(Int(dpid)));
 	if (currentStep.main_step == lst.order_number && (OptInt(processStep.next_step_order_number) > OptInt(currentStep.order_number))) {
 		//alert('11111');
 		var assessmentsCount = ArrayOptFirstElem(XQuery("sql: \n\
@@ -403,18 +403,18 @@ function post_taskChangeStep(queryObjects){
 				(select count(*) \n\
 				from cc_adaptation_tasks \n\
 				where \n\
-					ccat.career_reserve_id = " + crid + " \n\
+					ccat.career_reserve_id = " + dpid + " \n\
 					and collaborator_assessment is not null \n\
 				) collaborator_assessment, \n\
 				(select count(*) \n\
 				from cc_adaptation_tasks \n\
 				where \n\
-					ccat.career_reserve_id = " + crid + " \n\
+					ccat.career_reserve_id = " + dpid + " \n\
 					and manager_assessment is not null \n\
 				) manager_assessment \n\
 			from \n\
 				cc_adaptation_tasks ccat \n\
-			where ccat.career_reserve_id = " + crid + " \n\
+			where ccat.career_reserve_id = " + dpid + " \n\
 		"));
 		if (assessmentsCount != undefined) {
 			//alert('222222');
@@ -434,16 +434,16 @@ function post_taskChangeStep(queryObjects){
 	}
 
 
-	var currentUserId = currentStep.object_id;
+	var currentUserId = currentStep.current_collaborator_id;
 	//var nextUserId = Adaptation.getNextUserId(crid, processStep.next_role);
 	
 	var step = null;
 	var comment = data.HasProperty('comment') && data.GetOptProperty('comment') != 'undefined' ? data.comment : '';
-	var nextStep = Adaptation.createStep(
+	var nextStep = Dp.createStep(
 		currentStep.id,
 		{
 			collaborator_id: currentUserId,
-			object_id: nextUserId,
+			current_collaborator_id: nextUserId,
 			data: comment,
 			step_id: processStep.next_step
 		}
@@ -455,8 +455,8 @@ function post_taskChangeStep(queryObjects){
 		2. Если этап идет вниз, то отсылаем всем вниз по лесенке ролей относительно того, кто перевел.
 	*/
 
-	var curUserRole = User.getRoleRecordByUserId(currentUserId, crid);
-	var nextUserRole = User.getRoleRecordByUserId(nextUserId, crid);
+	var curUserRole = User.getRoleRecordByUserId(currentUserId, dpid);
+	var nextUserRole = User.getRoleRecordByUserId(nextUserId, dpid);
 
 	//alert('curUserRole: ' + tools.object_to_text(curUserRole, 'json'));
 	//alert('nextUserRole: ' + tools.object_to_text(nextUserRole, 'json'));
@@ -496,7 +496,7 @@ function post_taskChangeStep(queryObjects){
 
 		var objToNotificate = tools.object_to_text({
 			subject: ('Адаптация сотрудника ' + String(_person.fullname) + '. ' + String(nextStep.TopElem.main_step_id.ForeignElem.description) + ' / ' + String(processStep.step_title)),
-			crid: OptInt(crid),
+			dpid: OptInt(dpid),
 			stepTitle: String(processStep.step_title),
 			from: {
 				fullname: curUserDoc.TopElem.fullname,
@@ -509,7 +509,7 @@ function post_taskChangeStep(queryObjects){
 		}, 'json');
 
 		for (el in _tutors) {
-			Utils.notificate(processStep.notification_code, el, objToNotificate, crid);
+			Utils.notificate(processStep.notification_code, el, objToNotificate, dpid);
 		}
 	}
 
@@ -535,7 +535,7 @@ function post_Tasks(queryObjects){
 		}
 
 		task = Task.update(taskId, data);
-		return Utils.setSuccess(task);
+		return Utils.setSuccess(Task.getObject(taskId));
 		
 	}
 
@@ -548,7 +548,7 @@ function post_Tasks(queryObjects){
 	}
 
 	task = Task.create(dpId, competenceId, data);
-	return Utils.setSuccess(task);
+	return Utils.setSuccess(Task.getObject(task.DocID));
 }
 
 function delete_Tasks(queryObjects){
@@ -572,55 +572,55 @@ function delete_Tasks(queryObjects){
 }
 
 function get_Collaborators(queryObjects) {
-		var search = queryObjects.HasProperty('search') ? queryObjects.search : '';
-		var page = queryObjects.HasProperty('page') ? OptInt(queryObjects.page) : 1;
-		var pageSize = queryObjects.HasProperty('page_size') ? OptInt(queryObjects.page_size) : 10;
+	var search = queryObjects.HasProperty('search') ? queryObjects.search : '';
+	var page = queryObjects.HasProperty('page') ? OptInt(queryObjects.page) : 1;
+	var pageSize = queryObjects.HasProperty('page_size') ? OptInt(queryObjects.page_size) : 10;
 
-		var min = (page - 1) * pageSize;
-		var max = min + pageSize;
-		
-		var q = XQuery("sql: \n\
-			declare @s varchar(max) = '" + search + "'; \n\
-			select d.* \n\
-			from ( \n\
-				select \n\
-					count(cs.id) over() total, \n\
-					ROW_NUMBER() OVER (ORDER BY cs.fullname) AS [row_number], \n\
-					cs.id, \n\
-					cs.fullname name, \n\
-					cs.position_name description, \n\
-					cs.code, \n\
-					cs.hire_date, \n\
-					cs.dismiss_date, \n\
-					cs.pict_url \n\
-				from collaborators cs \n\
-				where \n\
-				    cs.is_dismiss = 0 \n\
-				    and cs.id <> " + curUserID + " \n\
-				    and cs.fullname like '%'+@s+'%' \n\
-				    and cs.position_name not in ('Агент (ЮЛ)', 'Агент (ИП)', 'Агент (ФЛ)') \n\
-			) d \n\
+	var min = (page - 1) * pageSize;
+	var max = min + pageSize;
+	
+	var q = XQuery("sql: \n\
+		declare @s varchar(max) = '" + search + "'; \n\
+		select d.* \n\
+		from ( \n\
+			select \n\
+				count(cs.id) over() total, \n\
+				ROW_NUMBER() OVER (ORDER BY cs.fullname) AS [row_number], \n\
+				cs.id, \n\
+				cs.fullname name, \n\
+				cs.position_name description, \n\
+				cs.code, \n\
+				cs.hire_date, \n\
+				cs.dismiss_date, \n\
+				cs.pict_url \n\
+			from collaborators cs \n\
 			where \n\
-				d.[row_number] > " + min + " and d.[row_number] <= " + max + " \n\
-			order by d.name asc \n\
-		");
+			    cs.is_dismiss = 0 \n\
+			    and cs.id <> " + curUserID + " \n\
+			    and cs.fullname like '%'+@s+'%' \n\
+			    and cs.position_name not in ('Агент (ЮЛ)', 'Агент (ИП)', 'Агент (ФЛ)') \n\
+		) d \n\
+		where \n\
+			d.[row_number] > " + min + " and d.[row_number] <= " + max + " \n\
+		order by d.name asc \n\
+	");
 
-		var total = 0;
-		var fobj = ArrayOptFirstElem(q);
-		if (fobj != undefined) {
-			total = fobj.total;
-		}
-
-		var obj = {
-			meta: {
-				total: Int(total),
-				pageSize: pageSize,
-				page: page
-			},
-			collaborators: q
-		}
-
-		return Utils.setSuccess(obj);
+	var total = 0;
+	var fobj = ArrayOptFirstElem(q);
+	if (fobj != undefined) {
+		total = fobj.total;
 	}
+
+	var obj = {
+		meta: {
+			total: Int(total),
+			pageSize: pageSize,
+			page: page
+		},
+		collaborators: q
+	}
+
+	return Utils.setSuccess(obj);
+}
 
 %>

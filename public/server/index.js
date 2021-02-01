@@ -207,12 +207,12 @@
 					}
 				}
 			} else if (aBs != undefined) {
-				alert(1);
+				//alert(1);
 				if (amBs != undefined) {
-					alert(2);
+					//alert(2);
 					cblock = amBs;
 				} else {
-					alert(3);
+					//alert(3);
 					cblock = aBs;
 				}
 			}

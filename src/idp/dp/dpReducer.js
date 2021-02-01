@@ -8,12 +8,12 @@ const tasksReducer = (state = [], action) => {
 		}
 		
 		case constants.REMOVE_TASK_SUCCESS: {
-			const id = action.id;
+			const id = action.payload.task_id;
 			return state.filter(t => t.id !== id);
 		}
 
 		case constants.EDIT_TASK_SUCCESS: {
-			const id = action.id;
+			const id = action.payload.id;
 			return state.map(t => {
 				if (t.id === id){
 					return action.payload;
@@ -58,15 +58,16 @@ const cardReducer = (state = {
 		case constants.REMOVE_TASK_SUCCESS:
 		case constants.EDIT_TASK_SUCCESS: {
 			const { payload } = action;
-			const otherComps = state.competences.filter(c => c.id !== payload.competence_id);
-			const comp = state.competences.find(c => c.id === payload.competence_id);
+			const compIndex = state.competences.findIndex(c => c.id === payload.competence_id);
 
-			if (comp) {
+			if (compIndex !== -1) {
+				const comp = { ...state.competences[compIndex] };
 				comp.tasks = tasksReducer(comp.tasks, action);
+				state.competences.splice(compIndex, 1, comp);
 
 				return {
 					...state,
-					competences: [...otherComps, comp]
+					competences: [...state.competences]
 				}
 			}
 			return state;

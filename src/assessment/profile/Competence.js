@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Icon, Table, Label, Popup, List, Segment, Header, Modal } from 'semantic-ui-react';
+import { Icon, Table, Label, Popup, Segment, Header, Modal } from 'semantic-ui-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import pSBC from '../../utils/pSBC';
 import cs from 'classnames';
@@ -55,8 +55,6 @@ class Competence extends PureComponent {
 			isDisabled,
 			competences,
 			commonCompetences,
-			indicators,
-			commonIndicators,
 			rules,
 			changeComment
 		} = this.props;

@@ -1,8 +1,8 @@
 import createRemoteActions from '../../utils/createRemoteActions';
-import { constants as appConstants, error } from '../appActions';
+import { error } from '../appActions';
 import { constants as idpConstants } from '../../idp/appActions';
 import { saveIdp } from '../../idp/meta/metaActions';
-import { normalize, denormalize, schema } from 'normalizr';
+import { normalize, schema } from 'normalizr';
 import { find } from 'lodash';
 import {
 	computeCompetencePercent,

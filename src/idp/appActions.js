@@ -1,6 +1,5 @@
 import { getUserDps } from './dp/dpActions';
 import { getUserDpsByManager } from './manager/managerActions';
-import { getCompetencesAndThemes } from './meta/metaActions';
 
 export const constants = {
 	'IDP_LOADING': 'IDP_LOADING',

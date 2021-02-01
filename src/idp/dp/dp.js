@@ -1,19 +1,19 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router';
-import { Spin, List, Button, Modal, Input, PageHeader, Row, Col, Steps, Card, Tag, Table } from 'antd';
-import { CheckOutlined, DownloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { Spin, List, Button, Modal, Input, PageHeader, Row, Col, Steps, Card, Tag } from 'antd';
+import { DownloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import DpMeta from '../meta';
 import TaskList from './taskList';
 import TaskForm from './taskForm';
 import ThemeList from './themeList';
-import ThemeForm from './themeForm';
 import { renderDate } from '../../utils/date';
 import { connect } from 'react-redux';
 import { getDp, changeStep, addTask, updateTask, removeTask, updateThemes, saveIdp } from './dpActions';
 import { createBaseUrl } from '../../utils/request';
-import { calculatePercent } from './utils/calculate';
 import './index.css';
 import 'antd/es/table/style/index.css';
+import 'antd/dist/antd.css';
+import '../App.css';
 
 const UserDescription = ({ ...props }) => (
 	<Col>
@@ -57,7 +57,7 @@ class Dp extends Component {
 	}
 
 	handleUpdate() {
-		const { match, getDp, saveIdp, card, user } = this.props;
+		const { match, saveIdp, card, user } = this.props;
 		const userId = user ? user.id : null;
 		saveIdp(match.params.id, card.development_plan_id, userId);
 
@@ -213,7 +213,7 @@ class Dp extends Component {
 	}
 
 	render() {
-		const { card, ui, updateTask, removeTask, updateThemes } = this.props;
+		const { match, card, ui, updateTask, removeTask } = this.props;
 		const { isShowModalTask, isShowModalTheme, isShowModalComment, comment } = this.state;
 
 		return (
@@ -249,11 +249,14 @@ class Dp extends Component {
 									}
 								>
 									<TaskList
+										competenceId = {c.id}
 										tasks={c.tasks}
 										updateTask={updateTask}
 										removeTask={removeTask}
 										meta={card.meta}
 										task_types={card.task_types}
+										assessment_appraise_id={match.params.id}
+										development_plan_id={card.development_plan_id}
 									/>
 								</Card>
 							)}
@@ -294,7 +297,7 @@ class Dp extends Component {
 						{isShowModalTask && <TaskForm
 							title='Новая задача'
 							onCommit={this.handleAddTask}
-							onCancel={this.handleToggleTaskNewModal}
+							onCancel={this.handleToggleTaskModal}
 							task_types={card.task_types}
 							meta={card.meta}
 						/>}

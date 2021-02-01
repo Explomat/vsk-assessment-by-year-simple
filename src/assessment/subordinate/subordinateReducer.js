@@ -80,7 +80,7 @@ const competencesReducer = (state = {}, action) => {
 	}
 }
 
-const indicatorsReducer = (state = {}, action) => {
+/*const indicatorsReducer = (state = {}, action) => {
 	switch(action.type){
 		case constants.SUBORDINATE_SET_MARK: {
 			return {
@@ -106,7 +106,7 @@ const indicatorsReducer = (state = {}, action) => {
 
 		default: return state;
 	}
-}
+}*/
 
 const subordinateReducer = (state = {
 	commonIndicators: {},

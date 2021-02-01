@@ -603,6 +603,9 @@ function getThemesByCompetencesByDpId(dpId, assessmentAppraiseId) {
 	return comps;
 }
 
+function isAccessToView(id, userId) {
+	return true;
+}
 
 function isAccessToUpdate(id, userId) {
 	return true;

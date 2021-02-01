@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Item from './Item';
 import { withRouter, Redirect } from 'react-router';
-import { List, Card, Button, Header, Icon, Confirm } from 'semantic-ui-react';
+import { Card, Button, Confirm } from 'semantic-ui-react';
 import { getMeta, onChecked, changeTrain } from './metaActions';
 import { connect } from 'react-redux';
 

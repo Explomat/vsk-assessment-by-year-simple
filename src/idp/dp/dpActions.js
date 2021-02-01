@@ -85,8 +85,7 @@ export function saveIdp(assessment_appraise_id, dp_id, user_id) {
 }
 
 export function getDp(assessment_appraise_id, user_id){
-	return (dispatch, getState) => {
-		const { idp } = getState();
+	return (dispatch) => {
 		dispatch(loading(true));
 
 		const obj = {
@@ -119,9 +118,7 @@ export function getDp(assessment_appraise_id, user_id){
 
 
 export function addTask(data, assessment_appraise_id, development_plan_id, competence_id) {
-	return (dispatch, getState) => {
-		const { idp } = getState();
-
+	return (dispatch) => {
 		const obj = { assessment_appraise_id };
 		if (development_plan_id) {
 			obj.development_plan_id = development_plan_id;
@@ -141,7 +138,7 @@ export function addTask(data, assessment_appraise_id, development_plan_id, compe
 				dispatch({
 					type: constants.ADD_TASK_SUCCESS,
 					payload: {
-						...data,
+						...d.data,
 						competence_id
 					}
 				});
@@ -153,9 +150,14 @@ export function addTask(data, assessment_appraise_id, development_plan_id, compe
 	}
 };
 
-export function updateTask(id, data) {
+export function updateTask(task_id, data, assessment_appraise_id, development_plan_id, competence_id) {
 	return (dispatch) => {
-		request('idp', 'Tasks', { task_id: id })
+		const obj = { task_id, assessment_appraise_id };
+		if (development_plan_id) {
+			obj.development_plan_id = development_plan_id;
+		}
+
+		request('idp', 'Tasks', obj)
 			.post(data)
 			.then(r => r.json())
 			.then(d => {
@@ -164,8 +166,7 @@ export function updateTask(id, data) {
 				}
 				dispatch({
 					type: constants.EDIT_TASK_SUCCESS,
-					payload: d.data,
-					id
+					payload: { ...d.data, competence_id }
 				});
 			})
 			.catch(e => {
@@ -175,9 +176,9 @@ export function updateTask(id, data) {
 	}
 };
 
-export function removeTask(task_id, assessment_appraise_id) {
+export function removeTask(task_id, competence_id, assessment_appraise_id) {
 	return dispatch => {
-		request('idp', 'Tasks', { assessment_appraise_id, task_id })
+		request('idp', 'Tasks', { task_id, assessment_appraise_id })
 			.delete()
 			.then(r => r.json())
 			.then(d => {
@@ -186,7 +187,10 @@ export function removeTask(task_id, assessment_appraise_id) {
 				}
 				dispatch({
 					type: constants.REMOVE_TASK_SUCCESS,
-					payload: d.data
+					payload: {
+						task_id,
+						competence_id
+					}
 				});
 			})
 			.catch(e => {

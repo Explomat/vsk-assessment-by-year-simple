@@ -28,7 +28,7 @@ class Main extends Component {
 	}
 
 	render(){
-		const { ui, user, assessment, onClose } = this.props;
+		const { ui, assessment, onClose } = this.props;
 		if (ui.isLoading) {
 			return (
 				<Dimmer active inverted>

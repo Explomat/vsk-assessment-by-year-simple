@@ -1,6 +1,4 @@
 import createRemoteActions from '../utils/createRemoteActions';
-import request from '../utils/request';
-import { getStepMock } from './mock';
 
 export const constants = {
 	'LOADING': 'LOADING',

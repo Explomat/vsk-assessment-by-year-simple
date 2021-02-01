@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router';
-import { Card, PageHeader, Select, Alert, List, Icon } from 'antd';
+import { Card, Select, Alert, List } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import unescapeSymbols from '../../utils/unescape';
@@ -43,7 +43,7 @@ class Manager extends Component {
 	}
 
 	render() {
-		const { list, curator_fullname, history } = this.props;
+		const { list } = this.props;
 		if (list.length === 0) {
 			return <Alert message='Нет данных' type='info' />
 		}

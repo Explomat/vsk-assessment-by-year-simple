@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { HashRouter as Router, Route, Redirect, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import Profile from './profile';
 import Meta from './profile/meta';
-import IdpApp from '../idp/App';
 import { Dimmer, Loader, Message, Modal } from 'semantic-ui-react';
 
 class App extends Component {

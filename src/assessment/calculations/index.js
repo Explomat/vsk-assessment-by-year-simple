@@ -7,7 +7,7 @@ const isCommentRequire = (scales, markText) => {
 }
 
 const isCompetenceCompleted = (competenceId, props) => {
-	const { competences, commonCompetences, indicators, commonIndicators } = props;
+	const { competences, commonCompetences } = props;
 
 	const comp = competences[competenceId];
 	const commonComp = commonCompetences[commonId(competenceId)];
@@ -44,7 +44,7 @@ const isCompetencesCompleted = (props) => {
 }
 
 const computeCompetencePercent = (competenceId, props) => {
-	const { competences, commonCompetences, indicators, commonIndicators } = props;
+	const { competences, commonCompetences } = props;
 
 	const comp = competences[competenceId];
 	const commonComp = commonCompetences[commonId(competenceId)];

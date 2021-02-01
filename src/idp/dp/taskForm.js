@@ -58,10 +58,8 @@ class TaskForm extends Component {
 		const {
 			isShowCollaborators,
 			idp_task_type_id,
-			idp_task_type_name,
 			description,
 			resut_form,
-			expert_collaborator_id,
 			expert_collaborator_fullname,
 			percent_complete
 		} = this.state;

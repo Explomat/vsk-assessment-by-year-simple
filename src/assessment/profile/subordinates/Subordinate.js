@@ -1,7 +1,6 @@
 import React from 'react';
 import { assessmentSteps } from '../../config/steps';
 import { Popup, Label, List, Image, Icon, Checkbox } from 'semantic-ui-react';
-import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { computeScaleByPercent } from '../../calculations';
 

@@ -28,7 +28,7 @@ class App extends Component {
 
 	componentDidMount() {
 		const { getUsers, match } = this.props;
-		this.props.getUsers(match.params.id);
+		getUsers(match.params.id);
 	}
 
 	onTabChange(activeKey) {

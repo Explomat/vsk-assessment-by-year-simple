@@ -16,9 +16,6 @@ function _setComputedFields(obj, userId) {
 	obj.is_archive = _toBoolean(obj.is_archive);
 
 	obj.meta = {
-		isLiked: (l != undefined || obj.is_archive),
-		canLike: !obj.is_archive,
-		canResponse: !obj.is_archive,
 		canEdit: (
 			(Int(obj.author_id) == Int(userId) || (ArrayOptFind(actions, "This == 'update'") != undefined)) && !obj.is_archive
 		),
@@ -32,6 +29,36 @@ function _setComputedFields(obj, userId) {
 
 function getByTaskId(taskId){
 	return ArrayOptFirstElem(XQuery('for $el in cc_idp_tasks where $el/id = \'' + taskId + '\' return $el'));
+}
+
+function getObject(taskId) {
+	var qt = XQuery("sql: \n\
+		select \n\
+			its.id, \n\
+			its.description, \n\
+			its.resut_form, \n\
+			its.percent_complete, \n\
+			its.expert_collaborator_id, \n\
+			cs.fullname expert_collaborator_fullname, \n\
+			itts.id task_type_id, \n\
+			itts.code task_type_code, \n\
+			itts.name task_type_name, \n\
+			itts.min_count task_type_min_count, \n\
+			itts.max_count task_type_max_count, \n\
+			itss.id task_state_id, \n\
+			itss.code task_state_code, \n\
+			itss.name task_state_name, \n\
+			convert(varchar(30), its.created_date, 126) created_date \n\
+		from cc_idp_tasks its \n\
+		inner join cc_idp_task it on it.id = its.id \n\
+		inner join cc_idp_task_types itts on itts.id = its.idp_task_type_id \n\
+		left join cc_idp_task_states itss on itss.id = its.idp_task_state_id \n\
+		left join collaborators cs on cs.id = its.expert_collaborator_id \n\
+		where \n\
+			its.id = " + taskId + " \n\
+	");
+
+	return ArrayOptFirstElem(qt);
 }
 
 function create(development_plan_id, competence_id, data) {
