@@ -192,6 +192,7 @@
 
 					cblock = tBg;
 				} else {
+					//alert('else');
 					if (isTrain == null) {
 						isNeedAskTrain = true;
 					}
@@ -199,6 +200,7 @@
 					if (topBg != undefined) {
 						cblock = topBg;
 					} else if (fscBs != undefined) {
+						//alert('11111111111111111111111111111111');
 						cblock = fscBs;
 					} else if (dmBs != undefined) {
 						cblock = dmBs;
@@ -231,6 +233,8 @@
 					isNeedAskTrain,
 					isTrain
 				);
+
+				//alert('conds: ' + tools.object_to_text(conds, 'json'));
 
 				return Utils.setSuccess(conds);
 			} else {

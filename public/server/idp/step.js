@@ -71,6 +71,7 @@ function getNextStepById(curStepId) {
 function getCurrentStep(dpId) {
 	return ArrayOptFirstElem(XQuery("sql: \n\
 		select \n\
+			imfs.id, \n\
 			imfs.current_collaborator_id, \n\
 			imfs.next_collaborator_id, \n\
 			iss.id idp_step_id, \n\
@@ -83,9 +84,9 @@ function getCurrentStep(dpId) {
 		inner join cc_idp_main_flows imfs on imfs.idp_main_id = ccims.id \n\
 		inner join cc_idp_main_steps imss on imss.id = imfs.idp_main_step_id \n\
 		inner join cc_idp_steps iss on iss.id = imfs.idp_step_id \n\
-		inner join development_plans dps on dps.id = ccims.development_plan_id \n\
 		where \n\
-			dps.id = " + dpId + " \n\
+			ccims.development_plan_id = " + dpId + " \n\
+			and imfs.is_active_step = 1 \n\
 	"));
 }
 
@@ -127,4 +128,42 @@ function getLastStepByMainStepId(dpId, mainStepId){
 			ims.development_plan_id = " + dpId + " \n\
 			and imss.id = " + mainStepId + " \n\
 	"));
+}
+
+function getProcessSteps(roleName, stepId, actionName){
+	return XQuery("sql: \n\
+		select \n\
+			d.*, \n\
+			irs1.code next_idp_role_code \n\
+		from ( \n\
+			select \n\
+				ars.id, \n\
+				ast.order_number, \n\
+				ars.idp_action_flow_id, \n\
+				aps.code idp_action_flow_code, \n\
+				ars.current_idp_step_id, \n\
+				ars.current_idp_role_id, \n\
+				irs.code current_idp_role_code, \n\
+				ars.next_idp_step_id, \n\
+				ast.name next_idp_step_name, \n\
+				ast.order_number next_idp_step_order_number, \n\
+				case \n\
+					when ars.next_idp_role_id is not null then ars.next_idp_role_id \n\
+					when ars.next_idp_role_id is null then ars.current_idp_role_id \n\
+				end next_idp_role_id, \n\
+				ns.code notification_code \n\
+			from \n\
+				cc_idp_role_operations ars \n\
+			inner join cc_idp_action_flows aps on aps.id = ars.idp_action_flow_id \n\
+			inner join cc_idp_steps ast on ast.id = ars.next_idp_step_id \n\
+			inner join cc_idp_roles irs on irs.id = ars.current_idp_role_id \n\
+			left join notifications ns on ns.id = ars.notification_id \n\
+		) d \n\
+		inner join cc_idp_roles irs1 on irs1.id = d.next_idp_role_id \n\
+		where \n\
+			d.current_idp_role_code = '" + roleName + "' \n\
+			and d.current_idp_step_id = " + stepId + " \n\
+			and d.idp_action_flow_code = '" + actionName + "' \n\
+		order by d.order_number asc \n\
+	");
 }

@@ -56,6 +56,26 @@ function isInSubs(userId, lsubs, positions, excludePositions, excludeCollaborato
 			" + (joinExcludeCollaborators.length > 0 ? "and c.id not in (" + joinExcludeCollaborators + ")" : "") + " \n\
 	");
 
+	/*alert("sql: \n\
+		select c.* \n\
+		from ( \n\
+			select \n\
+				cs.id, \n\
+				cs.position_name, \n\
+				c.p.query('id[text()[1]]').value('.', 'bigint') parent_sub_id \n\
+			from collaborators cs \n\
+			inner join collaborator cr on cr.id = cs.id \n\
+			cross apply cr.data.nodes('/collaborator/path_subs/path_sub') as c(p) \n\
+			where \n\
+				cs.id = " + OptInt(userId) + " \n\
+		) c \n\
+		where \n\
+			1=1 \n\
+			" + (joinSubs.length > 0 ? "and c.parent_sub_id in (" + joinSubs + ")" : "") + " \n\
+			" + (joinPositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') in ('" + joinPositions + "')" : "") + " \n\
+			" + (joinExcludePositions.length > 0 ? "and replace(lower(c.position_name), ' ', '') not in ('" + joinExcludePositions + "')" : "") + " \n\
+			" + (joinExcludeCollaborators.length > 0 ? "and c.id not in (" + joinExcludeCollaborators + ")" : "") + " \n\
+	");*/
 	return ArrayCount(q) == 1;
 }
 
@@ -102,6 +122,7 @@ function getBlockSubByUserId(userId, blockCode, assessmentAppraiseId) {
 		where \n\
 			ccabs.code = '" + blockCode + "' \n\
 			and ccabs.assessment_appraise_id = " + assessmentAppraiseId +" \n\
+		order by number asc \n\
 	");
 
 	var Utils = OpenCodeLib('./utils.js');
@@ -127,7 +148,7 @@ function getBlockSubByUserId(userId, blockCode, assessmentAppraiseId) {
 		_lsubs = ArrayExtractKeys(doc.TopElem.lsubdivisions, 'lsubdivision_id');
 		inSub = isInSubs(userId, _lsubs, _positions, _excludePositions, _excCollaborators);
 		if (inSub) {
-			//alert('inSub');
+			alert('inSub: ' + blockCode);
 			return doc;
 		}
 	}
@@ -138,8 +159,8 @@ function searchBlockSub(userId, assessmentAppraiseId) {
 		select code \n\
 		from cc_assessment_block_subs \n\
 		where \n\
-			subdivision is not null \n\
-			and assessment_appraise_id = " + assessmentAppraiseId + " \n\
+			--subdivision is not null \n\
+			assessment_appraise_id = " + assessmentAppraiseId + " \n\
 	");
 
 	for (el in sq) {

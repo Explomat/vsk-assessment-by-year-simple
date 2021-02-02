@@ -51,7 +51,8 @@ function _setComputedFields(dpDoc) {
 	}
 
 	function isManager(userRole){
-		return (userRole == btypes.manager || userRole == btypes.moderator);
+		//alert('isManager_userRole: ' + userRole);
+		return (userRole == btypes.main || userRole == btypes.moderator);
 	}
 
 	function isAllowEditDp(_dpDoc, _curStep) {
@@ -62,8 +63,8 @@ function _setComputedFields(dpDoc) {
 			return true;
 		}
 
-		if ((_curStep.idp_main_step_order_number == lst.order_number && _curStep.idp_step_order_number == lstm.order_number)
-			|| (lstm.order_number == _curStep.idp_step_order_number)
+		if ((_curStep.idp_main_step_order_number == lst.order_number && _curStep.idp_step_order_number == lstm.idp_step_order_number)
+			|| (lstm.idp_step_order_number == _curStep.idp_step_order_number)
 		) {
 			return false;
 		}
@@ -75,12 +76,11 @@ function _setComputedFields(dpDoc) {
 	//alert('currentStep: ' + tools.object_to_text(currentStep, 'json'));
 	//alert('curUserID: ' + curUserID);
 	//alert('crdoc.DocID: ' + crdoc.DocID);
+	//alert('g_1111111111111');
 	var urole = User.getRole(curUserID, dpDoc.DocID, dpDoc);
+	//alert('g_222222222222222');
 	//alert('urole: ' + urole);
 	//alert('_3');
-	var uactions = User.getActionsByRole(urole, currentStep.idp_step_id);
-	//alert('uactions:' + tools.object_to_text(uactions, 'json'));
-	//alert('_5');
 	var isEditDp = isAllowEditDp(dpDoc, currentStep);
 	//alert('isEditDp: ' + tools.object_to_text(isEditDp, 'json'));
 	//alert('_6');
@@ -91,6 +91,9 @@ function _setComputedFields(dpDoc) {
 	//alert('_9');
 	var curMainStepNumber = currentStep.idp_main_step_order_number;
 	//alert('curMainStepNumber: ' + curMainStepNumber);
+
+	var uactions = User.getActionsByRole(urole, currentStep.idp_step_id);
+	//alert('uactions:' + tools.object_to_text(uactions, 'json'));
 
 	var _isUser = isUser(dpDoc, urole);
 	//alert('_isUser: ' + _isUser);
@@ -103,7 +106,7 @@ function _setComputedFields(dpDoc) {
 	//alert('_isManager: ' + _isManager);
 
 	return {
-		actions: uactions,
+		actions: (curMainStepNumber > 0 ? uactions : []),
 		is_show_assessments: isEditTasks && curMainStepNumber > 0,
 		allow_add_themes: _isManager && (curMainStepNumber == 0),
 		allow_edit_themes: _isManager && (curMainStepNumber == 0),
@@ -332,29 +335,31 @@ function post_changeStep(queryObjects){
 	var dpid = queryObjects.HasProperty('development_plan_id') ? Trim(queryObjects.development_plan_id) : undefined;
 
 	if (dpid == undefined){
-		return Utils.toJSON(Utils.setError('Invalid parametres'));
+		return Utils.toJSON(Utils.setError('Не указан план развития'));
 	}
 
 	var isAccess = Dp.isAccessToView(curUserID, null, dpid);
 	if (!isAccess){
-		return Utils.toJSON(Utils.setError('You don`t have permissions to this document'));
+		return Utils.toJSON(Utils.setError('У вас нет доступа к этому документу'));
 	}
 
 	var data = tools.read_object(queryObjects.Body);
 	var action = data.HasProperty('action') ? data.action : undefined;
 	if (action == undefined) {
-		return Utils.setError('Invalid parametres');
+		return Utils.setError('Неверное количество аргументов');
 	}
 
 	var urole = User.getRole(curUserID, dpid);
+	alert('post_changeStep__urole: ' + urole);
 	var uactions = User.getActionsByRole(urole);
+	alert('post_changeStep__uactions: ' + tools.object_to_text(uactions, 'json'));
 
-	if (ArrayOptFind(uactions, 'This.name == \'' + action + '\'') == undefined) {
-		return Utils.setError('Unknown action for user');
+	if (ArrayOptFind(uactions, 'This.code == \'' + action + '\'') == undefined) {
+		return Utils.setError('Действие не найдено');
 	}
 
 	var currentStep = Step.getCurrentStep(dpid);
-	var personFromRole = User.getRole(currentStep.object_id, dpid);
+	var personFromRole = User.getRole(currentStep.next_collaborator_id, dpid);
 
 
 	/*alert('personFromRole: ' + personFromRole);
@@ -363,19 +368,19 @@ function post_changeStep(queryObjects){
 
 	//Теперь функция getProcessSteps может вернуть несколько записей. 
 	//Т.к. у  сотрудника может не быть куратора, и он должен отправить сразу руководителю.
-	//Получаем этапы, ранжируем по номеру
-	var processSteps = Step.getProcessSteps(personFromRole, currentStep.step_id, action);
+	//Получаем этапы, сортируем по номеру
+	var processSteps = Step.getProcessSteps(personFromRole, currentStep.idp_step_id, action);
 	//alert('processSteps: ' + tools.object_to_text(processSteps, 'json'))
 	
 	if (ArrayCount(processSteps) == 0){
-		return Utils.setError('Next step not found');
+		return Utils.setError('Невозможно перевести на следующий этап. Возможно у вас нет рук-ля в штатном расписании.');
 	}
 
 	var processStep = null;
 	var nextUserId = null;
 	//alert('ArrayCount(processSteps): ' + (ArrayCount(processSteps)))
 	for (ps in processSteps){
-		nextUserId = Dp.getNextUserId(dpid, ps.next_role);
+		nextUserId = Dp.getNextUserId(dpid, ps.next_idp_role_code);
 		if (nextUserId != null){
 			processStep = ps;
 			break;
@@ -387,14 +392,14 @@ function post_changeStep(queryObjects){
 	if (processStep == null || nextUserId == null){
 		/*alert('processStep == null:' + (processStep == null));
 		alert('nextUserId == null:' + (nextUserId == null));*/
-		return Utils.toJSON(Utils.setError('Next step or next user not found'));
+		return Utils.toJSON(Utils.setError('Невозможно перевести на следующий этап.'));
 	}
 
 	// если этап(общий) последний и не заполнены оценки рук-ля / сотрудника,
-	// и если сотрудник пытается отправить дальше по этапу (верх по лесенке), то возвращаем ошибку
-	var lst = Step.getLastMainStep();
+	// и если сотрудник пытается отправить дальше по этапу (вверх по лесенке), то возвращаем ошибку
+	/*var lst = Step.getLastMainStep();
 	var crDoc = OpenDoc(UrlFromDocID(Int(dpid)));
-	if (currentStep.main_step == lst.order_number && (OptInt(processStep.next_step_order_number) > OptInt(currentStep.order_number))) {
+	if (currentStep.idp_main_step_order_number == lst.order_number && (OptInt(processStep.next_step_order_number) > OptInt(currentStep.idp_step_order_number))) {
 		//alert('11111');
 		var assessmentsCount = ArrayOptFirstElem(XQuery("sql: \n\
 			select \n\
@@ -416,6 +421,7 @@ function post_changeStep(queryObjects){
 				cc_adaptation_tasks ccat \n\
 			where ccat.career_reserve_id = " + dpid + " \n\
 		"));
+
 		if (assessmentsCount != undefined) {
 			//alert('222222');
 			var c =
@@ -431,21 +437,21 @@ function post_changeStep(queryObjects){
 				return Utils.setError('Проставьте в задачах ваши оценки пожалуйста');
 			}
 		}
-	}
+	}*/
 
 
-	var currentUserId = currentStep.current_collaborator_id;
+	var currentUserId = currentStep.next_collaborator_id;
 	//var nextUserId = Adaptation.getNextUserId(crid, processStep.next_role);
 	
 	var step = null;
 	var comment = data.HasProperty('comment') && data.GetOptProperty('comment') != 'undefined' ? data.comment : '';
-	var nextStep = Dp.createStep(
+	var nextStep = Step.create(
 		currentStep.id,
 		{
-			collaborator_id: currentUserId,
-			current_collaborator_id: nextUserId,
-			data: comment,
-			step_id: processStep.next_step
+			current_collaborator_id: currentUserId,
+			next_collaborator_id: nextUserId,
+			comment: comment,
+			idp_step_id: processStep.next_idp_step_id
 		}
 	);
 
@@ -455,7 +461,7 @@ function post_changeStep(queryObjects){
 		2. Если этап идет вниз, то отсылаем всем вниз по лесенке ролей относительно того, кто перевел.
 	*/
 
-	var curUserRole = User.getRoleRecordByUserId(currentUserId, dpid);
+	/*var curUserRole = User.getRoleRecordByUserId(currentUserId, dpid);
 	var nextUserRole = User.getRoleRecordByUserId(nextUserId, dpid);
 
 	//alert('curUserRole: ' + tools.object_to_text(curUserRole, 'json'));
@@ -511,7 +517,7 @@ function post_changeStep(queryObjects){
 		for (el in _tutors) {
 			Utils.notificate(processStep.notification_code, el, objToNotificate, dpid);
 		}
-	}
+	}*/
 
 	return Utils.setSuccess({});
 }

@@ -5,6 +5,7 @@ import { Modal, Button, Icon, Loader, Dimmer, Message } from 'semantic-ui-react'
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import { getInitialData, thirdStep } from './subordinateActions';
+import { changeStep } from '../../idp/dp/dpActions';
 import { isCompetencesCompleted } from '../calculations';
 import { omit } from 'lodash';
 
@@ -22,8 +23,10 @@ class Main extends Component {
 	}
 
 	handleSave() {
-		const { onThirdStep, onClose, match } = this.props;
+		const { onThirdStep, onChangeStep, onClose, match } = this.props;
 		onThirdStep(match.params.id);
+
+		onChangeStep(match.params.id, 'approve');
 		onClose();
 	}
 
@@ -82,7 +85,8 @@ function mapStateToProps(state){
 function mapDispatchProps(dispatch, ownProps) {
 	return {
 		loadData: (subordinateId, assessmentId) => dispatch(getInitialData(subordinateId, assessmentId)),
-		onThirdStep: assessmentId => dispatch(thirdStep(assessmentId))
+		onThirdStep: assessmentId => dispatch(thirdStep(assessmentId)),
+		onChangeStep: (assessmentId, action, comment) => dispatch(changeStep(assessmentId, action, comment))
 	}
 }
 

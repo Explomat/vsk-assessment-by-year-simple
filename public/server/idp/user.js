@@ -1,10 +1,23 @@
 function roles() {
-	return {
+	var robj = {};
+	var qr = XQuery("sql: \n\
+		select code \n\
+		from cc_idp_roles \n\
+	");
+
+	for (el in qr) {
+		robj.SetProperty(String(el.code), String(el.code));
+	}
+
+	alert(tools.object_to_text(robj, 'json'));
+	return robj;
+
+	/*return {
 		'user': 'user',
 		'manager': 'manager',
 		'hrbp': 'hrbp',
 		'moderator': 'moderator'
-	}
+	}*/
 }
 
 function getManagerForIdp(userId, assessmentAppraiseId) {
@@ -117,12 +130,6 @@ function getManagers(userId, assessmentAppraiseId){
 	return result;
 }
 
-
-
-
-
-
-
 function getActions(user_id, object_type) {
 	var actions = [];
 
@@ -202,7 +209,12 @@ function getById(id){
 }
 
 function getRole(userId, dpId, dpdoc) {
+	//alert('getRole_userId: ' + userId);
+	//alert('getRole_dpId: ' + dpId);
+
+	//alert('11111111111111111');
 	var rs = roles();
+	//alert('22222222222222222');
 
 	// проверка на юзера
 	var dpDoc = null;
@@ -219,9 +231,11 @@ function getRole(userId, dpId, dpdoc) {
 	} catch(e) {}
 	//
 
+	//alert('33333333333333');
 	// проверка на рук-ля
 	try {
 		if (dpDoc != null) {
+			//alert('33333333333333_1');
 			var pId = OptInt(dpDoc.TopElem.person_id);
 			var epId = OptInt(dpDoc.TopElem.expert_person_id);
 			var apId = OptInt(dpDoc.TopElem.assessment_appraise_id);
@@ -245,13 +259,13 @@ function getRole(userId, dpId, dpdoc) {
 			"));
 
 			if (qmr != undefined) {
-				return rs.manager;
+				return rs.main;
 			}
 		}
 	} catch(e) {}
 	//
 
-
+	//alert('44444444444444444');
 	//проверка на модератора
 	var qmod = XQuery("sql: \n\
 		select ims.id, irs.code \n\
@@ -268,6 +282,7 @@ function getRole(userId, dpId, dpdoc) {
 	}
 	//
 
+	//alert('55555555555555555');
 	// проверка на hrbp
 	if (dpDoc != null) {
 		var hrbpq = ArrayOptFirstElem(XQuery("sql: \n\
@@ -280,12 +295,12 @@ function getRole(userId, dpId, dpdoc) {
 				and bts.code = '" + rs.hrbp + "' \n\
 		"));
 
-		if (hrbp != undefined) {
+		if (hrbpq != undefined) {
 			return String(hrbpq.code);
 		}
 	}
 
-
+	//alert('6666666666666666666');
 	return '';
 }
 
@@ -305,7 +320,7 @@ function getRoleRecordByUserId(userId, crId) {
 	"));
 }
 
-function getActionsByRole(role, stepId){
+function getActionsByRole(role, stepId) {
 	var o = [];
 	var strq = " \n\
 		select \n\

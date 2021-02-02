@@ -603,6 +603,24 @@ function getThemesByCompetencesByDpId(dpId, assessmentAppraiseId) {
 	return comps;
 }
 
+function getNextUserId(dpId, roleName){
+	var User = OpenCodeLib('./user.js');
+	DropFormsCache('./user.js');
+
+	var doc = OpenDoc(UrlFromDocID(Int(dpId)));
+	var types = User.roles();
+	
+	if (types.user == roleName) {
+		return doc.TopElem.person_id;
+	}
+
+	if (types.main == roleName) {
+		return doc.TopElem.expert_person_id;
+	}
+
+	return null;
+}
+
 function isAccessToView(id, userId) {
 	return true;
 }

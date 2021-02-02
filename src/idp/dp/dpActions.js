@@ -221,15 +221,16 @@ export function updateThemes(competences) {
 	}
 };
 
-export function changeStep(task_id, action, comment) {
+export function changeStep(assessment_appraise_id, action, comment) {
 	return (dispatch, getState) => {
-		dispatch(loading(true));
-
 		const { idp } = getState();
 
-		request('idp', 'changeStep', { development_plan_id: idp.dp.development_plan_id })
+		dispatch(loading(true));
+		request('idp', 'changeStep', {
+				assessment_appraise_id,
+				development_plan_id: idp.dp.card.development_plan_id
+			})
 			.post({
-				task_id,
 				action,
 				comment
 			})
@@ -238,7 +239,7 @@ export function changeStep(task_id, action, comment) {
 				if (d.type === 'error') {
 					throw d;
 				}
-				dispatch(getDp(idp.dp.development_plan_id));
+				dispatch(getUserDps(assessment_appraise_id));
 				dispatch(loading(false));
 			})
 			.catch(e => {
