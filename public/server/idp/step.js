@@ -23,7 +23,53 @@ function create(prevDocId, params) {
 	return doc;
 }
 
-function getMainSteps(){
+function calculateMainSteps(mainSteps, startDate){
+	var ms = [];
+
+	for (s in mainSteps){
+		//alert('startDate: ' + startDate)
+		obj = {
+			id: String(s.id),
+			order_number: OptInt(s.order_number),
+			name: String(s.name),
+			duration_days: OptInt(s.duration_days),
+			duration_months: OptInt(s.duration_months),
+			date: Date(startDate)
+		}
+
+		if (obj.duration_months == 0){
+			obj.date = Date(startDate);
+		} else {
+			d = obj.duration_months;
+			if (d != undefined){
+				_date = new Date(startDate);
+				nextMonth = (Month(_date) + d) % 12;
+				nextMonth = nextMonth == 0 ? 12 : nextMonth;
+				nextDay = Day(_date);
+				nextYear = Year(_date);
+				if ((Month(_date) + d) > 12) {
+					nextYear = nextYear + 1;
+				}
+
+				if (nextMonth == 2 && nextDay > 28){
+					nextDay = 28;
+					if ((nextYear % 4) == 0) { //високосный
+						nextDay = 29;
+					}
+				}
+
+				obj.date = Date(nextDay + '.' + nextMonth + '.' + nextYear);
+				//obj.date = StrXmlDate(Date(nextDay + '.' + nextMonth + '.' + nextYear));
+				//alert('obj.date: ' + obj.date);
+			}
+		}
+
+		ms.push(obj);
+	}
+	return ms;
+}
+
+function getMainSteps() {
 	return XQuery("sql: \n\
 		select \n\
 			convert(varchar(20), ccimss.id) id, \n\
@@ -33,6 +79,17 @@ function getMainSteps(){
 			ccimss.duration_months \n\
 		from cc_idp_main_steps ccimss \n\
 		order by ccimss.order_number asc \n\
+	");
+}
+
+function getSteps() {
+	return XQuery("sql: \n\
+		select \n\
+			id, \n\
+			order_number, \n\
+			name, \n\
+			duration \n\
+		from cc_idp_steps \n\
 	");
 }
 
@@ -130,7 +187,7 @@ function getLastStepByMainStepId(dpId, mainStepId){
 	"));
 }
 
-function getProcessSteps(roleName, stepId, actionName){
+function getProcessSteps(roleName, stepId, actionName) {
 	return XQuery("sql: \n\
 		select \n\
 			d.*, \n\

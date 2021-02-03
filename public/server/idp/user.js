@@ -9,7 +9,7 @@ function roles() {
 		robj.SetProperty(String(el.code), String(el.code));
 	}
 
-	alert(tools.object_to_text(robj, 'json'));
+	//alert(tools.object_to_text(robj, 'json'));
 	return robj;
 
 	/*return {

@@ -56,6 +56,7 @@ function _setComputedFields(dpDoc) {
 	}
 
 	function isAllowEditDp(_dpDoc, _curStep) {
+		//alert('_dpDoc.DocID: ' + _dpDoc.DocID);
 		var lst = Step.getLastMainStep();
 		var lstm = Step.getLastStepByMainStepId(_dpDoc.DocID, _curStep.idp_main_step_id);
 
@@ -335,12 +336,12 @@ function post_changeStep(queryObjects){
 	var dpid = queryObjects.HasProperty('development_plan_id') ? Trim(queryObjects.development_plan_id) : undefined;
 
 	if (dpid == undefined){
-		return Utils.toJSON(Utils.setError('Не указан план развития'));
+		return Utils.setError('Не указан план развития');
 	}
 
 	var isAccess = Dp.isAccessToView(curUserID, null, dpid);
 	if (!isAccess){
-		return Utils.toJSON(Utils.setError('У вас нет доступа к этому документу'));
+		return Utils.setError('У вас нет доступа к этому документу');
 	}
 
 	var data = tools.read_object(queryObjects.Body);
@@ -350,9 +351,9 @@ function post_changeStep(queryObjects){
 	}
 
 	var urole = User.getRole(curUserID, dpid);
-	alert('post_changeStep__urole: ' + urole);
+	//alert('post_changeStep__urole: ' + urole);
 	var uactions = User.getActionsByRole(urole);
-	alert('post_changeStep__uactions: ' + tools.object_to_text(uactions, 'json'));
+	//alert('post_changeStep__uactions: ' + tools.object_to_text(uactions, 'json'));
 
 	if (ArrayOptFind(uactions, 'This.code == \'' + action + '\'') == undefined) {
 		return Utils.setError('Действие не найдено');
@@ -360,11 +361,6 @@ function post_changeStep(queryObjects){
 
 	var currentStep = Step.getCurrentStep(dpid);
 	var personFromRole = User.getRole(currentStep.next_collaborator_id, dpid);
-
-
-	/*alert('personFromRole: ' + personFromRole);
-	alert('currentStep.step_id: ' + currentStep.step_id);
-	alert('action: ' + action);*/
 
 	//Теперь функция getProcessSteps может вернуть несколько записей. 
 	//Т.к. у  сотрудника может не быть куратора, и он должен отправить сразу руководителю.
@@ -379,9 +375,9 @@ function post_changeStep(queryObjects){
 	var processStep = null;
 	var nextUserId = null;
 	//alert('ArrayCount(processSteps): ' + (ArrayCount(processSteps)))
-	for (ps in processSteps){
+	for (ps in processSteps) {
 		nextUserId = Dp.getNextUserId(dpid, ps.next_idp_role_code);
-		if (nextUserId != null){
+		if (nextUserId != null) {
 			processStep = ps;
 			break;
 		}
@@ -392,7 +388,7 @@ function post_changeStep(queryObjects){
 	if (processStep == null || nextUserId == null){
 		/*alert('processStep == null:' + (processStep == null));
 		alert('nextUserId == null:' + (nextUserId == null));*/
-		return Utils.toJSON(Utils.setError('Невозможно перевести на следующий этап.'));
+		return Utils.setError('Невозможно перевести на следующий этап.');
 	}
 
 	// если этап(общий) последний и не заполнены оценки рук-ля / сотрудника,
@@ -520,6 +516,81 @@ function post_changeStep(queryObjects){
 	}*/
 
 	return Utils.setSuccess({});
+}
+
+function post_nextMainStep(queryObjects) {
+	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
+
+	if (assessmentAppraiseId == undefined) {
+		return Utils.setError('Не указана процедура оценки');
+	}
+
+	var dpid = queryObjects.HasProperty('development_plan_id') ? Trim(queryObjects.development_plan_id) : undefined;
+
+	if (dpid == undefined){
+		return Utils.setError('Не указан план развития');
+	}
+
+	var isAccess = Dp.isAccessToView(curUserID, null, dpid);
+	if (!isAccess){
+		return Utils.setError('У вас нет доступа к этому документу');
+	}
+
+	var dpDoc = OpenDoc(UrlFromDocID(Int(dpid)));
+	var idpq = ArrayOptFirstElem(XQuery("sql: \n\
+		select id \n\
+		from cc_idp_mains \n\
+		where development_plan_id = " + dpid + " \n\
+	"));
+
+	if (idpq == undefined) {
+		return Utils.setError('Системная ошибка, не найдена анкета ИПР.');
+	}
+
+	var idpDoc = OpenDoc(UrlFromDocID(Int(idpq.id)));
+	var currentStep = Step.getCurrentStep(dpid);
+
+	var steps = Step.getSteps();
+	var mSteps = Step.getMainSteps();
+
+	var msCount = ArrayCount(mSteps);
+
+	var curMainSteps = Step.calculateMainSteps(mSteps, idpDoc.TopElem.create_date);
+	var curMainStepIndex = Utils.findIndexById(curMainSteps, currentStep.idp_main_step_id);
+
+	if (curMainStepIndex != -1) {
+		//alert('post_nextMainStep__curMainStepIndex: ' + curMainStepIndex);
+		var nextMainStepIndex = curMainStepIndex + 1;
+
+		if (nextMainStepIndex < msCount) {
+			//alert('post_nextMainStep__nextMainStepIndex: ' + nextMainStepIndex);
+			var nextMainStep = curMainSteps[nextMainStepIndex];
+
+			//alert('post_nextMainStep__1');
+			//alert('cr.step_id: ' + cr.step_id);
+			//alert('steps: ' + tools.object_to_text(steps, 'json'));
+			//alert('Int(currentStep.idp_step_id): ' + Int(currentStep.idp_step_id));
+			var s = ArrayOptFind(steps, 'Int(This.id) == ' + Int(currentStep.idp_step_id));
+			if (s != undefined && currentStep.idp_step_order_number == (ArrayCount(steps) - 1)) {
+				//alert('post_nextMainStep__2');
+				try {
+					Step.create(
+						currentStep.id,
+						{
+							current_collaborator_id: dpDoc.TopElem.person_id,
+							next_collaborator_id: dpDoc.TopElem.person_id,
+							idp_step_id: ArrayOptFirstElem(steps).id,
+							idp_main_step_id: nextMainStep.id
+						}
+					);
+				} catch(e) { alert(e); }
+
+				return Utils.setSuccess({});
+			}
+		}
+	}
+
+	return Utils.setError('Невозможно перевести на слеующий общий этап');
 }
 
 function post_Tasks(queryObjects){

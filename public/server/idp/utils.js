@@ -88,3 +88,12 @@ function getCommonAssessments(assessmentAppraiseId) {
 			ccac.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 	");
 }
+
+function findIndexById(arr, id){
+	for (var i = 0; i < arr.length; i++) {
+		if (String(arr[i].id) == String(id)){
+			return i;
+		}
+	}
+	return -1;
+}

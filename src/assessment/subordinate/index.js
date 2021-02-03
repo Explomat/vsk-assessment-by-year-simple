@@ -4,8 +4,7 @@ import { assessmentSteps } from '../config/steps';
 import { Modal, Button, Icon, Loader, Dimmer, Message } from 'semantic-ui-react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
-import { getInitialData, thirdStep } from './subordinateActions';
-import { changeStep } from '../../idp/dp/dpActions';
+import { getInitialData, thirdStep, updateIdp } from './subordinateActions';
 import { isCompetencesCompleted } from '../calculations';
 import { omit } from 'lodash';
 
@@ -23,10 +22,10 @@ class Main extends Component {
 	}
 
 	handleSave() {
-		const { onThirdStep, onChangeStep, onClose, match } = this.props;
+		const { onThirdStep, onUpdateIdp, onClose, match } = this.props;
 		onThirdStep(match.params.id);
 
-		onChangeStep(match.params.id, 'approve');
+		onUpdateIdp(match.params.id);
 		onClose();
 	}
 
@@ -86,7 +85,7 @@ function mapDispatchProps(dispatch, ownProps) {
 	return {
 		loadData: (subordinateId, assessmentId) => dispatch(getInitialData(subordinateId, assessmentId)),
 		onThirdStep: assessmentId => dispatch(thirdStep(assessmentId)),
-		onChangeStep: (assessmentId, action, comment) => dispatch(changeStep(assessmentId, action, comment))
+		onUpdateIdp: assessmentId => dispatch(updateIdp(assessmentId))
 	}
 }
 

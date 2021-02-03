@@ -264,6 +264,7 @@ function getObject(dpId, assessmentAppraiseId) {
 			where \n\
 				dps.id = " + dpId + " \n\
 				and dps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+				and imfs.is_active_step = 1 \n\
 		")
 	);
 
@@ -289,12 +290,15 @@ function getObject(dpId, assessmentAppraiseId) {
 		var startDate = obj.create_date;
 
 		for (s in mainSteps) {
+			lastStep = Step.getLastStepByMainStepId(dpId, Int(s.id));
+
 			sobj = {
 				id: String(s.id),
 				name: String(s.name),
 				duration_months: String(s.duration_months),
 				order_number: String(s.order_number),
-				date: StrXmlDate(Date(startDate))
+				date: StrXmlDate(Date(startDate)),
+				is_approved: (lastStep != undefined)
 			}
 
 			if (s.duration_months == '0') {

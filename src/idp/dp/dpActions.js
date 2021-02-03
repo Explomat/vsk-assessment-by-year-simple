@@ -249,3 +249,29 @@ export function changeStep(assessment_appraise_id, action, comment) {
 			});
 	}
 };
+
+
+export function nextMainStep(assessment_appraise_id) {
+	return (dispatch, getState) => {
+		const { idp } = getState();
+
+		dispatch(loading(true));
+		request('idp', 'nextMainStep', {
+				assessment_appraise_id,
+				development_plan_id: idp.dp.card.development_plan_id
+			})
+			.post({})
+			.then(r => r.json())
+			.then(d => {
+				if (d.type === 'error') {
+					throw d;
+				}
+				dispatch(loading(false));
+			})
+			.catch(e => {
+				dispatch(loading(false));
+				console.error(e.message);
+				dispatch(error(e.message));
+			});
+	}
+};

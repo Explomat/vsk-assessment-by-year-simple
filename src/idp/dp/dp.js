@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router';
 import { Spin, List, Button, Modal, Input, PageHeader, Row, Col, Steps, Card, Tag } from 'antd';
-import { DownloadOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { DownloadOutlined, ArrowRightOutlined, CheckOutlined } from '@ant-design/icons';
 import DpMeta from '../meta';
 import TaskList from './taskList';
 import TaskForm from './taskForm';
@@ -89,20 +89,20 @@ class Dp extends Component {
 	}
 
 	handeAction(action) {
-		const { changeStep } = this.props;
+		const { changeStep, match } = this.props;
 
 		if (action.allow_additional_data === 'true'){
 			this.currentAction = action;
 			this.handleToggleCommentModal();
 		} else {
-			changeStep(action.name);
+			changeStep(match.params.id, action.code);
 		}
 	}
 
 	handleChangeStep(isComment) {
-		const { changeStep } = this.props;
+		const { changeStep, match } = this.props;
 		const comment = isComment ? this.state.comment : null;
-		changeStep(this.currentAction.name, comment);
+		changeStep(match.params.id, this.currentAction.code, comment);
 		this.handleToggleCommentModal();
 	}
 
@@ -169,7 +169,7 @@ class Dp extends Component {
 								title={
 									<span>
 										<span className='dp__date'>{renderDate(s.date)}</span>
-										{/*s.is_approved ? <CheckOutlined className='adaptation__date-check' /> : null*/}
+										{s.is_approved ? <CheckOutlined className='adaptation__date-check' /> : null}
 									</span>
 								}
 								description={s.name}
@@ -221,7 +221,7 @@ class Dp extends Component {
 				<div className='dp'>
 					{ /*this.renderHeader()*/ }
 					<div className='dp__body'>
-						{/*this.renderMainSteps()*/}
+						{this.renderMainSteps()}
 						<div className='dp__competence-and-themes-container'>
 							<div className='dp_header'>
 								<div className='dp__title'>Обязательные обучения для развития компетенций</div>
@@ -321,9 +321,9 @@ class Dp extends Component {
 							<Input.TextArea placeholder='Описание' value={comment} autosize={{ minRows: 3}} onChange={this.handleChangeComment}/>
 						</Modal>
 					</div>
-					{/*<div className='dp__footer'>
+					<div className='dp__footer'>
 						{this.renderHistory()}
-					</div>*/}
+					</div>
 				</div>
 			</Spin>
 		);

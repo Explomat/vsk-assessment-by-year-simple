@@ -2,6 +2,7 @@ import createRemoteActions from '../../utils/createRemoteActions';
 import { error } from '../appActions';
 import { loading } from '../profile/profileActions';
 import { loadData as loadSubordinates } from '../profile/subordinates/subordinatesActions';
+import { nextMainStep } from '../../idp/dp/dpActions';
 import request from '../../utils/request';
 import { normalize, schema } from 'normalizr';
 import { find } from 'lodash';
@@ -146,6 +147,44 @@ export function thirdStep(assessmentId){
 					dispatch(error(e.message));
 				});
 		}
+	}
+}
+
+
+export function changeStepI(assessment_appraise_id, action, comment) {
+	return (dispatch, getState) => {
+		const { idp } = getState();
+
+		dispatch(loading(true));
+		return request('idp', 'changeStep', {
+				assessment_appraise_id,
+				development_plan_id: idp.dp.card.development_plan_id
+			})
+			.post({
+				action,
+				comment
+			})
+			.then(r => r.json())
+			.then(d => {
+				if (d.type === 'error') {
+					throw d;
+				}
+				dispatch(loading(false));
+			})
+			.catch(e => {
+				dispatch(loading(false));
+				console.error(e.message);
+				dispatch(error(e.message));
+			});
+	}
+};
+
+export function updateIdp(assessmentId) {
+	return (dispatch, getState) => {
+		dispatch(changeStepI(assessmentId, 'approve')).then(() => {
+			dispatch(nextMainStep(assessmentId));
+		});
+		
 	}
 }
 
