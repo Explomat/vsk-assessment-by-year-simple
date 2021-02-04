@@ -428,7 +428,7 @@
 		try {
 			var curPaCard = Assessment.update(Int(paId), _competences, overall, 2);
 			//оценка руководителя
-			var docManager = Assessment.createBoss(Int(paId), assessmentAppraiseId);
+			//var docManager = Assessment.createBoss(Int(paId), assessmentAppraiseId);
 
 			var objToSend = tools.object_to_text({
 				assessmentAppraiseId: assessmentAppraiseId

@@ -137,10 +137,10 @@ class Profile extends Component {
 							</Dropdown>
 						</Card.Description>)}
 						{user.shouldHasPa && <Card.Description>
-							<span className='assessment-profile__description'>Вертикаль : </span><strong>{user.channel_level}</strong>
+							<span className='assessment-profile__description'>Уровень подразделения: </span><strong>{user.channel_level}</strong>
 						</Card.Description>}
 						{user.shouldHasPa && <Card.Description>
-							<span className='assessment-profile__description'>Уровень должности : </span><strong>{user.position_level}</strong>
+							<span className='assessment-profile__description'>Уровень должности: </span><strong>{user.position_level}</strong>
 						</Card.Description>}
 					</Card.Content>
 					<Card.Content className='assessment-profile__card-actions' extra>

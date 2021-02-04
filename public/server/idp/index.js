@@ -40,10 +40,17 @@ function _setComputedFields(dpDoc) {
 		return (Int(curStep.next_collaborator_id) == curUserID || userRole == btypes.moderator);
 	}
 
-	function isTop() {
-		var userDoc = OpenDoc(UrlFromDocID(curUserID));
+	function top(dpDoc) {
+		var userId = null;
+		if (dpDoc.TopElem.person_id == curUserID) {
+			userId = curUserID;
+		} else {
+			userId = dpDoc.TopElem.person_id;
+		}
+
+		var userDoc = OpenDoc(UrlFromDocID(userId));
 		var pl = userDoc.TopElem.custom_elems.ObtainChildByKey('position_level').value;
-		return (pl == '1' || pl == '2');
+		return pl;
 	}
 
 	function isUser(dpDoc, userRole){
@@ -99,7 +106,11 @@ function _setComputedFields(dpDoc) {
 	var _isUser = isUser(dpDoc, urole);
 	//alert('_isUser: ' + _isUser);
 	var _isManager = isManager(urole);
-	var _isTop = isTop();
+
+	var _top = String(top(dpDoc));
+	var isTop1 = _top == '1';
+	var isTop2 = _top == '2';
+	var isTop3 = _top == '3';
 	/*alert('_isTop: ' + _isTop);
 	alert('allow_edit_tasks: ' + ((_isTop && curMainStepNumber == 0) || (_isUser && (curMainStepNumber > 0))));
 	alert('allow_add_tasks: ' + (_isTop && curMainStepNumber == 0));
@@ -115,9 +126,11 @@ function _setComputedFields(dpDoc) {
 		allow_edit_target: isEditTasks && isEditDp && curMainStepNumber == 0, // цель
 		allow_edit_expected_result: isEditTasks && isEditDp && curMainStepNumber == 0, // ожидаемый результат
 		allow_edit_achieved_result: isEditTasks && isEditDp && curMainStepNumber > 0 && _isUser, // Достигнутый результат
-		allow_edit_tasks: (_isTop && curMainStepNumber == 0) || (_isUser && (curMainStepNumber > 0)),
-		allow_add_tasks: _isTop && curMainStepNumber == 0,
-		allow_remove_tasks: _isTop && curMainStepNumber == 0
+		allow_view_tasks:  (isTop1 && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 0 && _isManager),
+		allow_edit_tasks: (isTop1 && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 0 && _isManager),
+		allow_add_tasks: (isTop1 && _isUser && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 0 && _isManager),
+		allow_remove_tasks: (isTop1 && _isUser && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 0 && _isManager),
+		allow_percent_edit: (isTop1 && curMainStepNumber > 0) || (isTop3 && curMainStepNumber > 0 && _isManager)
 	}
 }
 

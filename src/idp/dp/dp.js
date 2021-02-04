@@ -233,7 +233,7 @@ class Dp extends Component {
 								</div>
 								<ThemeList competences={card.competences} />
 						</div>
-						<div className='dp__body-competence-tasks'>
+						{card.meta.allow_view_tasks && <div className='dp__body-competence-tasks'>
 							<div className='dp__title'>Развивающиее задачи</div>
 							{card.competences.map(c => 
 								<Card
@@ -280,7 +280,7 @@ class Dp extends Component {
 									);
 								})}
 							</div>
-						</div>
+						</div>}
 						{isShowModalTheme &&
 							<Modal
 								visible={true}

@@ -33,7 +33,7 @@ function createBoss(paId, assessmentAppraiseId) {
 	docManager.TopElem.status = 'manager';
 	docManager.TopElem.assessment_appraise_id = bsettings.assessment_appraise_id;
 	docManager.TopElem.workflow_id = bsettings.workflow_id;
-	docManager.TopElem.workflow_state = 2;
+	//docManager.TopElem.workflow_state = 2;
 	docManager.TopElem.person_id = docPaUser.TopElem.person_id;
 	docManager.TopElem.expert_person_id = docPlan.TopElem.boss_id;
 
@@ -153,6 +153,9 @@ function create(userId, assessmentAppraiseId, blockSubId, blockId) {
 	docSelf.TopElem.assessment_plan_id = docPlan.DocID;
 	docSelf.BindToDb(DefaultDb);
 	docSelf.Save();
+
+	//оценка рук-ля
+	createBoss(docSelf.DocID, assessmentAppraiseId);
 
 	return docSelf;
 }
