@@ -29,18 +29,22 @@ const isCompetenceCompleted = (competenceId, props) => {
 	return f.length === 0;*/
 }
 
-const isCompetencesCompleted = (props) => {
-	const { competences } = props;
+const isCompetencesCompleted = (props, pa) => {
+	if (!pa) {
+		return false;
+	}
 
-	const ids = Object.keys(competences);
+	const competences = Object.keys(props.competences).filter(c => props.competences[c].pa_id == pa.id);
 
-	const len = ids.filter(c => {
+	//const { competences } = props;
+	//const ids = Object.keys(competences);
+
+	const len = competences.filter(c => {
 		const l = isCompetenceCompleted(c, props);
 		//console.log('isCompetenceCompleted:' + l);
 		return l;
 	}).length;
-	//console.log(len);
-	return len === ids.length;
+	return len === competences.length;
 }
 
 const computeCompetencePercent = (competenceId, props) => {

@@ -1,17 +1,45 @@
-function setComputedFields(curUserID, userId, bossId, step) {
+function setComputedFields(assessmentAppraiseId, curUserID, userId, bossId, step) {
 	var User = OpenCodeLib('./user.js');
 	DropFormsCache('./user.js');
 
 	var actions = User.getActions(curUserID, 'pa');
 	var updateAction = (ArrayOptFind(actions, 'This == "update"') != undefined);
 
+	// вычисляем текущую оценочную анкету
+	var cpq = null;
+	var curPaId = null;
+	if (userId == curUserID) {
+		cpq = ArrayOptFirstElem(XQuery("sql: \n\
+			select id \n\
+			from pas \n\
+			where \n\
+				person_id = " + userId + " \n\
+				and expert_person_id = " + userId + " \n\
+				and assessment_appraise_id = " + assessmentAppraiseId + " \n\
+		"));
+		curPaId = (cpq != undefined ? cpq.id : null);
+	} else {
+		cpq = ArrayOptFirstElem(XQuery("sql: \n\
+			select id \n\
+			from pas \n\
+			where \n\
+				person_id = " + userId + " \n\
+				and expert_person_id = " + curUserID + " \n\
+				and assessment_appraise_id = " + assessmentAppraiseId + " \n\
+		"));
+	}
+
+	curPaId = (cpq != undefined ? cpq.id : null);
+
 	return {
+		curPaId: String(curPaId),
 		curUserID: curUserID,
 		canEditSelf: ((curUserID == userId && String(step) == '1') || updateAction),
 		canEditBoss: ((curUserID == bossId && String(step) == '2') || updateAction),
 		isAssessmentCompleted: (String(step) == '4')
 	}
 }
+
 
 function createBoss(paId, assessmentAppraiseId) {
 	var Settings = OpenCodeLib('./settings.js');
@@ -33,7 +61,7 @@ function createBoss(paId, assessmentAppraiseId) {
 	docManager.TopElem.status = 'manager';
 	docManager.TopElem.assessment_appraise_id = bsettings.assessment_appraise_id;
 	docManager.TopElem.workflow_id = bsettings.workflow_id;
-	//docManager.TopElem.workflow_state = 2;
+	docManager.TopElem.workflow_state = 2;
 	docManager.TopElem.person_id = docPaUser.TopElem.person_id;
 	docManager.TopElem.expert_person_id = docPlan.TopElem.boss_id;
 
@@ -155,7 +183,7 @@ function create(userId, assessmentAppraiseId, blockSubId, blockId) {
 	docSelf.Save();
 
 	//оценка рук-ля
-	createBoss(docSelf.DocID, assessmentAppraiseId);
+	//createBoss(docSelf.DocID, assessmentAppraiseId);
 
 	return docSelf;
 }

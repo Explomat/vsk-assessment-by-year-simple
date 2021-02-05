@@ -24,7 +24,7 @@ const Pa = ({ pa, CompetenceContainer, ...props }) => {
 
 	const resultMark = computeScaleByPercent(pa.overall, props);
 	const renderedResultMark = renderResultMark(resultMark);
-	const isCompleted = isCompetencesCompleted(props);
+	const isCompleted = isCompetencesCompleted(props, pa);
 	return (
 		<div key={pa.id} className='assessment-profile__pa'>
 			{props.isHeaderOpened && <div className='assessment-profile__pa_header' onClick={() => props.onTogglePa(pa.id)}>

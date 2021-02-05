@@ -321,7 +321,7 @@
 
 			user.shouldHasPa = true;
 			var plan = Assessment.getAssessmentPlan(userID, assessmentAppraiseId);
-			var meta = Assessment.setComputedFields(curUserID, userID, plan.boss_id, plan.step);
+			var meta = Assessment.setComputedFields(assessmentAppraiseId, curUserID, userID, plan.boss_id, plan.step);
 			var pasData = User.getPas(userID, undefined, assessmentAppraiseId);
 			var commonCompetences = Assessment.getCommonCompetences(userID, assessmentAppraiseId);
 
@@ -428,12 +428,12 @@
 		try {
 			var curPaCard = Assessment.update(Int(paId), _competences, overall, 2);
 			//оценка руководителя
-			//var docManager = Assessment.createBoss(Int(paId), assessmentAppraiseId);
+			var docManager = Assessment.createBoss(Int(paId), assessmentAppraiseId);
 
-			var objToSend = tools.object_to_text({
+			/*var objToSend = tools.object_to_text({
 				assessmentAppraiseId: assessmentAppraiseId
 			}, 'json');
-			Utils.notificate('oc_2', docManager.TopElem.expert_person_id, curUserID, objToSend);
+			Utils.notificate('oc_2', docManager.TopElem.expert_person_id, curUserID, objToSend);*/
 
 		} catch(e){ return Utils.setError(e); }
 

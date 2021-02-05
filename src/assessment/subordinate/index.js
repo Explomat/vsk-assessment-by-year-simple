@@ -30,7 +30,7 @@ class Main extends Component {
 	}
 
 	render(){
-		const { ui, assessment, onClose } = this.props;
+		const { ui, assessment, onClose, meta } = this.props;
 		if (ui.isLoading) {
 			return (
 				<Dimmer active inverted>
@@ -38,6 +38,9 @@ class Main extends Component {
 				</Dimmer>
 			)
 		}
+
+		const isCompleted = isCompetencesCompleted(this.props, meta.curPaId);
+
 		return(
 			<Modal size='large' className='assessment-subordinate' open closeIcon onClose={onClose} style={{
 				position: 'relative'
@@ -50,7 +53,7 @@ class Main extends Component {
 				</Modal.Content>
 				{assessment.step == assessmentSteps.second ?
 					(
-						isCompetencesCompleted(this.props) && (<Modal.Actions>
+						isCompleted && (<Modal.Actions>
 							<Button primary onClick={this.handleSave}>
 								Сохранить <Icon name='chevron right' />
 							</Button>

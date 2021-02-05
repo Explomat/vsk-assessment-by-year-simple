@@ -48,6 +48,7 @@ function _setComputedFields(dpDoc) {
 			userId = dpDoc.TopElem.person_id;
 		}
 
+		//alert('top_userId: ' + userId);
 		var userDoc = OpenDoc(UrlFromDocID(userId));
 		var pl = userDoc.TopElem.custom_elems.ObtainChildByKey('position_level').value;
 		return pl;
@@ -104,13 +105,18 @@ function _setComputedFields(dpDoc) {
 	//alert('uactions:' + tools.object_to_text(uactions, 'json'));
 
 	var _isUser = isUser(dpDoc, urole);
-	//alert('_isUser: ' + _isUser);
+	alert('_isUser: ' + _isUser);
 	var _isManager = isManager(urole);
+	alert('_isManager: ' + _isManager);
 
 	var _top = String(top(dpDoc));
+	alert('_top: ' + _top);
 	var isTop1 = _top == '1';
 	var isTop2 = _top == '2';
 	var isTop3 = _top == '3';
+
+	alert('isTop1: ' + isTop1);
+	alert('curMainStepNumber: ' + curMainStepNumber);
 	/*alert('_isTop: ' + _isTop);
 	alert('allow_edit_tasks: ' + ((_isTop && curMainStepNumber == 0) || (_isUser && (curMainStepNumber > 0))));
 	alert('allow_add_tasks: ' + (_isTop && curMainStepNumber == 0));

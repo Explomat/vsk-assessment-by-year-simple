@@ -16,6 +16,7 @@ function mapStateToProps(state){
 			currentStep: idp.meta.ui.currentStep,
 			stepsCount: idp.meta.ui.stepsCount
 		},
+		curPa: result.pas[profile.result.meta.curPaId],
 		meta: profile.result.meta,
 		user: profile.result.user,
 		managers: profile.result.managers,

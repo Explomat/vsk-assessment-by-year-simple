@@ -131,7 +131,8 @@ const subordinateReducer = (state = {
 		},*/
 		rules: [],
 		commonCompetences: [],
-		meta: {}
+		meta: {},
+		pas: {}
 	},
 	ui: {
 		//isLoading: true,

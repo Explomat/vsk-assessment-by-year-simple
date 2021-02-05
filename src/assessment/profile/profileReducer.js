@@ -140,6 +140,7 @@ const profileReducer = (state = {
 			pas: []
 		},
 		rules: [],
+		pas: {},
 		commonCompetences: [],
 		meta: {}
 	},
