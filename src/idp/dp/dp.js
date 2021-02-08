@@ -261,7 +261,7 @@ class Dp extends Component {
 								</Card>
 							)}
 							<div className='dp__body-competence-tasks-actions'>
-								{card.meta.actions && card.meta.actions.map(a => {
+								{card.meta.allow_edit_percent_task && card.meta.actions && card.meta.actions.map(a => {
 									let tasksLen = 0;
 									card.competences.forEach(c => {
 										tasksLen += c.tasks.length;

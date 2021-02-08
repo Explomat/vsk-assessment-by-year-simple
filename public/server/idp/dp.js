@@ -288,6 +288,7 @@ function getObject(dpId, assessmentAppraiseId) {
 		// общие этапы
 		var mainSteps = Step.getMainSteps();
 		var startDate = obj.create_date;
+		//alert('startDate: ' + startDate);
 
 		for (s in mainSteps) {
 			lastStep = Step.getLastStepByMainStepId(dpId, Int(s.id));
@@ -301,11 +302,11 @@ function getObject(dpId, assessmentAppraiseId) {
 				is_approved: (lastStep != undefined)
 			}
 
-			if (s.duration_months == '0') {
+			if (OptInt(s.duration_months) == 0) {
 				sobj.date = StrXmlDate(Date(startDate));
 			} else {
 				d = OptInt(s.duration_months);
-				if (d != undefined){
+				if (d != undefined) {
 					_date = new Date(startDate);
 					nextMonth = (Month(_date) + d) % 12;
 					nextMonth = nextMonth == 0 ? 12 : nextMonth;
@@ -553,8 +554,23 @@ function getThemesByCompetences(_competences, assessmentAppraiseId) {
 }
 
 
-function getThemesByCompetencesByDpId(dpId, assessmentAppraiseId) {
-	var paDoc = OpenDoc(UrlFromDocID(Int(paId)));
+function getThemesByDpId(dpId, assessmentAppraiseId) {
+	var _pa = ArrayOptFirstElem(XQuery("sql: \n\
+		select ps.id \n\
+		from development_plans dps \n\
+		inner join assessment_plans aps on aps.id = dps.assessment_plan_id \n\
+		inner join pas ps on ps.assessment_plan_id = aps.id \n\
+		where \n\
+			dps.id = " + dpId + " \n\
+			and aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+			and ps.person_id = ps.expert_person_id \n\
+	"));
+
+	if (_pa == undefined) {
+		return [];
+	}
+
+	var paDoc = OpenDoc(UrlFromDocID(Int(_pa.id)));
 	var comps = [];
 
 	for (c in paDoc.TopElem.competences) {

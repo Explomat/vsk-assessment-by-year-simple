@@ -79,17 +79,17 @@ export function loading(isLoading){
 export function saveIdp(assessment_appraise_id, dp_id) {
 	return (dispatch, getState) => {
 		dispatch(appLoading(true));
-
+		
 		const { idp } = getState();
 		const competences = [];
-
+		
 		idp.meta.competences.forEach(c => {
 			if (c.checked) {
 				c.themes = c.themes.filter(t => t.checked);
 				competences.push(c);
 			}
 		});
-
+		
 		const robj = { assessment_appraise_id };
 		if (dp_id) {
 			robj.development_plan_id = dp_id;
@@ -113,7 +113,7 @@ export function saveIdp(assessment_appraise_id, dp_id) {
 	}
 }
 
-export function getMeta(assessment_appraise_id, dpId){
+export function getMeta(assessment_appraise_id, dpId) {
 	return (dispatch, getState) => {
 		dispatch(loading(true));
 
@@ -139,7 +139,7 @@ export function getMeta(assessment_appraise_id, dpId){
 			})
 			.then(r => r.json())
 			.then(d => {
-				if (d.type === 'error'){
+				if (d.type === 'error') {
 					throw d;
 				}
 				dispatch({

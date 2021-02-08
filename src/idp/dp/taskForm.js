@@ -54,7 +54,7 @@ class TaskForm extends Component {
 	}
 
 	render() {
-		const { task_types, onCancel } = this.props;
+		const { meta, task_types, onCancel } = this.props;
 		const {
 			isShowCollaborators,
 			idp_task_type_id,
@@ -72,7 +72,7 @@ class TaskForm extends Component {
 				onOk={this.handleCommit}
 				onCancel={onCancel}
 				footer={[
-					<Button disabled={description.trim() === '' || resut_form.trim() === ''} type='primary' key='submit' onClick={this.handleCommit}>
+					<Button disabled={(description.trim() === '' || resut_form.trim() === '') || !meta.allow_edit_percent_task} type='primary' key='submit' onClick={this.handleCommit}>
 						Сохранить
 					</Button>,
 					<Button key='cancel' onClick={onCancel}>
@@ -83,6 +83,7 @@ class TaskForm extends Component {
 				<div className='dp-meta-task__form-label-container'>
 					<label className='dp-meta-task__form-label'>Тип задачи</label>
 					<Select
+						disabled={!meta.allow_edit_fields_task}
 						defaultValue={idp_task_type_id}
 						onChange={value => this.handleChangeProp('idp_task_type_id', value)}
 					>
@@ -96,6 +97,7 @@ class TaskForm extends Component {
 				<div className='dp-meta-task__form-label-container'>
 					<label className='dp-meta-task__form-label'>Описание</label>
 					<Input.TextArea
+						disabled={!meta.allow_edit_fields_task}
 						placeholder='Опишите задачу'
 						value={description}
 						autosize={{ minRows: 2, maxRows: 3}}
@@ -105,6 +107,7 @@ class TaskForm extends Component {
 				<div className='dp-meta-task__form-label-container'>
 					<label className='dp-meta-task__form-label'>Образ результата</label>
 					<Input.TextArea
+						disabled={!meta.allow_edit_fields_task}
 						placeholder='Опишите результат'
 						value={resut_form}
 						autosize={{ minRows: 3, maxRows: 6}}
@@ -114,6 +117,7 @@ class TaskForm extends Component {
 				<div className='dp-meta-task__form-label-container'>
 					<label className='dp-meta-task__form-label'>Эксперт</label>
 					<Input
+						disabled={!meta.allow_edit_fields_task}
 						placeholder='Выберите эксперта'
 						value={expert_collaborator_fullname}
 						addonAfter={<EllipsisOutlined onClick={this.handleShowCollaborators}/>}
@@ -122,6 +126,7 @@ class TaskForm extends Component {
 				<div className='dp-meta-task__form-label-container'>
 					<label className='dp-meta-task__form-label'>Процент выполнения</label>
 					<InputNumber
+						disabled={!meta.allow_edit_percent_task}
 						placeholder='Процент'
 						defaultValue={0}
 						min={0}

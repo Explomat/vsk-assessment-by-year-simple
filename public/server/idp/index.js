@@ -105,18 +105,27 @@ function _setComputedFields(dpDoc) {
 	//alert('uactions:' + tools.object_to_text(uactions, 'json'));
 
 	var _isUser = isUser(dpDoc, urole);
-	alert('_isUser: ' + _isUser);
+	//alert('_isUser: ' + _isUser);
 	var _isManager = isManager(urole);
-	alert('_isManager: ' + _isManager);
+	//alert('_isManager: ' + _isManager);
+
+	//  последний общий этап
+	var lsmt = Step.getLastMainStep();
+	var lstByMain = Step.getLastStepByMainStepId(dpDoc.DocID, currentStep.idp_main_step_id);
+
+	// утвержден ли последний общий этап
+	var isApproved = (lstByMain != undefined);
+
+	var isLastMainStep = curMainStepNumber == lsmt.order_number;
 
 	var _top = String(top(dpDoc));
-	alert('_top: ' + _top);
+	//alert('_top: ' + _top);
 	var isTop1 = _top == '1';
 	var isTop2 = _top == '2';
 	var isTop3 = _top == '3';
 
-	alert('isTop1: ' + isTop1);
-	alert('curMainStepNumber: ' + curMainStepNumber);
+	//alert('isTop1: ' + isTop1);
+	//alert('curMainStepNumber: ' + curMainStepNumber);
 	/*alert('_isTop: ' + _isTop);
 	alert('allow_edit_tasks: ' + ((_isTop && curMainStepNumber == 0) || (_isUser && (curMainStepNumber > 0))));
 	alert('allow_add_tasks: ' + (_isTop && curMainStepNumber == 0));
@@ -132,11 +141,12 @@ function _setComputedFields(dpDoc) {
 		allow_edit_target: isEditTasks && isEditDp && curMainStepNumber == 0, // цель
 		allow_edit_expected_result: isEditTasks && isEditDp && curMainStepNumber == 0, // ожидаемый результат
 		allow_edit_achieved_result: isEditTasks && isEditDp && curMainStepNumber > 0 && _isUser, // Достигнутый результат
-		allow_view_tasks:  (isTop1 && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 0 && _isManager),
-		allow_edit_tasks: (isTop1 && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 0 && _isManager),
-		allow_add_tasks: (isTop1 && _isUser && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 0 && _isManager),
-		allow_remove_tasks: (isTop1 && _isUser && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 0 && _isManager),
-		allow_percent_edit: (isTop1 && curMainStepNumber > 0) || (isTop3 && curMainStepNumber > 0 && _isManager)
+		allow_view_tasks:  isTop1 || (isTop3 && curMainStepNumber > 1),
+		allow_edit_tasks: isTop1 || (isTop3 && curMainStepNumber > 1),
+		allow_add_tasks: (isTop1 && _isUser && curMainStepNumber == 0) || (isTop3 && _isUser && curMainStepNumber > 1),
+		allow_remove_tasks: (isTop1 && _isUser && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 1 && _isUser),
+		allow_edit_fields_task: (isTop1 && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 1),
+		allow_edit_percent_task: (isTop1 && curMainStepNumber > 1 && _isUser) || (isTop3 && curMainStepNumber > 1)
 	}
 }
 
@@ -249,11 +259,8 @@ function post_Meta(queryObjects) {
 		return Utils.setError('Не указана процедура оценки');
 	}
 
-	if (comps == undefined) {
-		return Utils.setError('Неверные параметры');	
-	} 
-
 	var selected_items = [];
+	var result = [];
 	if (dpId != undefined) {
 		selected_items = XQuery("sql: \n\
 			select \n\
@@ -264,7 +271,15 @@ function post_Meta(queryObjects) {
 			inner join cc_idp_themes its on its.id = ics.idp_theme_id \n\
 			where \n\
 				ics.development_plan_id = " + dpId + " \n\
-		")
+		");
+
+		result = Dp.getThemesByDpId(dpId, assessmentAppraiseId);
+	} else {
+		if (comps == undefined) {
+			return Utils.setError('Неверные параметры');	
+		}
+
+		result = Dp.getThemesByCompetences(comps, assessmentAppraiseId);
 	}
 
 	/*var qs = ArrayOptFirstElem(XQuery("sql: \n\
@@ -281,7 +296,6 @@ function post_Meta(queryObjects) {
 	if (qs == undefined) {
 		return Utils.setError('Не найдена завершенная анкета оценки');
 	}*/
-	var result = Dp.getThemesByCompetences(comps, assessmentAppraiseId);
 	var commonScales = Assessment.getCommonScales();
 	var taskTypes = Task.getTaskTypes();
 	return Utils.setSuccess({

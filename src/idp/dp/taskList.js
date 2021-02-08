@@ -80,9 +80,9 @@ class TaskList extends Component {
 					key: 'update',
 					render: (text, task) => (
 						<span>
-							{meta.allow_edit_tasks && <EditOutlined className='task__icon' onClick={() => this.handleToggleEditModal(task)}/>}
-							{meta.allow_edit_tasks && meta.allow_remove_tasks && <Divider type='vertical' />}
-							{meta.allow_remove_tasks && <DeleteOutlined className='task__icon' onClick={() => removeTask(task.id, competenceId)}/>}
+							{meta.allow_edit_tasks && meta.allow_edit_percent_task && <EditOutlined className='task__icon' onClick={() => this.handleToggleEditModal(task)}/>}
+							{meta.allow_edit_tasks && meta.allow_edit_percent_task && meta.allow_remove_tasks && <Divider type='vertical' />}
+							{meta.allow_remove_tasks &&  <DeleteOutlined className='task__icon' onClick={() => removeTask(task.id, competenceId)}/>}
 						</span>
 					)
 				}
