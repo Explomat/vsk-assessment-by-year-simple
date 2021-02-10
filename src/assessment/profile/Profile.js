@@ -107,16 +107,16 @@ class Profile extends Component {
 							{user.fullname}
 						</Card.Header>
 						<Card.Meta>{user.department} -> {user.position}</Card.Meta>
-						{user.shouldHasPa && <Card.Description>
-							<span className='assessment-profile__description'>Название : </span><strong>{assessment.name}</strong>
+						{user.shouldHasPa && <Card.Description className='assessment-profile__description-container'>
+							<span className='assessment-profile__description'>Название : </span><strong className='assessment-profile__description'>{assessment.name}</strong>
 						</Card.Description>}
-						{user.shouldHasPa && <Card.Description>
-							<span className='assessment-profile__description'>Период : </span><strong>{new Date(assessment.startDate).toLocaleDateString()} -  {new Date(assessment.finishDate).toLocaleDateString()}</strong>
+						{user.shouldHasPa && <Card.Description className='assessment-profile__description-container'>
+							<span className='assessment-profile__description'>Период : </span><strong className='assessment-profile__description'>{new Date(assessment.startDate).toLocaleDateString()} -  {new Date(assessment.finishDate).toLocaleDateString()}</strong>
 						</Card.Description>}
-						{user.shouldHasPa && <Card.Description>
-							<span className='assessment-profile__description'>Этап : </span><strong>{assessment.stepName}</strong>
+						{user.shouldHasPa && <Card.Description className='assessment-profile__description-container'>
+							<span className='assessment-profile__description'>Этап : </span><strong className='assessment-profile__description'>{assessment.stepName}</strong>
 						</Card.Description>}
-						{user.shouldHasPa && managers.map(m => <Card.Description key={m.id}>
+						{user.shouldHasPa && managers.map(m => <Card.Description key={m.id} className='assessment-profile__description-container'>
 							<span className='assessment-profile__description'>{m.boss_type_name} {' : '}</span>
 							<Dropdown inline text={m.fullname}>
 								<Dropdown.Menu>
@@ -137,11 +137,11 @@ class Profile extends Component {
 								</Dropdown.Menu>
 							</Dropdown>
 						</Card.Description>)}
-						{user.shouldHasPa && <Card.Description>
-							<span className='assessment-profile__description'>Уровень подразделения: </span><strong>{user.channel_level}</strong>
+						{user.shouldHasPa && <Card.Description className='assessment-profile__description-container'>
+							<span className='assessment-profile__description'>Уровень подразделения: </span><strong className='assessment-profile__description'>{user.channel_level}</strong>
 						</Card.Description>}
-						{user.shouldHasPa && <Card.Description>
-							<span className='assessment-profile__description'>Уровень должности: </span><strong>{user.position_level}</strong>
+						{user.shouldHasPa && <Card.Description className='assessment-profile__description-container'>
+							<span className='assessment-profile__description'>Уровень должности: </span><strong className='assessment-profile__description'>{user.position_level}</strong>
 						</Card.Description>}
 					</Card.Content>
 					<Card.Content className='assessment-profile__card-actions' extra>
@@ -235,7 +235,7 @@ class Profile extends Component {
 								{ui.isShowBossButton && <Button
 									onClick={this.handlePrevPage}
 								>
-									Назад
+									Назад к оценке
 								</Button>}
 								{ui.isShowBossButton && idp.hasThemesChecked && (idp.currentStep === idp.stepsCount) && <Button
 									disabled={!isCompleted}

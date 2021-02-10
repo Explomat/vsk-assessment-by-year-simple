@@ -110,19 +110,20 @@ function getFirstMainStep() {
 }
 
 function getNextStepById(curStepId) {
-	return ArrayOptFirstElem(XQuery("sql: \n\
-		declare @stepId bigint = ( \n\
-			select iss.order_number \n\
+	return ArrayOptFirstElem(
+		XQuery("sql: \n\
+			declare @stepId bigint = ( \n\
+				select iss.order_number \n\
+				from cc_idp_steps iss \n\
+				where iss.id = " + curStepId + " \n\
+			) \n\
+			\n\
+			select iss.* \n\
 			from cc_idp_steps iss \n\
 			where \n\
-				iss.id = " + curStepId + " \n\
-		) \n\
-		\n\
-		select iss.* \n\
-		from cc_idp_steps iss \n\
-		where \n\
-			iss.order_number = (@stepId + 1) \n\
-	"));
+				iss.order_number = (@stepId + 1) \n\
+		")
+	);
 }
 
 function getCurrentStep(dpId) {

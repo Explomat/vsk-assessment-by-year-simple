@@ -1,7 +1,7 @@
 .assessment-profile {
 	
 }
-
+d
 .assessment-delegate__search {
 	width: 100%;
 }
@@ -27,7 +27,12 @@
 	line-height: 22px !important;
 }
 
+.assessment-profile__description-container {
+	display: flex;
+}
+
 .assessment-profile__description {
+	flex-shrink: 0;
 	line-height: 22px;
     display: block;
     padding: 3px 0;
@@ -35,6 +40,12 @@
     color: rgba(0,0,0,.5);
     width: 175px;
     display: inline-block;
+}
+
+.assessment-profile__description:last-child {
+	flex-grow: 1;
+	min-width: 500px;
+	color: rgba(0, 0, 0, 0.68);
 }
 
 .assessment-profile__indicators-container {

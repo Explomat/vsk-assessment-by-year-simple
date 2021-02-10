@@ -122,7 +122,7 @@ function getBlockSubByUserId(userId, blockCode, assessmentAppraiseId) {
 		where \n\
 			ccabs.code = '" + blockCode + "' \n\
 			and ccabs.assessment_appraise_id = " + assessmentAppraiseId +" \n\
-		order by number asc \n\
+		order by number desc \n\
 	");
 
 	var Utils = OpenCodeLib('./utils.js');

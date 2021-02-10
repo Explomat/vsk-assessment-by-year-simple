@@ -172,6 +172,13 @@ const metaReducer = (state = {
 
 		case constants.DP_META_THEME_CHECKED: {
 			const { payload } = action;
+			const compsChecked = state.competences.filter(c => c.checked);
+
+			let maxCountThemesForSelected = state.ui.maxCountThemesForSelected;
+			if (compsChecked.length > 1) {
+				maxCountThemesForSelected = 1;
+			}
+
 			const comp = state.competences.find(c => c.id == payload.competence_id);
 
 			if (comp) {
@@ -179,7 +186,7 @@ const metaReducer = (state = {
 					...action,
 					payload: {
 						...action.payload,
-						maxCountThemesForSelected: state.ui.maxCountThemesForSelected
+						maxCountThemesForSelected
 					}
 				});
 				return {
@@ -188,6 +195,7 @@ const metaReducer = (state = {
 					hasThemesChecked: comp.themes.filter(c => c.checked).length > 0
 				}
 			}
+
 			return state;
 		}
 

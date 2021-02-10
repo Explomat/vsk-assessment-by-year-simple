@@ -10,7 +10,8 @@ class ThemeList extends Component {
 			{
 				title: 'Название темы',
 				dataIndex: 'name',
-				key: 'name'
+				key: 'name',
+				width: 650
 			},
 			{
 				title: 'Процент выполнения',

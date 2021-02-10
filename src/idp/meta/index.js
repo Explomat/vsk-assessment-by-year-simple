@@ -157,17 +157,20 @@ class Meta extends Component {
 		const { ui, hasChecked } = this.props;
 		const buttons = [];
 
-		const buttonNext = <Button key='1' className='clearfix' style={{float: 'right'}} onClick={this.handleNextStep}><RightOutlined /></Button>;
-		const buttonPrev = <Button key='2' className='clearfix' style={{float: 'left'}} onClick={this.handlePrevStep}><LeftOutlined /></Button>;
+		const buttonNext = <Button key='1' disabled={!(ui.currentStep === 1 && hasChecked)} className='clearfix' style={{float: 'right'}} onClick={this.handleNextStep}><RightOutlined /></Button>;
+		const buttonPrev = <Button key='2' disabled={!(ui.currentStep <= ui.stepsCount && ui.currentStep !== 1)} className='clearfix' style={{float: 'right', marginRight: '20px'}} onClick={this.handlePrevStep}><LeftOutlined /></Button>;
+		buttons.push(buttonNext);
+		buttons.push(buttonPrev);
+
 		//const buttonSave = <Button onClick={this.handleSave} key='3' className='clearfix' type='primary' style={{float: 'right'}} onClick={this.handleSave}>Сохранить</Button>;
 
-		if (ui.currentStep <= ui.stepsCount && ui.currentStep !== 1) {
+		/*if (ui.currentStep <= ui.stepsCount && ui.currentStep !== 1) {
 			buttons.push(buttonPrev);
 		}
 
 		if (ui.currentStep === 1 && hasChecked) {
 			buttons.push(buttonNext);
-		} /*else if (currentStep === 2 && meta.hasThemesChecked) {
+		}*/ /*else if (currentStep === 2 && meta.hasThemesChecked) {
 			buttons.push(buttonNext);
 		} else if (currentStep === (stepsCount - 1)) {
 			buttons.push(buttonSave);

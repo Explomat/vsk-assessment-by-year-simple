@@ -213,7 +213,7 @@ class Dp extends Component {
 	}
 
 	render() {
-		const { match, card, ui, updateTask, removeTask } = this.props;
+		const { match, idp, card, ui, updateTask, removeTask } = this.props;
 		const { isShowModalTask, isShowModalTheme, isShowModalComment, comment } = this.state;
 
 		return (
@@ -288,6 +288,9 @@ class Dp extends Component {
 								title='Редактирование'
 								cancelText='Отмена'
 								okText='Сохранить'
+								okButtonProps={{
+									disabled: !(idp.meta.hasThemesChecked && idp.meta.hasChecked)
+								}}
 								onCancel={this.handleToggleThemeModal}
 								onOk={this.handleUpdate}
 							>
@@ -333,6 +336,7 @@ class Dp extends Component {
 function mapStateToProps(state){
 	const { idp } = state;
 	return {
+		idp,
 		card: idp.dp.card,
 		ui: idp.dp.ui
 	}

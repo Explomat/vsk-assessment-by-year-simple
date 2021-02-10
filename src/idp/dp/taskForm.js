@@ -72,7 +72,7 @@ class TaskForm extends Component {
 				onOk={this.handleCommit}
 				onCancel={onCancel}
 				footer={[
-					<Button disabled={(description.trim() === '' || resut_form.trim() === '') || !meta.allow_edit_percent_task} type='primary' key='submit' onClick={this.handleCommit}>
+					<Button disabled={(description.trim() === '' || resut_form.trim() === '')} type='primary' key='submit' onClick={this.handleCommit}>
 						Сохранить
 					</Button>,
 					<Button key='cancel' onClick={onCancel}>
@@ -114,7 +114,7 @@ class TaskForm extends Component {
 						onChange={e => this.handleChangeProp('resut_form', e.target.value)}
 					/>
 				</div>
-				<div className='dp-meta-task__form-label-container'>
+				{/*<div className='dp-meta-task__form-label-container'>
 					<label className='dp-meta-task__form-label'>Эксперт</label>
 					<Input
 						disabled={!meta.allow_edit_fields_task}
@@ -122,7 +122,7 @@ class TaskForm extends Component {
 						value={expert_collaborator_fullname}
 						addonAfter={<EllipsisOutlined onClick={this.handleShowCollaborators}/>}
 					/>
-				</div>
+				</div>*/}
 				<div className='dp-meta-task__form-label-container'>
 					<label className='dp-meta-task__form-label'>Процент выполнения</label>
 					<InputNumber
