@@ -32,6 +32,20 @@
 
 	var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
 
+	function isAccessToAssessment(stopHireDate, assessmentAppraiseId) {
+		if (
+				curUser.hire_date <= stopHireDate &&
+				curUser.current_state != 'Декретный' &&
+				curUser.current_state != 'Женщинам дети до 1,5' &&
+				curUser.current_state != 'Уход 1,5' &&
+				curUser.current_state != 'Уход до 3'
+			) {
+			return true;
+		}
+
+		return false;
+	}
+
 	function post_Meta(queryObjects) {
 
 		function getConditions(
@@ -147,7 +161,8 @@
 		}
 
 		var systemSettings = Utils.getSystemSettings(assessmentAppraiseId);
-		if (curUser.hire_date > systemSettings.TopElem.stop_hire_date) {
+		var isAccess = isAccessToAssessment(systemSettings.TopElem.stop_hire_date, assessmentAppraiseId);
+		if (!isAccess) {
 			return Utils.setSuccess({
 				hasPa: false,
 				shouldHasPa: false
@@ -301,7 +316,8 @@
 
 			var userDoc = OpenDoc(UrlFromDocID(Int(userID)));
 
-			if (userDoc.TopElem.hire_date > systemSettings.TopElem.stop_hire_date) {
+			var isAccess = isAccessToAssessment(systemSettings.TopElem.stop_hire_date, assessmentAppraiseId);
+			if (!isAccess) {
 				user.shouldHasPa = false;
 
 				return Utils.setSuccess({

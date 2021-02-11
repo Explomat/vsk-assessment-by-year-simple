@@ -161,7 +161,16 @@ const metaReducer = (state = {
 			});
 
 			const countChecked = comps.filter(c => c.checked).length;
-			const result = countChecked > state.ui.maxCountCompetencesForSelected ? state.competences : comps;
+			let result = countChecked > state.ui.maxCountCompetencesForSelected ? state.competences : comps;
+			/*result = result.map(c => {
+				c.themes = c.themes.map(t => {
+					return {
+						...t,
+						checked: false
+					}
+				});
+				return c;
+			});*/
 			
 			return {
 				...state,

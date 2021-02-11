@@ -88,7 +88,7 @@ function _setComputedFields(dpDoc) {
 	//alert('g_1111111111111');
 	var urole = User.getRole(curUserID, dpDoc.DocID, dpDoc);
 	//alert('g_222222222222222');
-	//alert('urole: ' + urole);
+	alert('urole: ' + urole);
 	//alert('_3');
 	var isEditDp = isAllowEditDp(dpDoc, currentStep);
 	//alert('isEditDp: ' + tools.object_to_text(isEditDp, 'json'));
@@ -102,12 +102,15 @@ function _setComputedFields(dpDoc) {
 	//alert('curMainStepNumber: ' + curMainStepNumber);
 
 	var uactions = User.getActionsByRole(urole, currentStep.idp_step_id);
+	var isUpdateAction = ArrayOptFind(uactions, 'This == \'update\'') != undefined;
+	var isRemoveAction = ArrayOptFind(uactions, 'This == \'remove\'') != undefined;
+	var isAddAction = ArrayOptFind(uactions, 'This == \'add\'') != undefined;
 	//alert('uactions:' + tools.object_to_text(uactions, 'json'));
 
 	var _isUser = isUser(dpDoc, urole);
-	//alert('_isUser: ' + _isUser);
+	alert('_isUser: ' + _isUser);
 	var _isManager = isManager(urole);
-	//alert('_isManager: ' + _isManager);
+	alert('_isManager: ' + _isManager);
 
 	//  последний общий этап
 	var lsmt = Step.getLastMainStep();
@@ -142,17 +145,18 @@ function _setComputedFields(dpDoc) {
 		allow_edit_expected_result: isEditTasks && isEditDp && curMainStepNumber == 0, // ожидаемый результат
 		allow_edit_achieved_result: isEditTasks && isEditDp && curMainStepNumber > 0 && _isUser, // Достигнутый результат
 		allow_view_tasks:  isTop1 || (isTop3 && curMainStepNumber > 1),
-		allow_edit_tasks: isTop1 || (isTop3 && curMainStepNumber > 1),
-		allow_add_tasks: (isTop1 && _isUser && curMainStepNumber == 0) || (isTop3 && _isUser && curMainStepNumber > 1),
-		allow_remove_tasks: (isTop1 && _isUser && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 1 && _isUser),
-		allow_edit_fields_task: (isTop1 && curMainStepNumber == 0) || (isTop3 && curMainStepNumber > 1),
-		allow_edit_percent_task: (isTop1 && curMainStepNumber > 1 && _isUser) || (isTop3 && curMainStepNumber > 1)
+		allow_edit_tasks: (isEditTasks  && isEditDp && isTop1) || (isEditTasks && isTop3 && curMainStepNumber > 1),
+		allow_add_tasks: ((isEditTasks && isEditDp && isTop1 && _isUser && curMainStepNumber == 0) || (isEditTasks && isTop3 && _isUser && curMainStepNumber > 1) && isAddAction),
+		allow_remove_tasks: ((isEditTasks && isEditDp && isTop1 && _isUser && curMainStepNumber == 0) || (isEditTasks && isTop3 && curMainStepNumber > 1 && _isUser) && isRemoveAction),
+		allow_edit_fields_task: ((isEditTasks && isEditDp && isTop1 && curMainStepNumber == 0) || (isEditTasks && isTop3 && curMainStepNumber > 1) && isUpdateAction),
+		allow_edit_percent_task: ((isEditTasks && isEditDp && isTop1 && curMainStepNumber > 0 && _isUser) || (isEditTasks && isTop3 && curMainStepNumber > 0) && isUpdateAction)
 	}
 }
 
 
 function get_Idps(queryObjects) {
 	var assessmentAppraiseId = queryObjects.GetOptProperty('assessment_appraise_id');
+	var dpId = queryObjects.GetOptProperty('development_plan_id');
 	var userId = queryObjects.GetOptProperty('user_id');
 	userId = userId == undefined ? curUserID : userId;
 
@@ -160,18 +164,27 @@ function get_Idps(queryObjects) {
 		return Utils.setError('Не указана процедура оценки');
 	}
 
-	var dp = ArrayOptFirstElem(XQuery("sql: \n\
-		select id \n\
-		from development_plans \n\
-		where \n\
-			person_id = " + userId + " \n\
-			and assessment_appraise_id = " + assessmentAppraiseId)
-	);
+	var dp = null;
+	if (dpId == undefined && userId != undefined) {
+		dp = ArrayOptFirstElem(XQuery("sql: \n\
+			select id \n\
+			from development_plans \n\
+			where \n\
+				person_id = " + userId + " \n\
+				and assessment_appraise_id = " + assessmentAppraiseId)
+		);
+
+		if (dp != undefined) {
+			dpId = dp.id;
+		}
+	}
+
+	
 
 	try {
-		if (dp != undefined) {
-			var card = Dp.getObject(dp.id, assessmentAppraiseId);
-			var dpDoc = OpenDoc(UrlFromDocID(Int(dp.id)));
+		if (dpId != undefined) {
+			var card = Dp.getObject(dpId, assessmentAppraiseId);
+			var dpDoc = OpenDoc(UrlFromDocID(Int(dpId)));
 			var meta = _setComputedFields(dpDoc);
 			return Utils.setSuccess({
 				card: card,

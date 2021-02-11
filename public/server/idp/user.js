@@ -246,13 +246,13 @@ function getRole(userId, dpId, dpdoc) {
 				where \n\
 					dps.id = " + dpId + " \n\
 					and ( \n\
-						(dps.expert_person_id = " + epId + " and dps.person_id = " + pId + ") \n\
+						(dps.expert_person_id = " + userId + " and dps.person_id = " + pId + ") \n\
 						or ( \n\
 							select count(ads.id) \n\
 							from cc_assessment_delegates ads \n\
 							where \n\
 								ads.boss_delegate_id = " + epId + " \n\
-								and ads.[user_id] = " + pId + " \n\
+								and ads.[user_id] = " + userId + " \n\
 								and ads.assessment_appraise_id = " + apId + " \n\
 						) > 0 \n\
 					) \n\

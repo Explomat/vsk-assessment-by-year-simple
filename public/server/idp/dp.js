@@ -8,6 +8,56 @@ function getFirstStateId() {
 	return s == undefined ? null : s.id;
 }
 
+function calculateMainSteps(dpId, startDate) {
+	var Step = OpenCodeLib('./step.js');
+	DropFormsCache('./step.js');
+
+	var mainSteps = Step.getMainSteps();
+	var result = [];
+
+	for (s in mainSteps) {
+		lastStep = Step.getLastStepByMainStepId(dpId, Int(s.id));
+
+		sobj = {
+			id: String(s.id),
+			name: String(s.name),
+			duration_months: String(s.duration_months),
+			order_number: String(s.order_number),
+			date: StrXmlDate(Date(startDate)),
+			is_approved: (lastStep != undefined)
+		}
+
+		if (OptInt(s.duration_months) == 0) {
+			sobj.date = StrXmlDate(Date(startDate));
+		} else {
+			d = OptInt(s.duration_months);
+			if (d != undefined) {
+				_date = new Date(startDate);
+				nextMonth = (Month(_date) + d) % 12;
+				nextMonth = nextMonth == 0 ? 12 : nextMonth;
+				nextDay = Day(_date);
+				nextYear = Year(_date);
+
+				if ((Month(_date) + d) > 12) {
+					nextYear = nextYear + 1;
+				}
+
+				if (nextMonth == 2 && nextDay > 28) {
+					nextDay = 28;
+					if ((nextYear % 4) == 0) { //високосный
+						nextDay = 29;
+					}
+				}
+
+				sobj.date = StrXmlDate(Date(nextDay + '.' + nextMonth + '.' + nextYear));
+			}
+		}
+		result.push(sobj);
+	}
+
+	return result;
+}
+
 function update(dpId, comps, assessmentAppraiseId) {
 	function findItemsForRemove(firstArr, secondArr, firstKey, secondKey) {
 		var rarr = [];
@@ -25,7 +75,9 @@ function update(dpId, comps, assessmentAppraiseId) {
 	var dpDoc = OpenDoc(UrlFromDocID(Int(dpId)));
 
 	// удаляем задачи только задачи, у которых удалили компетенцию
-	var rcomps = findItemsForRemove(comps, ArrayDirect(dpDoc.TopElem.competences), 'id', 'competence_id');
+	//alert('comps: ' + tools.object_to_text(comps, 'json'));
+	var rcomps = findItemsForRemove(ArrayDirect(dpDoc.TopElem.competences), comps, 'competence_id', 'id');
+	//alert('rcomps: ' + tools.object_to_text(rcomps, 'json'));
 	for (el in rcomps) {
 		tsq = XQuery("sql: \n\
 			select its.id \n\
@@ -138,12 +190,15 @@ function create(userId, comps, assessmentAppraiseId) {
 	dpDoc.Save();
 
 	//главный документ
+	var aaDoc = OpenDoc(UrlFromDocID(Int(assessmentAppraiseId)));
+	var msteps = calculateMainSteps(dpDoc.DocID, aaDoc.TopElem.start_date);
+
 	var userDoc = OpenDoc(UrlFromDocID(Int(userId)));
 	var mDoc = tools.new_doc_by_name('cc_idp_main');
 	mDoc.TopElem.fullname = userDoc.TopElem.fullname;
 	mDoc.TopElem.development_plan_id = dpDoc.DocID;
-	mDoc.TopElem.create_date = new Date();
-	mDoc.TopElem.plan_date = calculatePlanDate(new Date(), 3);
+	mDoc.TopElem.create_date = aaDoc.TopElem.start_date;
+	mDoc.TopElem.plan_date = msteps.length > 0 ? msteps[msteps.length - 1].date : null;
 	mDoc.TopElem.idp_state_id = getFirstStateId();
 	mDoc.BindToDb(DefaultDb);
 	mDoc.Save();
@@ -284,51 +339,10 @@ function getObject(dpId, assessmentAppraiseId) {
 
 		// руководители
 		obj.managers = User.getManagers(qdp.person_id, assessmentAppraiseId);
+		
 
 		// общие этапы
-		var mainSteps = Step.getMainSteps();
-		var startDate = obj.create_date;
-		//alert('startDate: ' + startDate);
-
-		for (s in mainSteps) {
-			lastStep = Step.getLastStepByMainStepId(dpId, Int(s.id));
-
-			sobj = {
-				id: String(s.id),
-				name: String(s.name),
-				duration_months: String(s.duration_months),
-				order_number: String(s.order_number),
-				date: StrXmlDate(Date(startDate)),
-				is_approved: (lastStep != undefined)
-			}
-
-			if (OptInt(s.duration_months) == 0) {
-				sobj.date = StrXmlDate(Date(startDate));
-			} else {
-				d = OptInt(s.duration_months);
-				if (d != undefined) {
-					_date = new Date(startDate);
-					nextMonth = (Month(_date) + d) % 12;
-					nextMonth = nextMonth == 0 ? 12 : nextMonth;
-					nextDay = Day(_date);
-					nextYear = Year(_date);
-
-					if ((Month(_date) + d) > 12) {
-						nextYear = nextYear + 1;
-					}
-
-					if (nextMonth == 2 && nextDay > 28) {
-						nextDay = 28;
-						if ((nextYear % 4) == 0) { //високосный
-							nextDay = 29;
-						}
-					}
-
-					sobj.date = StrXmlDate(Date(nextDay + '.' + nextMonth + '.' + nextYear));
-				}
-			}
-			obj.main_steps.push(sobj);
-		}
+		obj.main_steps = calculateMainSteps(dpId, obj.create_date);
 		//
 
 

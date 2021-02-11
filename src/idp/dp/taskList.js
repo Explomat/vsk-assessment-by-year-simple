@@ -65,11 +65,11 @@ class TaskList extends Component {
 					dataIndex: 'resut_form',
 					key: 'resut_form'
 				},
-				{
+				/*{
 					title: 'Эксперт',
 					dataIndex: 'expert_collaborator_fullname',
 					key: 'expert_collaborator_fullname'
-				},
+				},*/
 				{
 					title: 'Процент выполнения',
 					dataIndex: 'percent_complete',

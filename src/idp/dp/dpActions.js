@@ -84,7 +84,7 @@ export function saveIdp(assessment_appraise_id, dp_id, user_id) {
 	}
 }
 
-export function getDp(assessment_appraise_id, user_id){
+export function getDp(assessment_appraise_id, user_id, development_plan_id){
 	return (dispatch) => {
 		dispatch(loading(true));
 
@@ -94,6 +94,10 @@ export function getDp(assessment_appraise_id, user_id){
 
 		if (user_id) {
 			obj.user_id = user_id;
+		}
+
+		if (development_plan_id) {
+			obj.development_plan_id = development_plan_id;
 		}
 
 		request('idp', 'Idps')
@@ -239,7 +243,7 @@ export function changeStep(assessment_appraise_id, action, comment) {
 				if (d.type === 'error') {
 					throw d;
 				}
-				dispatch(getUserDps(assessment_appraise_id));
+				dispatch(getDp(assessment_appraise_id, null, idp.dp.card.development_plan_id));
 				dispatch(loading(false));
 			})
 			.catch(e => {
