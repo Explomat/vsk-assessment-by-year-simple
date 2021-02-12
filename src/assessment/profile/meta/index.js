@@ -96,7 +96,7 @@ class Meta extends Component {
 						</Card.Content>
 						<Card.Content extra>
 							<Button style={{float: 'right'}} onClick={this.handleShowConfirm} primary disabled={!meta.hasChecked}>Далее</Button>
-							<Button style={{float: 'right'}} onClick={() => window.location.reload(true)}>Вернуться к выбору поезда</Button>
+							<Button style={{float: 'right'}} onClick={() => window.location.reload(true)}>Сбросить настройки выбора</Button>
 						</Card.Content>
 					</Card>
 					<Confirm

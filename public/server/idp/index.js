@@ -1,25 +1,27 @@
 <%
 
-var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/utils.js');
-DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/utils.js');
+var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/utils.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/utils.js');
 
-var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/user.js');
-DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/user.js');
+var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/user.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/user.js');
 
-var Dp = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/dp.js');
-DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/dp.js');
+var Dp = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/dp.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/dp.js');
 
-var Task = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/task.js');
-DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/task.js');
+var Task = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/task.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/task.js');
 
-var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/assessment.js');
-DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/assessment.js');
+var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/assessment.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/assessment.js');
 
-var Step = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/step.js');
-DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/idp/step.js');
+var Step = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/step.js');
+DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/step.js');
 
+// 6928287565866297168 - prod
+// 6790263731625424310 - test
 
-var st = Utils.getSystemSettings(6790263731625424310);
+var st = Utils.getSystemSettings(6928287565866297168);
 var curUserID = OptInt(st.TopElem.cur_user_id);
 
 //var curUserID = 6711785032659205612; // me test

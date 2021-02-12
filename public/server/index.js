@@ -1,24 +1,27 @@
 <%
-	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/utils.js');
+	var Utils = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/utils.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/utils.js');
 
-	var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/user.js');
+	var User = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/user.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/user.js');
 
-	var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/assessment.js');
+	var Assessment = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/assessment.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/assessment.js');
 
-	var Report = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/report.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/report.js');
+	var Report = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/report.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/report.js');
 
-	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/settings.js');
+	var Settings = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/settings.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/settings.js');
 
-	var Lists = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
-	DropFormsCache('x-local://wt/web/vsk/portal/assessment_by_quarter/server/lists.js');
+	var Lists = OpenCodeLib('x-local://wt/web/vsk/portal/assessment_ver2/server/lists.js');
+	DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/lists.js');
 
 
-	var st = Utils.getSystemSettings(6790263731625424310);
+	// 6928287565866297168 - prod
+	// 6790263731625424310 - test
+
+	var st = Utils.getSystemSettings(6928287565866297168);
 	var curUserID = OptInt(st.TopElem.cur_user_id); //6711785032659205612;
 
 	//var curUserID = 6711785032659205612; // me test
