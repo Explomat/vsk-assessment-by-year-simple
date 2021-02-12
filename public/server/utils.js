@@ -15,8 +15,8 @@ function toJSON(data) {
 }
 
 function log(message) {
-	EnableLog('assessment');
-	LogEvent('assessment', message);
+	EnableLog('assessment_idp');
+	LogEvent('assessment_idp', message);
 }
 
 function setMessage(type, message) {

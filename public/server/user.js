@@ -367,12 +367,12 @@ function getUser(userId, assessmentAppraiseId, stopHireDate) {
 					select count(*) as [count] \n\
 					from func_managers fms \n\
 					left join collaborators c on c.id = fms.[object_id] \n\
-					left join assessment_plans aps on aps.person_id = c.id \n\
+					left join assessment_plans aps on (aps.person_id = c.id and aps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 					left join cc_assessment_delegates ccads on (ccads.user_id = c.id and ccads.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 					--left join pas ps on (ps.person_id = aps.person_id and ps.expert_person_id = aps.boss_id and ps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 					--left join pa p on p.id = ps.id \n\
 					left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
-					left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
+					--left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
 					where \n\
 						convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
 						and ( \n\
@@ -393,10 +393,10 @@ function getUser(userId, assessmentAppraiseId, stopHireDate) {
 								) \n\
 							) \n\
 							or ccads.boss_delegate_id = " + userId + " \n\
-							or ( \n\
-								ccaa.[action] in ('view') \n\
-								and ccaa.object_type = 'pa' \n\
-							) \n\
+							--or ( \n\
+							--	ccaa.[action] in ('view') \n\
+							--	and ccaa.object_type = 'pa' \n\
+							--) \n\
 							or ( \n\
 								aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 								and aps.boss_id = " + userId + " \n\
@@ -409,6 +409,7 @@ function getUser(userId, assessmentAppraiseId, stopHireDate) {
 		left join competence_blocks cbs on cbs.id = ccams.competence_block_id \n\
 		left join competence_blocks cbs_parent on cbs_parent.id = cbs.parent_object_id";
 
+	//alert('getUser: ' + q);
 	var col = ArrayOptFirstElem(XQuery(q));
 	if (col != undefined) {
 		return {
@@ -450,12 +451,12 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 						----ps.overall \n\
 					from func_managers fms \n\
 					left join collaborators c on c.id = fms.[object_id] \n\
-					left join assessment_plans aps on aps.person_id = c.id \n\
+					left join assessment_plans aps on (aps.person_id = c.id and aps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 					left join cc_assessment_delegates ccads on (ccads.user_id = c.id and ccads.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 					--left join pas ps on (ps.person_id = aps.person_id and ps.expert_person_id = aps.boss_id and ps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 					--left join pa p on p.id = ps.id \n\
 					left join cc_assessment_moderators ccam on ccam.user_id = " + userId + " \n\
-					left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
+					--left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
 					where \n\
 						c.fullname like '%'+@s+'%' \n\
 						and convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
@@ -477,10 +478,10 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 								) \n\
 							) \n\
 							or ccads.boss_delegate_id = " + userId + " \n\
-							or ( \n\
-								ccaa.[action] in ('view') \n\
-								and ccaa.object_type = 'pa' \n\
-							) \n\
+							--or ( \n\
+							--	ccaa.[action] in ('view') \n\
+							--	and ccaa.object_type = 'pa' \n\
+							--) \n\
 							or ( \n\
 								aps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 								and aps.boss_id = " + userId + " \n\
@@ -493,7 +494,7 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 				d.[row_number] > " + minRow + " and d.[row_number] <= " + maxRow + " \n\
 			order by d.fullname asc";
 
-		//alert(qsubs);
+		//alert('getSubordinates: ' + qsubs);
 		return XQuery(qsubs);
 	}
 
@@ -519,6 +520,7 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 					ps.assessment_plan_id = " + s.assessment_plan_id + " \n\
 					and ps.person_id = " + s.id + " \n\
 					and ps.expert_person_id = " + s.id + " \n\
+					and ps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
 			"));
 
 			/*alert('s.assessment_plan_id: ' + s.assessment_plan_id);

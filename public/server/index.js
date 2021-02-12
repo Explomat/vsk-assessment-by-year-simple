@@ -407,20 +407,10 @@
 			var curPaCard = Assessment.update(Int(paId), _competences, overall, 4);
 
 			Assessment.complete(paId, assessmentAppraiseId);
-			var bossId = User.getAssessmentBossId(curUserID, assessmentAppraiseId);
+			//var bossId = User.getAssessmentBossId(curUserID, assessmentAppraiseId);
 
-			if (bossId != undefined) {
-				var objToSend = tools.object_to_text({
-					assessmentAppraiseId: assessmentAppraiseId
-				}, 'json');
-				Utils.notificate('oc_4', bossId, curUserID, objToSend);
-
-				objToSend = tools.object_to_text({
-					assessmentAppraiseId: assessmentAppraiseId
-				}, 'json');
-				Utils.notificate('oc_5', curUserID, bossId, objToSend);
-			}
-
+			var bossFullname = curPaCard.TopElem.expert_person_id.OptForeignElem.fullname;
+			Utils.notificate('ver2_oc_5', curPaCard.TopElem.person_id, assessmentAppraiseId, bossFullname);
 			return Utils.setSuccess({ step: 4 });
 		} catch(e) {
 			return Utils.setError(e);
@@ -448,11 +438,7 @@
 			var curPaCard = Assessment.update(Int(paId), _competences, overall, 2);
 			//оценка руководителя
 			var docManager = Assessment.createBoss(Int(paId), assessmentAppraiseId);
-
-			/*var objToSend = tools.object_to_text({
-				assessmentAppraiseId: assessmentAppraiseId
-			}, 'json');
-			Utils.notificate('oc_2', docManager.TopElem.expert_person_id, curUserID, objToSend);*/
+			Utils.notificate('ver2_oc_4', docManager.TopElem.expert_person_id, assessmentAppraiseId, curUser.fullname);
 
 		} catch(e){ return Utils.setError(e); }
 
