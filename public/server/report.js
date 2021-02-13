@@ -62,12 +62,12 @@ function create(userID, _rules, assessmentAppraiseId) {
 	}
 
 	function colorByMark(mark, __rules){
-		var c = ArrayOptFind(__rules, "This.scale == '" + mark + "'");
+		var c = ArrayOptFind(__rules, "String(This.scale) == '" + String(mark) + "'");
 		return c == undefined ? c : c.color;
 	}
 
 	function markByPercent(percent, __rules){
-		var c = ArrayOptFind(__rules, "This.percent == '" + percent + "'");
+		var c = ArrayOptFind(__rules, "String(This.percent) == '" + String(percent) + "'");
 		return c == undefined ? c : c.scale;
 	}
 
