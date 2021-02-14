@@ -29,12 +29,12 @@ const isCompetenceCompleted = (competenceId, props) => {
 	return f.length === 0;*/
 }
 
-const isCompetencesCompleted = (props, pa) => {
-	if (!pa) {
+const isCompetencesCompleted = (props, paId) => {
+	if (!paId) {
 		return false;
 	}
 
-	const competences = Object.keys(props.competences).filter(c => props.competences[c].pa_id == pa.id);
+	const competences = Object.keys(props.competences).filter(c => props.competences[c].pa_id == paId);
 
 	//const { competences } = props;
 	//const ids = Object.keys(competences);

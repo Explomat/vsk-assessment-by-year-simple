@@ -90,7 +90,7 @@ class Profile extends Component {
 		} = this.props;
 
 		const pasLen = assessment.pas.length;
-		const isCompleted = isCompetencesCompleted(this.props, curPa);
+		const isCompleted = isCompetencesCompleted(this.props, meta.curPaId);
 		const { isShowInstruction, curPage } = this.state;
 		return (
 			<div className='assessment-profile'>

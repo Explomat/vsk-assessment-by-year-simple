@@ -21,7 +21,7 @@ DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/step.js')
 // 6928287565866297168 - prod
 // 6790263731625424310 - test
 
-var st = Utils.getSystemSettings(6790263731625424310);
+var st = Utils.getSystemSettings(6928287565866297168);
 var curUserID = OptInt(st.TopElem.cur_user_id);
 
 //var curUserID = 6711785032659205612; // me test

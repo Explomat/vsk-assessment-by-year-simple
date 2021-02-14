@@ -84,7 +84,7 @@ function update(dpId, comps, assessmentAppraiseId) {
 			from cc_idp_tasks its \n\
 			where \n\
 				its.development_plan_id = " + dpId + " \n\
-				and its.competence_id = " + el.competence_id + " \n\
+				and its.competence_id = " + el.id + " \n\
 		");
 
 		for (iel in tsq) {

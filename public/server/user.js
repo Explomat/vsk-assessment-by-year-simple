@@ -459,6 +459,7 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 					--left join cc_assessment_actions ccaa on ccaa.role_id = ccam.role_id \n\
 					where \n\
 						c.fullname like '%'+@s+'%' \n\
+						and c.is_dismiss = 0 \n\
 						and convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
 						and ( \n\
 							( \n\
