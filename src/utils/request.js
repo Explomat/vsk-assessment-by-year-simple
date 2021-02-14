@@ -52,6 +52,7 @@ const request = (appName, actionName, urlParams = {}) => {
 		get: (params = {}, config) => {
 			const url = new URL(_url);
 			Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+			url.searchParams.append('r', Date.now());
 			return fetch(url, config);
 		},
 		post: (data = {}, config) => {

@@ -138,7 +138,7 @@ function _setComputedFields(dpDoc) {
 	//alert('_isManager: ' + _isManager);
 
 	return {
-		actions: (curMainStepNumber > 0 ? uactions : []),
+		actions: uactions,
 		is_show_assessments: isEditTasks && curMainStepNumber > 0,
 		allow_add_themes: _isManager && (curMainStepNumber == 0),
 		allow_edit_themes: _isManager && (curMainStepNumber == 0),

@@ -56,6 +56,13 @@ class Dp extends Component {
 		getDp(match.params.id, userId);
 	}
 
+	componentDidUpdate(prevProps) {
+		const { match, getDp, user } = this.props;
+		if (user && prevProps.user && user.id != prevProps.user.id) {
+			getDp(match.params.id, user.id);
+		}
+	}
+
 	handleUpdate() {
 		const { match, saveIdp, card, user } = this.props;
 		const userId = user ? user.id : null;

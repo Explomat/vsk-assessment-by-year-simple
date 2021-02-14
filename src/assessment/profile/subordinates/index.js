@@ -10,6 +10,7 @@ import { loadData, subordinateChecked, changeSearch, searchSubordinates, delegat
 import { find } from 'lodash';
 
 import './subordinates.css';
+var curSubordinateId = null;
 
 class Subordinates extends Component {
 
@@ -21,6 +22,8 @@ class Subordinates extends Component {
 			isManagerCanNotEstimate: false,
 			curSubordinate: {}
 		}
+
+		this.curSubordinateId = null;
 
 		this.handleDelegateUser = this.handleDelegateUser.bind(this);
 		this.handleChangeSearch = this.handleChangeSearch.bind(this);
@@ -81,9 +84,11 @@ class Subordinates extends Component {
 	onShowSubordinate(subordinateId){
 		const { subordinates } = this.props;
 		const subordinate = find(subordinates, { id: subordinateId });
+
+		curSubordinateId = subordinateId;
 		if (subordinate){
 			if (subordinate.assessment.step === assessmentSteps.first){
-				return this.setState({
+				this.setState({
 					isManagerCanNotEstimate: true,
 					curSubordinate: subordinate
 				});
@@ -98,7 +103,7 @@ class Subordinates extends Component {
 
 	render(){
 		const { ui, meta, subordinates, delegate, checkedSubordinates } = this.props;
-		const { isShowDelegate, isShowSubordinate, isManagerCanNotEstimate, curSubordinate, subordinateId } = this.state;
+		const { isShowDelegate, isShowSubordinate, isManagerCanNotEstimate, curSubordinate } = this.state;
 
 		if (ui.isLoading) {
 			return (
@@ -153,7 +158,7 @@ class Subordinates extends Component {
 				{isShowSubordinate && (
 					<ViewSubordinate
 						onClose={this.onShowSubordinate}
-						subordinateId={subordinateId}
+						subordinateId={curSubordinateId}
 					/>)
 				}
 				{isManagerCanNotEstimate && (

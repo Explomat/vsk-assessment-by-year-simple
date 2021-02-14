@@ -17,20 +17,20 @@ class Main extends Component {
 	}
 
 	componentDidMount(){
-		const { match, loadData } = this.props;
-		loadData(this.props.subordinateId, match.params.id);
+		const { match, loadData, subordinateId } = this.props;
+		loadData(subordinateId, match.params.id);
 	}
 
 	handleSave() {
-		const { onThirdStep, onUpdateIdp, onClose, match } = this.props;
+		const { onThirdStep, onUpdateIdp, onClose, match, subordinateId } = this.props;
 		onThirdStep(match.params.id);
 
 		onUpdateIdp(match.params.id);
-		onClose();
+		onClose(subordinateId);
 	}
 
 	render(){
-		const { ui, assessment, onClose, meta } = this.props;
+		const { ui, assessment, onClose, meta, subordinateId } = this.props;
 		if (ui.isLoading) {
 			return (
 				<Dimmer active inverted>
@@ -42,7 +42,7 @@ class Main extends Component {
 		const isCompleted = isCompetencesCompleted(this.props, meta.curPaId);
 
 		return(
-			<Modal size='large' className='assessment-subordinate' open closeIcon onClose={onClose} style={{
+			<Modal size='large' className='assessment-subordinate' open closeIcon onClose={() => onClose(subordinateId)} style={{
 				position: 'relative'
 			}}>
 				<Modal.Header>Оценка подчиненного</Modal.Header>

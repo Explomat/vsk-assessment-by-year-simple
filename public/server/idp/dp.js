@@ -218,35 +218,11 @@ function create(userId, comps, assessmentAppraiseId) {
 		idp_main_step_id: firstMainStepId
 	});
 
-	var nextStep = Step.getNextStepById(firstStepId);
+	/*var nextStep = Step.getNextStepById(firstStepId);
 	Step.create(tfDoc.DocID, {
 		next_collaborator_id: manager.id,
 		idp_step_id: (nextStep != undefined ? nextStep.id : null)
-	});
-
-/*	var tfDoc = tools.new_doc_by_name('cc_idp_main_flow');
-	tfDoc.TopElem.idp_main_id = mDoc.DocID;
-	tfDoc.TopElem.current_collaborator_id = userId;
-	tfDoc.TopElem.next_collaborator_id = userId;
-	tfDoc.TopElem.idp_step_id = getFirstStepId();
-	tfDoc.TopElem.idp_main_step_id = firstMainStepId;
-	tfDoc.TopElem.created_date = new Date();
-	tfDoc.TopElem.is_active_step = false;
-	tfDoc.BindToDb(DefaultDb);
-	tfDoc.Save();
-
-	// следующий этап, перевод на рук-ля
-	tfDoc = tools.new_doc_by_name('cc_idp_main_flow');
-	tfDoc.TopElem.idp_main_id = mDoc.DocID;
-	tfDoc.TopElem.current_collaborator_id = userId;
-	tfDoc.TopElem.next_collaborator_id = manager.id;
-	tfDoc.TopElem.idp_step_id = getFirstStepId();
-	tfDoc.TopElem.idp_main_step_id = firstMainStepId;
-	tfDoc.TopElem.created_date = new Date();
-	tfDoc.TopElem.is_active_step = true;
-	tfDoc.BindToDb(DefaultDb);
-	tfDoc.Save();*/
-
+	});*/
 
 	for (c in comps) {
 		compChild = dpDoc.TopElem.competences.AddChild();

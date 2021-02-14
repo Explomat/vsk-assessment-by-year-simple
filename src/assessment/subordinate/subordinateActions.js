@@ -181,10 +181,10 @@ export function changeStepI(assessment_appraise_id, action, comment) {
 
 export function updateIdp(assessmentId) {
 	return (dispatch, getState) => {
-		dispatch(changeStepI(assessmentId, 'approve')).then(() => {
+		/*dispatch(changeStepI(assessmentId, 'approve')).then(() => {
 			dispatch(nextMainStep(assessmentId));
-		});
-		
+		});*/
+		dispatch(nextMainStep(assessmentId));
 	}
 }
 
