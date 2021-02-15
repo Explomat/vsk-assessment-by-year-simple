@@ -21,8 +21,8 @@
 	// 6928287565866297168 - prod
 	// 6790263731625424310 - test
 
-	var st = Utils.getSystemSettings(6928287565866297168);
-	var curUserID = OptInt(st.TopElem.cur_user_id); //6711785032659205612;
+	//var st = Utils.getSystemSettings(6928287565866297168);
+	//var curUserID = OptInt(st.TopElem.cur_user_id); //6711785032659205612;
 
 	//var curUserID = 6711785032659205612; // me test
 	//var curUserID = 6719948502038810952; // volkov test
@@ -33,7 +33,7 @@
 	//var curUserID = 6148914691236517121; // user prod
 	//var curUserID = 6605157354988654063; // пичугина prod
 
-	var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
+	//var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
 
 	function isAccessToAssessment(stopHireDate, assessmentAppraiseId) {
 		if (
@@ -177,17 +177,17 @@
 			var blocks = bsettings.blocks;
 
 			var gkBs = User.getBlockSubByUserId(curUserID, blocks.gk, assessmentAppraiseId);
-			alert('gkBs:' + tools.object_to_text(gkBs, 'json'));
+			//alert('gkBs:' + tools.object_to_text(gkBs, 'json'));
 			var topBg = User.getBlockGroupByUserId(curUserID, blocks.top, assessmentAppraiseId);
-			alert('topBg:' + tools.object_to_text(topBg, 'json'));
+			//alert('topBg:' + tools.object_to_text(topBg, 'json'));
 			var fscBs = User.getBlockSubByUserId(curUserID, blocks.federal_service_center, assessmentAppraiseId);
-			alert('fscBs:' + tools.object_to_text(fscBs, 'json'));
+			//alert('fscBs:' + tools.object_to_text(fscBs, 'json'));
 			var dmBs = User.getBlockSubByUserId(curUserID, blocks.division_moscow, assessmentAppraiseId);
-			alert('dmBs:' + tools.object_to_text(dmBs, 'json'));
+			//alert('dmBs:' + tools.object_to_text(dmBs, 'json'));
 			var aBs = User.getBlockSubByUserId(curUserID, blocks.affiliate, assessmentAppraiseId);
-			alert('aBs:' + tools.object_to_text(aBs, 'json'));
+			//alert('aBs:' + tools.object_to_text(aBs, 'json'));
 			var amBs = User.getBlockSubByUserId(curUserID, blocks.affiliate_manager, assessmentAppraiseId);
-			alert('amBs:' + tools.object_to_text(amBs, 'json'));
+			//alert('amBs:' + tools.object_to_text(amBs, 'json'));
 
 			var cblock = null;
 			var isNeedAskTrain = false;
@@ -410,7 +410,7 @@
 			//var bossId = User.getAssessmentBossId(curUserID, assessmentAppraiseId);
 
 			var bossFullname = curPaCard.TopElem.expert_person_id.OptForeignElem.fullname;
-			//Utils.notificate('ver2_oc_5', curPaCard.TopElem.person_id, assessmentAppraiseId, bossFullname);
+			Utils.notificate('ver2_oc_5', curPaCard.TopElem.person_id, assessmentAppraiseId, bossFullname);
 			return Utils.setSuccess({ step: 4 });
 		} catch(e) {
 			return Utils.setError(e);
@@ -438,7 +438,7 @@
 			var curPaCard = Assessment.update(Int(paId), _competences, overall, 2);
 			//оценка руководителя
 			var docManager = Assessment.createBoss(Int(paId), assessmentAppraiseId);
-			//Utils.notificate('ver2_oc_4', docManager.TopElem.expert_person_id, assessmentAppraiseId, curUser.fullname);
+			Utils.notificate('ver2_oc_4', docManager.TopElem.expert_person_id, assessmentAppraiseId, curUser.fullname);
 
 		} catch(e){ return Utils.setError(e); }
 

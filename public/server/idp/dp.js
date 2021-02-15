@@ -203,27 +203,6 @@ function create(userId, comps, assessmentAppraiseId) {
 	mDoc.BindToDb(DefaultDb);
 	mDoc.Save();
 
-	// начальный этап
-	var firstMainStep = Step.getFirstMainStep();
-	var firstStep = Step.getFirstStep();
-
-	var firstMainStepId = firstMainStep != undefined ? firstMainStep.id : null;
-	var firstStepId = firstStep != undefined ? firstStep.id : null;
-
-	var tfDoc = Step.create(null, {
-		idp_main_id: mDoc.DocID,
-		current_collaborator_id: userId,
-		next_collaborator_id: userId,
-		idp_step_id: firstStepId,
-		idp_main_step_id: firstMainStepId
-	});
-
-	/*var nextStep = Step.getNextStepById(firstStepId);
-	Step.create(tfDoc.DocID, {
-		next_collaborator_id: manager.id,
-		idp_step_id: (nextStep != undefined ? nextStep.id : null)
-	});*/
-
 	for (c in comps) {
 		compChild = dpDoc.TopElem.competences.AddChild();
 		compChild.competence_id = c.id;

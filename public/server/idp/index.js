@@ -21,8 +21,8 @@ DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/step.js')
 // 6928287565866297168 - prod
 // 6790263731625424310 - test
 
-var st = Utils.getSystemSettings(6928287565866297168);
-var curUserID = OptInt(st.TopElem.cur_user_id);
+//var st = Utils.getSystemSettings(6928287565866297168);
+//var curUserID = OptInt(st.TopElem.cur_user_id);
 
 //var curUserID = 6711785032659205612; // me test
 //var curUserID = 6719948502038810952; // volkov test
@@ -33,27 +33,27 @@ var curUserID = OptInt(st.TopElem.cur_user_id);
 //var curUserID = 6148914691236517121; // user prod
 //var curUserID = 6605157354988654063; // пичугина prod
 
-var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
+//var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
+
+function _top(dpDoc) {
+	var userId = null;
+	if (dpDoc.TopElem.person_id == curUserID) {
+		userId = curUserID;
+	} else {
+		userId = dpDoc.TopElem.person_id;
+	}
+
+	//alert('top_userId: ' + userId);
+	var userDoc = OpenDoc(UrlFromDocID(userId));
+	var pl = userDoc.TopElem.custom_elems.ObtainChildByKey('position_level').value;
+	return pl;
+}
 
 function _setComputedFields(dpDoc) {
 	var btypes = User.roles();
 
 	function isAlowEditTasks(curStep, userRole){
 		return (Int(curStep.next_collaborator_id) == curUserID || userRole == btypes.moderator);
-	}
-
-	function top(dpDoc) {
-		var userId = null;
-		if (dpDoc.TopElem.person_id == curUserID) {
-			userId = curUserID;
-		} else {
-			userId = dpDoc.TopElem.person_id;
-		}
-
-		//alert('top_userId: ' + userId);
-		var userDoc = OpenDoc(UrlFromDocID(userId));
-		var pl = userDoc.TopElem.custom_elems.ObtainChildByKey('position_level').value;
-		return pl;
 	}
 
 	function isUser(dpDoc, userRole){
@@ -70,9 +70,16 @@ function _setComputedFields(dpDoc) {
 		var lst = Step.getLastMainStep();
 		var lstm = Step.getLastStepByMainStepId(_dpDoc.DocID, _curStep.idp_main_step_id);
 
+		/*alert('_curStep.idp_main_step_order_number: ' + _curStep.idp_main_step_order_number);
+		alert('lst.order_number: ' + lst.order_number);
+		alert('_curStep.idp_step_order_number: ' + _curStep.idp_step_order_number);
+*/
 		if (lstm == undefined) {
 			return true;
 		}
+
+		//alert('lstm.idp_step_order_number: ' + lstm.idp_step_order_number);
+		//alert('lstm.idp_step_order_number == _curStep.idp_step_order_number: ' + (lstm.idp_step_order_number == _curStep.idp_step_order_number));
 
 		if ((_curStep.idp_main_step_order_number == lst.order_number && _curStep.idp_step_order_number == lstm.idp_step_order_number)
 			|| (lstm.idp_step_order_number == _curStep.idp_step_order_number)
@@ -90,10 +97,10 @@ function _setComputedFields(dpDoc) {
 	//alert('g_1111111111111');
 	var urole = User.getRole(curUserID, dpDoc.DocID, dpDoc);
 	//alert('g_222222222222222');
-	alert('urole: ' + urole);
+	//alert('urole: ' + urole);
 	//alert('_3');
 	var isEditDp = isAllowEditDp(dpDoc, currentStep);
-	//alert('isEditDp: ' + tools.object_to_text(isEditDp, 'json'));
+	//alert('isEditDp: ' + isEditDp);
 	//alert('_6');
 	var isEditTasks = isAlowEditTasks(currentStep, urole);
 	//alert('isEditTasks: ' + tools.object_to_text(isEditTasks, 'json'));
@@ -110,9 +117,9 @@ function _setComputedFields(dpDoc) {
 	//alert('uactions:' + tools.object_to_text(uactions, 'json'));
 
 	var _isUser = isUser(dpDoc, urole);
-	alert('_isUser: ' + _isUser);
+	//alert('_isUser: ' + _isUser);
 	var _isManager = isManager(urole);
-	alert('_isManager: ' + _isManager);
+	//alert('_isManager: ' + _isManager);
 
 	//  последний общий этап
 	var lsmt = Step.getLastMainStep();
@@ -123,11 +130,11 @@ function _setComputedFields(dpDoc) {
 
 	var isLastMainStep = curMainStepNumber == lsmt.order_number;
 
-	var _top = String(top(dpDoc));
+	var top = String(_top(dpDoc));
 	//alert('_top: ' + _top);
-	var isTop1 = _top == '1';
-	var isTop2 = _top == '2';
-	var isTop3 = _top == '3';
+	var isTop1 = top == '1';
+	var isTop2 = top == '2';
+	var isTop3 = top == '3';
 
 	//alert('isTop1: ' + isTop1);
 	//alert('curMainStepNumber: ' + curMainStepNumber);
@@ -140,9 +147,9 @@ function _setComputedFields(dpDoc) {
 	return {
 		actions: uactions,
 		is_show_assessments: isEditTasks && curMainStepNumber > 0,
-		allow_add_themes: _isManager && (curMainStepNumber == 0),
-		allow_edit_themes: _isManager && (curMainStepNumber == 0),
-		allow_remove_themes: _isManager && (curMainStepNumber == 0),
+		allow_add_themes: isEditDp && _isManager && (curMainStepNumber == 0),
+		allow_edit_themes: isEditDp && _isManager && (curMainStepNumber == 0),
+		allow_remove_themes: isEditDp && _isManager && (curMainStepNumber == 0),
 		allow_edit_target: isEditTasks && isEditDp && curMainStepNumber == 0, // цель
 		allow_edit_expected_result: isEditTasks && isEditDp && curMainStepNumber == 0, // ожидаемый результат
 		allow_edit_achieved_result: isEditTasks && isEditDp && curMainStepNumber > 0 && _isUser, // Достигнутый результат
@@ -339,7 +346,39 @@ function post_Idps(queryObjects) {
 				return Utils.setError('У вас нет прав на создание');
 			}
 
-			var dpDoc = Dp.create(curUserID, comps, assessmentAppraiseId);
+			var mDoc = Dp.create(curUserID, comps, assessmentAppraiseId);
+
+			// начальный этап
+			var firstMainStep = Step.getFirstMainStep();
+			var firstStep = Step.getFirstStep();
+
+			var firstMainStepId = firstMainStep != undefined ? firstMainStep.id : null;
+			var firstStepId = firstStep != undefined ? firstStep.id : null;
+
+			var tfDoc = Step.create(null, {
+				idp_main_id: mDoc.DocID,
+				current_collaborator_id: curUserID,
+				next_collaborator_id: curUserID,
+				idp_step_id: firstStepId,
+				idp_main_step_id: firstMainStepId
+			});
+
+			var dpDoc = OpenDoc(UrlFromDocID(Int(mDoc.TopElem.development_plan_id)));
+			var top = String(_top(dpDoc));
+			var isTop1 = top == '1';
+
+			if (!isTop1) {
+				var nextStep = Step.getNextStepById(firstStepId);
+				var manager = User.getManagerForIdp(curUserID, assessmentAppraiseId);
+				if (manager == undefined) {
+					return Utils.setError('Руководитель не определен');
+				}
+
+				Step.create(tfDoc.DocID, {
+					next_collaborator_id: manager.id,
+					idp_step_id: (nextStep != undefined ? nextStep.id : null)
+				});
+			}
 			
 			/*if (isNotificate != undefined && (isNotificate || isNotificate == 'true')) {
 				Utils.notificate('idp_1', collaboratorId);
@@ -416,7 +455,7 @@ function post_changeStep(queryObjects){
 	var processSteps = Step.getProcessSteps(personFromRole, currentStep.idp_step_id, action);
 	//alert('processSteps: ' + tools.object_to_text(processSteps, 'json'))
 	
-	if (ArrayCount(processSteps) == 0){
+	if (ArrayCount(processSteps) == 0) {
 		return Utils.setError('Невозможно перевести на следующий этап. Возможно у вас нет рук-ля в штатном расписании.');
 	}
 
@@ -485,7 +524,6 @@ function post_changeStep(queryObjects){
 
 
 	var currentUserId = currentStep.next_collaborator_id;
-	//var nextUserId = Adaptation.getNextUserId(crid, processStep.next_role);
 	
 	var step = null;
 	var comment = data.HasProperty('comment') && data.GetOptProperty('comment') != 'undefined' ? data.comment : '';
@@ -498,6 +536,18 @@ function post_changeStep(queryObjects){
 			idp_step_id: processStep.next_idp_step_id
 		}
 	);
+
+	// сокращенный вариант отправки уведомлений
+	var dpDoc = OpenDoc(UrlFromDocID(Int(dpid)));
+
+	// Руководителю: Сотрудник внес развивающие задачи
+	if (curUserID != nextUserId) {
+		Utils.notificate('ver2_oc_6', nextUserId, assessmentAppraiseId, curUser.fullname);
+	} else if (curUserID == nextUserId && dpDoc.TopElem.person_id != curUserID) {
+		// Сотруднику: Руководитель утвердил развивающие задачи
+		Utils.notificate('ver2_oc_7', dpDoc.TopElem.person_id, assessmentAppraiseId, curUser.fullname);
+	}
+
 
 
 	/* отправка уведомлений
@@ -575,7 +625,7 @@ function post_nextMainStep(queryObjects) {
 
 	var dpid = queryObjects.HasProperty('development_plan_id') ? Trim(queryObjects.development_plan_id) : undefined;
 
-	if (dpid == undefined){
+	if (dpid == undefined) {
 		return Utils.setError('Не указан план развития');
 	}
 
@@ -595,8 +645,63 @@ function post_nextMainStep(queryObjects) {
 		return Utils.setError('Системная ошибка, не найдена анкета ИПР.');
 	}
 
+	// меняем этап (утверждаем) если это не ТОП1 
+	var top = String(_top(dpDoc));
+	var isTop1 = top == '1';
+
+	if (!isTop1) {
+		var action = 'approve';
+		var urole = User.getRole(curUserID, dpid);
+		var uactions = User.getActionsByRole(urole);
+
+		if (ArrayOptFind(uactions, 'This.code == \'' + action + '\'') == undefined) {
+			return Utils.setError('Действие не найдено');
+		}
+
+		var currentStep = Step.getCurrentStep(dpid);
+		var personFromRole = User.getRole(currentStep.next_collaborator_id, dpid);
+
+		//Теперь функция getProcessSteps может вернуть несколько записей. 
+		//Т.к. у  сотрудника может не быть куратора, и он должен отправить сразу руководителю.
+		//Получаем этапы, сортируем по номеру
+		var processSteps = Step.getProcessSteps(personFromRole, currentStep.idp_step_id, action);
+		//alert('processSteps: ' + tools.object_to_text(processSteps, 'json'))
+		
+		if (ArrayCount(processSteps) == 0) {
+			return Utils.setError('Невозможно перевести на следующий этап. Возможно у вас нет рук-ля в штатном расписании.');
+		}
+
+		var processStep = null;
+		var nextUserId = null;
+		for (ps in processSteps) {
+			nextUserId = Dp.getNextUserId(dpid, ps.next_idp_role_code);
+			if (nextUserId != null) {
+				processStep = ps;
+				break;
+			}
+		}
+
+		if (processStep == null || nextUserId == null){
+			return Utils.setError('Невозможно перевести на следующий этап.');
+		}
+
+		var currentUserId = currentStep.next_collaborator_id;
+		
+		var step = null;
+		var nextStep = Step.create(
+			currentStep.id,
+			{
+				current_collaborator_id: currentUserId,
+				next_collaborator_id: nextUserId,
+				comment: '',
+				idp_step_id: processStep.next_idp_step_id
+			}
+		);
+	}
+
+	// переводим на следующий общий этап
 	var idpDoc = OpenDoc(UrlFromDocID(Int(idpq.id)));
-	var currentStep = Step.getCurrentStep(dpid);
+	currentStep = Step.getCurrentStep(dpid);
 
 	var steps = Step.getSteps();
 	var mSteps = Step.getMainSteps();
@@ -613,11 +718,6 @@ function post_nextMainStep(queryObjects) {
 		if (nextMainStepIndex < msCount) {
 			//alert('post_nextMainStep__nextMainStepIndex: ' + nextMainStepIndex);
 			var nextMainStep = curMainSteps[nextMainStepIndex];
-
-			//alert('post_nextMainStep__1');
-			//alert('cr.step_id: ' + cr.step_id);
-			//alert('steps: ' + tools.object_to_text(steps, 'json'));
-			//alert('Int(currentStep.idp_step_id): ' + Int(currentStep.idp_step_id));
 			var s = ArrayOptFind(steps, 'Int(This.id) == ' + Int(currentStep.idp_step_id));
 			if (s != undefined && currentStep.idp_step_order_number == (ArrayCount(steps) - 1)) {
 				//alert('post_nextMainStep__2');
@@ -631,6 +731,10 @@ function post_nextMainStep(queryObjects) {
 							idp_main_step_id: nextMainStep.id
 						}
 					);
+
+					// Сотруднику: Руководитель утвердил развивающие задачи
+					Utils.notificate('ver2_oc_7', dpDoc.TopElem.person_id, assessmentAppraiseId, curUser.fullname);
+
 				} catch(e) { alert(e); }
 
 				return Utils.setSuccess({});
@@ -638,7 +742,7 @@ function post_nextMainStep(queryObjects) {
 		}
 	}
 
-	return Utils.setError('Невозможно перевести на слеующий общий этап');
+	return Utils.setError('Невозможно перевести на следующий общий этап');
 }
 
 function post_Tasks(queryObjects){
