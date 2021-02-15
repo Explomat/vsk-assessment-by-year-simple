@@ -1,3 +1,7 @@
+.ui.modal {
+	position: initial !important;
+}
+
 .assessment-meta__li {
 	padding: 0.75rem 1rem;
 	cursor: pointer;

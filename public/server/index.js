@@ -21,8 +21,9 @@
 	// 6928287565866297168 - prod
 	// 6790263731625424310 - test
 
-	//var st = Utils.getSystemSettings(6928287565866297168);
-	//var curUserID = OptInt(st.TopElem.cur_user_id); //6711785032659205612;
+	/*var st = Utils.getSystemSettings(6790263731625424310);
+	var curUserID = OptInt(st.TopElem.cur_user_id); //6711785032659205612;
+	var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;*/
 
 	//var curUserID = 6711785032659205612; // me test
 	//var curUserID = 6719948502038810952; // volkov test
@@ -33,9 +34,11 @@
 	//var curUserID = 6148914691236517121; // user prod
 	//var curUserID = 6605157354988654063; // пичугина prod
 
-	//var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
-
 	function isAccessToAssessment(stopHireDate, assessmentAppraiseId) {
+		/*alert('curUser.hire_date: ' + String(curUser.hire_date));
+		alert('curUser.current_state: ' + String(curUser.current_state));
+		alert('stopHireDate: ' + String(stopHireDate));*/
+
 		if (
 				curUser.hire_date <= stopHireDate &&
 				curUser.current_state != 'Декретный' &&
@@ -43,9 +46,11 @@
 				curUser.current_state != 'Уход 1,5' &&
 				curUser.current_state != 'Уход до 3'
 			) {
+			//alert('111111111111111');
 			return true;
 		}
 
+		//alert('222222222222222222');
 		return false;
 	}
 

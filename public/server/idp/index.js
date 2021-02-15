@@ -21,8 +21,9 @@ DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/step.js')
 // 6928287565866297168 - prod
 // 6790263731625424310 - test
 
-//var st = Utils.getSystemSettings(6928287565866297168);
-//var curUserID = OptInt(st.TopElem.cur_user_id);
+var st = Utils.getSystemSettings(6790263731625424310);
+var curUserID = OptInt(st.TopElem.cur_user_id);
+var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
 
 //var curUserID = 6711785032659205612; // me test
 //var curUserID = 6719948502038810952; // volkov test
@@ -32,8 +33,6 @@ DropFormsCache('x-local://wt/web/vsk/portal/assessment_ver2/server/idp/step.js')
 //var curUserID = 6770996101418848653; // user test
 //var curUserID = 6148914691236517121; // user prod
 //var curUserID = 6605157354988654063; // пичугина prod
-
-//var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;
 
 function _top(dpDoc) {
 	var userId = null;

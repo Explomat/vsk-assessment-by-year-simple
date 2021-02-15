@@ -88,7 +88,7 @@ class Meta extends Component {
 			return (
 				<div>
 					<Card fluid className='assessment-meta'>
-						<Card.Content header='Выберите, к какому каналу продаж относится ваша дирекция' />
+						<Card.Content header='Выберите свое подразделение и должность' />
 						<Card.Content>
 							<ul className='assessment-meta__root-ul'>
 								{this.renderChannels(meta.channels)}

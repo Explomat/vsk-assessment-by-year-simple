@@ -1,4 +1,4 @@
-function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excludeCollaborators) {
+п»їfunction isInSub(userId, subId, excludeSubIds, positions, excludePositions, excludeCollaborators) {
 	var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', ',');
 	var joinPositions = StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', '');
 	var joinExcludePositions = StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', '');
@@ -286,7 +286,7 @@ function getManagers(userId, assessmentAppraiseId){
 			cs.email, \n\
 			cs.position_name position, \n\
 			cs.position_parent_name department, \n\
-			'Непосредственный руководитель' boss_type_name \n\
+			'Р”РµР»РµРіРёСЂРѕРІР°РЅРёРµ РѕС†РµРЅРєРё' boss_type_name \n\
 		from collaborators cs \n\
 		inner join assessment_plans aps on aps.boss_id = cs.id \n\
 		where \n\
@@ -315,8 +315,8 @@ function getManagers(userId, assessmentAppraiseId){
 
 	var dm = ArraySelectDistinct(mq, 'This.id');
 
-	// т.к. в выборку попадают и непосредственные рук-ли и те, на которых делегировали,
-	// приходится делать этот маразм
+	// С‚.Рє. РІ РІС‹Р±РѕСЂРєСѓ РїРѕРїР°РґР°СЋС‚ Рё РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅС‹Рµ СЂСѓРє-Р»Рё Рё С‚Рµ, РЅР° РєРѕС‚РѕСЂС‹С… РґРµР»РµРіРёСЂРѕРІР°Р»Рё,
+	// РїСЂРёС…РѕРґРёС‚СЃСЏ РґРµР»Р°С‚СЊ СЌС‚РѕС‚ РјР°СЂР°Р·Рј
 	var result = [];
 	for (el in dm) {
 		obj = {
@@ -338,7 +338,7 @@ function getManagers(userId, assessmentAppraiseId){
 			"));
 
 			if (fel != undefined) {
-				obj.boss_type_name = 'Делегирование оценки';
+				obj.boss_type_name = 'Р”РµР»РµРіРёСЂРѕРІР°РЅРёРµ РѕС†РµРЅРєРё';
 			}
 		}
 
@@ -460,6 +460,8 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 					where \n\
 						c.fullname like '%'+@s+'%' \n\
 						and c.is_dismiss = 0 \n\
+						and replace(replace(replace(replace(lower(c.position_name), char(13), ''), char(10), ''), ' ', ''), '-', '') not in ('СѓР±РѕСЂС‰РёРєСЃР»СѓР¶РµР±РЅС‹Р№РїРѕРјРµС‰РµРЅРёР№','РІРѕРґРёС‚РµР»СЊ','РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹Р№РІРѕРґРёС‚РµР»СЊ','С„РёС‚РЅРµСЃС‚СЂРµРЅРµСЂ','РєРѕРјРµРЅРґР°РЅС‚','РєСѓСЂСЊРµСЂ','РґРІРѕСЂРЅРёРє','РїРѕРјРѕС‰РЅРёРєСЃРїРµС†РёР°Р»РёСЃС‚Р°') \n\
+						and isnull(c.current_state, '') not in ('Р”РµРєСЂРµС‚РЅС‹Р№', 'Р–РµРЅС‰РёРЅР°Рј РґРµС‚Рё РґРѕ 1,5', 'РЈС…РѕРґ 1,5', 'РЈС…РѕРґ РґРѕ 3') \n\
 						and convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
 						and ( \n\
 							( \n\
