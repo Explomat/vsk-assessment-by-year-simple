@@ -1,7 +1,7 @@
 ﻿function isInSub(userId, subId, excludeSubIds, positions, excludePositions, excludeCollaborators) {
 	var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', ',');
-	var joinPositions = StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', '');
-	var joinExcludePositions = StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', '');
+	var joinPositions = StrReplace(StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', ''), '-', '');
+	var joinExcludePositions = StrReplace(StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', ''), '-', '');
 	var joinExcludeCollaborators = ArrayMerge(excludeCollaborators, 'This', ',');
 
 	var q = XQuery("sql: \n\
@@ -31,8 +31,8 @@
 function isInSubs(userId, lsubs, positions, excludePositions, excludeCollaborators) {
 	//var joinSubs = ArrayMerge(ArrayUnion([subId], excludeSubIds), 'This', ',');
 	var joinSubs = ArrayMerge(lsubs, 'This', ',');
-	var joinPositions = StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', '');
-	var joinExcludePositions = StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', '');
+	var joinPositions = StrReplace(StrReplace(StrLowerCase(ArrayMerge(positions, 'This', '\',\'')), ' ', ''), '-', '');
+	var joinExcludePositions = StrReplace(StrReplace(StrLowerCase(ArrayMerge(excludePositions, 'This', '\',\'')), ' ', ''), '-', '');
 	var joinExcludeCollaborators = ArrayMerge(excludeCollaborators, 'This', ',');
 
 	var q = XQuery("sql: \n\
@@ -148,7 +148,7 @@ function getBlockSubByUserId(userId, blockCode, assessmentAppraiseId) {
 		_lsubs = ArrayExtractKeys(doc.TopElem.lsubdivisions, 'lsubdivision_id');
 		inSub = isInSubs(userId, _lsubs, _positions, _excludePositions, _excCollaborators);
 		if (inSub) {
-			alert('inSub: ' + blockCode);
+			//alert('inSub: ' + blockCode);
 			return doc;
 		}
 	}
@@ -460,9 +460,16 @@ function getSubordinates(userId, assessmentAppraiseId, stopHireDate, search, min
 					where \n\
 						c.fullname like '%'+@s+'%' \n\
 						and c.is_dismiss = 0 \n\
-						and replace(replace(replace(replace(lower(c.position_name), char(13), ''), char(10), ''), ' ', ''), '-', '') not in ('уборщикслужебныйпомещений','водитель','персональныйводитель','фитнестренер','комендант','курьер','дворник','помощникспециалиста') \n\
+						and replace(replace(replace(replace(lower(c.position_name), char(13), ''), char(10), ''), ' ', ''), '-', '') not in ('агент(юл)','агент(ип)', 'агент(фл)', 'уборщикслужебныхпомещений','водитель','персональныйводитель','фитнестренер','комендант','курьер','дворник','помощникспециалиста') \n\
 						and isnull(c.current_state, '') not in ('Декретный', 'Женщинам дети до 1,5', 'Уход 1,5', 'Уход до 3') \n\
 						and convert(date, c.hire_date, 105) < convert(date, '" + DateNewTime(stopHireDate) + "', 105) \n\
+						and c.id not in ( \n\
+							select R.p.query('exclude_collaborator_id').value('.', 'bigint') id \n\
+							from cc_assessment_settings cass \n\
+							inner join cc_assessment_setting cas on cas.id = cass.id \n\
+							cross apply cas.data.nodes('/cc_assessment_setting/exclude_collaborators/exclude_collaborator') as R(p) \n\
+							where cass.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+						) \n\
 						and ( \n\
 							( \n\
 								fms.person_id = " + userId + " \n\

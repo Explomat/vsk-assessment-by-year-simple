@@ -34,17 +34,17 @@
 	//var curUserID = 6148914691236517121; // user prod
 	//var curUserID = 6605157354988654063; // пичугина prod
 
-	function isAccessToAssessment(stopHireDate, assessmentAppraiseId) {
+	function isAccessToAssessment(curUserDocTe, stopHireDate, assessmentAppraiseId) {
 		/*alert('curUser.hire_date: ' + String(curUser.hire_date));
 		alert('curUser.current_state: ' + String(curUser.current_state));
 		alert('stopHireDate: ' + String(stopHireDate));*/
 
 		if (
-				curUser.hire_date <= stopHireDate &&
-				curUser.current_state != 'Декретный' &&
-				curUser.current_state != 'Женщинам дети до 1,5' &&
-				curUser.current_state != 'Уход 1,5' &&
-				curUser.current_state != 'Уход до 3'
+				curUserDocTe.hire_date <= stopHireDate &&
+				curUserDocTe.current_state != 'Декретный' &&
+				curUserDocTe.current_state != 'Женщинам дети до 1,5' &&
+				curUserDocTe.current_state != 'Уход 1,5' &&
+				curUserDocTe.current_state != 'Уход до 3'
 			) {
 			//alert('111111111111111');
 			return true;
@@ -169,7 +169,7 @@
 		}
 
 		var systemSettings = Utils.getSystemSettings(assessmentAppraiseId);
-		var isAccess = isAccessToAssessment(systemSettings.TopElem.stop_hire_date, assessmentAppraiseId);
+		var isAccess = isAccessToAssessment(curUser, systemSettings.TopElem.stop_hire_date, assessmentAppraiseId);
 		if (!isAccess) {
 			return Utils.setSuccess({
 				hasPa: false,
@@ -323,8 +323,7 @@
 			//alert(tools.object_to_text(_rules, 'json'));
 
 			var userDoc = OpenDoc(UrlFromDocID(Int(userID)));
-
-			var isAccess = isAccessToAssessment(systemSettings.TopElem.stop_hire_date, assessmentAppraiseId);
+			var isAccess = isAccessToAssessment(userDoc.TopElem, systemSettings.TopElem.stop_hire_date, assessmentAppraiseId);
 			if (!isAccess) {
 				user.shouldHasPa = false;
 
@@ -478,7 +477,7 @@
 				alert(e);
 			}
 		}
-		if (planId != null){
+		if (planId != null) {
 			DeleteDoc(UrlFromDocID(Int(planId)));
 		}
 

@@ -78,7 +78,7 @@ const computeCompetencePercent = (competenceId, props) => {
 const computeScaleByPercent = (percent, props) => {
 	const { rules } = props;
 	const r = Math.round(parseInt(percent, 10) / 10) * 10;
-
+	
 	const s = findKey(rules, { percent: r });
 	if (s) return rules[s].scale;
 	return null;
