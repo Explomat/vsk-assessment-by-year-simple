@@ -21,7 +21,7 @@
 	// 6928287565866297168 - prod
 	// 6790263731625424310 - test
 
-	/*var st = Utils.getSystemSettings(6790263731625424310);
+/*	var st = Utils.getSystemSettings(6790263731625424310);
 	var curUserID = OptInt(st.TopElem.cur_user_id); //6711785032659205612;
 	var curUser = OpenDoc(UrlFromDocID(curUserID)).TopElem;*/
 
@@ -35,10 +35,6 @@
 	//var curUserID = 6605157354988654063; // пичугина prod
 
 	function isAccessToAssessment(curUserDocTe, stopHireDate, assessmentAppraiseId) {
-		/*alert('curUser.hire_date: ' + String(curUser.hire_date));
-		alert('curUser.current_state: ' + String(curUser.current_state));
-		alert('stopHireDate: ' + String(stopHireDate));*/
-
 		if (
 				curUserDocTe.hire_date <= stopHireDate &&
 				curUserDocTe.current_state != 'Декретный' &&
@@ -46,11 +42,8 @@
 				curUserDocTe.current_state != 'Уход 1,5' &&
 				curUserDocTe.current_state != 'Уход до 3'
 			) {
-			//alert('111111111111111');
 			return true;
 		}
-
-		//alert('222222222222222222');
 		return false;
 	}
 
@@ -502,6 +495,7 @@
 			select \n\
 				cs.id collaborator_id,  \n\
 				aps.id assessment_plan_id, \n\
+				dps.id development_plan_id, \n\
 				aps.boss_id, \n\
 				cs.fullname collaborator_fullname, \n\
 				ps.id boss_pa_id, \n\
@@ -510,6 +504,7 @@
 			left join assessment_plans aps on (aps.person_id = cs.id and aps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 			left join pas ps on (ps.assessment_plan_id = aps.id and ps.expert_person_id = " + curUserID + ") \n\
 			left join cc_assessment_delegates ccads on (ccads.[user_id] = cs.id and ccads.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
+			left join development_plans dps on (dps.person_id = cs.id and dps.assessment_appraise_id = " + assessmentAppraiseId + ") \n\
 			where \n\
 				cs.id in (" + subordinates.join(',') + ") \n\
 		");
@@ -547,11 +542,38 @@
 					}
 				}
 
+				if (el.development_plan_id != null) {
+					dDoc = OpenDoc(UrlFromDocID(Int(el.development_plan_id)));
+					dDoc.TopElem.expert_person_id = userId;
+					dDoc.Save();
+				}
+
 				delegateDoc.TopElem.fullname = String(el.collaborator_fullname);
 				delegateDoc.TopElem.user_id = OptInt(el.collaborator_id);
 				delegateDoc.TopElem.boss_delegate_id = userId;
 				delegateDoc.TopElem.assessment_appraise_id = assessmentAppraiseId;
 				delegateDoc.Save();
+
+				// меняем юзера в согласовании ИПР
+				mfq = XQuery("sql: \n\
+					select imfs.id, imfs.current_collaborator_id, imfs.next_collaborator_id \n\
+					from cc_idp_main_flows imfs \n\
+					inner join cc_idp_mains ims on ims.id = imfs.idp_main_id \n\
+					inner join development_plans dps on dps.id = ims.development_plan_id \n\
+					where \n\
+						dps.assessment_appraise_id = " + assessmentAppraiseId + " \n\
+						and imfs.is_active_step = 1 \n\
+						and dps.person_id in (" + subordinates.join(',') + ") \n\
+					order by imfs.current_collaborator_id \n\
+				");
+
+				for (el in mfq) {
+					if (el.current_collaborator_id != el.next_collaborator_id) {
+						mfDoc = OpenDoc(UrlFromDocID(Int(el.id)));
+						mfDoc.TopElem.next_collaborator_id = userId;
+						mfDoc.Save();
+					}
+				}
 			} catch(e) {
 				err = err + e;
 			}

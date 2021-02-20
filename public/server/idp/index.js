@@ -477,53 +477,7 @@ function post_changeStep(queryObjects){
 		return Utils.setError('Невозможно перевести на следующий этап.');
 	}
 
-	// если этап(общий) последний и не заполнены оценки рук-ля / сотрудника,
-	// и если сотрудник пытается отправить дальше по этапу (вверх по лесенке), то возвращаем ошибку
-	/*var lst = Step.getLastMainStep();
-	var crDoc = OpenDoc(UrlFromDocID(Int(dpid)));
-	if (currentStep.idp_main_step_order_number == lst.order_number && (OptInt(processStep.next_step_order_number) > OptInt(currentStep.idp_step_order_number))) {
-		//alert('11111');
-		var assessmentsCount = ArrayOptFirstElem(XQuery("sql: \n\
-			select \n\
-				top 1 \n\
-				count(ccat.id) over() total, \n\
-				(select count(*) \n\
-				from cc_adaptation_tasks \n\
-				where \n\
-					ccat.career_reserve_id = " + dpid + " \n\
-					and collaborator_assessment is not null \n\
-				) collaborator_assessment, \n\
-				(select count(*) \n\
-				from cc_adaptation_tasks \n\
-				where \n\
-					ccat.career_reserve_id = " + dpid + " \n\
-					and manager_assessment is not null \n\
-				) manager_assessment \n\
-			from \n\
-				cc_adaptation_tasks ccat \n\
-			where ccat.career_reserve_id = " + dpid + " \n\
-		"));
-
-		if (assessmentsCount != undefined) {
-			//alert('222222');
-			var c =
-				isManager(urole) ?
-					OptInt(assessmentsCount.manager_assessment) :
-					(isUser(crDoc, urole) ?
-						OptInt(assessmentsCount.collaborator_assessment) :
-						OptInt(assessmentsCount.total));
-			//alert('c:' + c);
-			//alert('OptInt(assessmentsCount.total): ' + OptInt(assessmentsCount.total));
-			if (OptInt(assessmentsCount.total) > c) {
-				//alert('33333');
-				return Utils.setError('Проставьте в задачах ваши оценки пожалуйста');
-			}
-		}
-	}*/
-
-
 	var currentUserId = currentStep.next_collaborator_id;
-	
 	var step = null;
 	var comment = data.HasProperty('comment') && data.GetOptProperty('comment') != 'undefined' ? data.comment : '';
 	var nextStep = Step.create(
@@ -546,71 +500,6 @@ function post_changeStep(queryObjects){
 		// Сотруднику: Руководитель утвердил развивающие задачи
 		Utils.notificate('ver2_oc_7', dpDoc.TopElem.person_id, assessmentAppraiseId, curUser.fullname);
 	}
-
-
-
-	/* отправка уведомлений
-		1. Если этап идет вверх, то отсылаем уведомление на кого переведен этап, и остальным вниз по лесенке ролей относительно того, кто перевел.
-		2. Если этап идет вниз, то отсылаем всем вниз по лесенке ролей относительно того, кто перевел.
-	*/
-
-	/*var curUserRole = User.getRoleRecordByUserId(currentUserId, dpid);
-	var nextUserRole = User.getRoleRecordByUserId(nextUserId, dpid);
-
-	//alert('curUserRole: ' + tools.object_to_text(curUserRole, 'json'));
-	//alert('nextUserRole: ' + tools.object_to_text(nextUserRole, 'json'));
-
-	if (curUserRole != undefined && nextUserRole != undefined) {
-		//alert(1);
-		var managerTypes = [];
-		// если порядковый номер следующего этапа больше текущего, значит лесенка вверх
-		if (OptInt(processStep.next_step_order_number) > OptInt(currentStep.order_number)) {
-			//alert(2)
-			managerTypes = User.getNextManagerTypes(OptInt(curUserRole.order_number), OptInt(nextUserRole.order_number));
-		} else {
-			//alert(3)
-			managerTypes = User.getPrevManagerTypes(OptInt(nextUserRole.order_number));
-		}
-
-		//alert('ArrayCount(managerTypes):' + ArrayCount(managerTypes));
-		var _tutors = [];
-		//var crDoc = OpenDoc(UrlFromDocID(Int(crid)));
-		for (mt in managerTypes) {
-			for (el in crDoc.TopElem.tutors) {
-				if (mt.boss_type_id == el.boss_type_id) {
-					_tutors.push(el.person_id);
-				}
-			}
-		}
-
-		// Сотрудник, кто прохоит адаптацию должен всегда получать уведомления, если не он отправляет на согласование
-		if (Int(crDoc.TopElem.person_id) != Int(currentUserId)) {
-			_tutors.push(crDoc.TopElem.person_id);
-		}
-
-		//alert('ArrayCount(_tutors):' + ArrayCount(_tutors));
-		var curUserDoc = OpenDoc(UrlFromDocID(Int(currentUserId)));
-		var nextUserDoc = OpenDoc(UrlFromDocID(Int(nextUserId)));
-		var _person = crDoc.TopElem.person_id.ForeignElem;
-
-		var objToNotificate = tools.object_to_text({
-			subject: ('Адаптация сотрудника ' + String(_person.fullname) + '. ' + String(nextStep.TopElem.main_step_id.ForeignElem.description) + ' / ' + String(processStep.step_title)),
-			dpid: OptInt(dpid),
-			stepTitle: String(processStep.step_title),
-			from: {
-				fullname: curUserDoc.TopElem.fullname,
-				role: String(curUserRole.user_role_title)
-			},
-			to: {
-				fullname: nextUserDoc.TopElem.fullname,
-				role: String(nextUserRole.user_role_title)
-			}
-		}, 'json');
-
-		for (el in _tutors) {
-			Utils.notificate(processStep.notification_code, el, objToNotificate, dpid);
-		}
-	}*/
 
 	return Utils.setSuccess({});
 }
@@ -635,8 +524,9 @@ function post_nextMainStep(queryObjects) {
 
 	var dpDoc = OpenDoc(UrlFromDocID(Int(dpid)));
 	var idpq = ArrayOptFirstElem(XQuery("sql: \n\
-		select id \n\
-		from cc_idp_mains \n\
+		select ims.id, dps.person_id \n\
+		from cc_idp_mains ims \n\
+		inner join development_plans dps on dps.id = ims.development_plan_id \n\
 		where development_plan_id = " + dpid + " \n\
 	"));
 
@@ -646,56 +536,11 @@ function post_nextMainStep(queryObjects) {
 
 	// меняем этап (утверждаем) если это не ТОП1 
 	var top = String(_top(dpDoc));
-	var isTop1 = top == '1';
+	var isTop1 = (String(top) == '1');
 
 	if (!isTop1) {
-		var action = 'approve';
-		var urole = User.getRole(curUserID, dpid);
-		var uactions = User.getActionsByRole(urole);
-
-		if (ArrayOptFind(uactions, 'This.code == \'' + action + '\'') == undefined) {
-			return Utils.setError('Действие не найдено');
-		}
-
-		var currentStep = Step.getCurrentStep(dpid);
-		var personFromRole = User.getRole(currentStep.next_collaborator_id, dpid);
-
-		//Теперь функция getProcessSteps может вернуть несколько записей. 
-		//Т.к. у  сотрудника может не быть куратора, и он должен отправить сразу руководителю.
-		//Получаем этапы, сортируем по номеру
-		var processSteps = Step.getProcessSteps(personFromRole, currentStep.idp_step_id, action);
-		//alert('processSteps: ' + tools.object_to_text(processSteps, 'json'))
-		
-		if (ArrayCount(processSteps) == 0) {
-			return Utils.setError('Невозможно перевести на следующий этап. Возможно у вас нет рук-ля в штатном расписании.');
-		}
-
-		var processStep = null;
-		var nextUserId = null;
-		for (ps in processSteps) {
-			nextUserId = Dp.getNextUserId(dpid, ps.next_idp_role_code);
-			if (nextUserId != null) {
-				processStep = ps;
-				break;
-			}
-		}
-
-		if (processStep == null || nextUserId == null){
-			return Utils.setError('Невозможно перевести на следующий этап.');
-		}
-
-		var currentUserId = currentStep.next_collaborator_id;
-		
-		var step = null;
-		var nextStep = Step.create(
-			currentStep.id,
-			{
-				current_collaborator_id: currentUserId,
-				next_collaborator_id: nextUserId,
-				comment: '',
-				idp_step_id: processStep.next_idp_step_id
-			}
-		);
+		//Step.nextStep(idpq.person_id, dpid, 'transfer_for_approval', '');
+		Step.nextStep(curUserID, dpid, 'approve', '');
 	}
 
 	// переводим на следующий общий этап

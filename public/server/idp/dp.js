@@ -604,6 +604,18 @@ function getNextUserId(dpId, roleName){
 	}
 
 	if (types.main == roleName) {
+		var qb = ArrayOptFirstElem(XQuery("sql: \n\
+			select dps.expert_person_id \n\
+			from cc_assessment_delegates ads \n\
+			inner join development_plans dps on dps.person_id = ads.[user_id] \n\
+			where \n\
+				dps.id = " + dpId + " \n\
+		"));
+
+		if (qb != undefined) {
+			return qb.expert_person_id;
+		}
+
 		return doc.TopElem.expert_person_id;
 	}
 
