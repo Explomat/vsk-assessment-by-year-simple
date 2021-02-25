@@ -37,8 +37,8 @@ class Meta extends Component {
 	}
 
 	componentDidMount(){
-		const { match, getMeta, dpId } = this.props;
-		getMeta(match.params.id, dpId);
+		const { match, getMeta, dpId, curPaId } = this.props;
+		getMeta(match.params.id, dpId, curPaId);
 	}
 
 	handleSave() {

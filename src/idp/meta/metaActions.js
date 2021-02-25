@@ -113,20 +113,31 @@ export function saveIdp(assessment_appraise_id, dp_id) {
 	}
 }
 
-export function getMeta(assessment_appraise_id, dpId) {
+export function getMeta(assessment_appraise_id, dpId, curPaId) {
 	return (dispatch, getState) => {
 		dispatch(loading(true));
 
 		const { assessment } = getState();
-		const paKey = Object.keys(assessment.profile.pas).find(p => assessment.profile.pas[p].status === 'self');
+		let comps = [];
+
+		let paKey = Object.keys(assessment.profile.pas).find(p => assessment.profile.pas[p].id == curPaId);
+		if (paKey) {
+			comps = assessment.profile.pas[paKey].competences.map(c =>
+				assessment.profile.competences[c]
+			);
+		} else {
+			paKey = Object.keys(assessment.subordinate.pas).find(p => assessment.subordinate.pas[p].id == curPaId);
+			if (paKey) {
+				comps = assessment.subordinate.pas[paKey].competences.map(c =>
+					assessment.subordinate.competences[c]
+				);
+			}
+		}
+
 		if (!paKey) {
 			dispatch(error('client: Не найдена анкета самооценки'));
 			return;
 		}
-
-		const comps = assessment.profile.pas[paKey].competences.map(c =>
-			assessment.profile.competences[c]
-		);
 
 		const robj = { assessment_appraise_id };
 		if (dpId) {

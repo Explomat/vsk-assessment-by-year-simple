@@ -5,6 +5,12 @@ function setComputedFields(assessmentAppraiseId, curUserID, userId, bossId, step
 	var actions = User.getActions(curUserID, 'pa');
 	var updateAction = (ArrayOptFind(actions, 'This == "update"') != undefined);
 
+	/*alert('assessmentAppraiseId: ' + assessmentAppraiseId);
+	alert('curUserID: ' + curUserID);
+	alert('userId: ' + userId);
+	alert('bossId: ' + bossId);
+	alert('step: ' + step);*/
+
 	// вычисляем текущую оценочную анкету
 	var cpq = null;
 	var curPaId = null;

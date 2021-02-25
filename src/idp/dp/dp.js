@@ -220,7 +220,7 @@ class Dp extends Component {
 	}
 
 	render() {
-		const { match, idp, card, ui, updateTask, removeTask } = this.props;
+		const { match, idp, card, ui, curPaId, updateTask, removeTask } = this.props;
 		const { isShowModalTask, isShowModalTheme, isShowModalComment, comment } = this.state;
 
 		return (
@@ -301,7 +301,7 @@ class Dp extends Component {
 								onCancel={this.handleToggleThemeModal}
 								onOk={this.handleUpdate}
 							>
-								<DpMeta dpId={card.development_plan_id}/>
+								<DpMeta dpId={card.development_plan_id} curPaId={curPaId}/>
 							</Modal>
 						}
 						{isShowModalTask && <TaskForm

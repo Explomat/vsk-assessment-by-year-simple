@@ -205,9 +205,9 @@ class Profile extends Component {
 							return <PaContainer key={p} id={p} isHeaderOpened={pasLen > 1} isOpened={isOpened} />
 						})
 					}
-					{meta.hasIdp && <Dp user={user}/>}
+					{meta.hasIdp && <Dp user={user} curPaId={meta.curPaId}/>}
 				</div>}
-				{curPage === 2 && <DpMeta />}
+				{curPage === 2 && <DpMeta curPaId={meta.curPaId} />}
 				<div className='assessment-profile__result'>
 					{
 						meta.canEditSelf && curPage === 1 && isCompleted && (
